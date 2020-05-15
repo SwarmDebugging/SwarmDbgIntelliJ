@@ -1,0 +1,32 @@
+<idea-plugin>
+    <id>org.test.PluginTest</id>
+    <name>Swarm Debugging</name>
+    <vendor email="supporte@yourcompany.com" url="https://www.yourcompany.com">Yourscompany</vendor>
+
+    <description>Swarm Debugging for IntelliJ Idea, collects debugging information</description>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+    
+    <projectListeners>
+        <listener class="com.swarm.listeners.breakpointListener" topic="com.intellij.xdebugger.breakpoints.XBreakpointListener"/>
+        <listener class="com.swarm.listeners.fileChangeListener" topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+        <listener class="com.swarm.listeners.DebugActionListener" topic="com.intellij.openapi.actionSystem.ex.AnActionListener"/>
+        <listener class="com.swarm.listeners.steppingCommandListener" topic="com.intellij.xdebugger.XDebuggerManagerListener"/>
+    </projectListeners>
+
+    <actions>
+        <group id="MyIdeaDemo.AskQuestionAction" text="MyIdeaDemo" description="About my idea">
+            <add-to-group group-id="MainMenu" anchor="last"/>
+            <action class="com.swarm.AskQuestionAction" id="MyIdeaDemo.Action.AskQuestionAction" text="Ask a Question to Stackoverflow"/>
+            <action class="com.swarm.SearchQuestion" id="MyIdeaDemo.Action.SearchQuestionAction" text="Search Highlighted Text"/>
+            <action class="com.swarm.NotificationAction" id="MyIdeaDemo.Action.NotificationAction" text="Trigger Notification" description="Display notification"/>
+            <action class="com.swarm.DisplayInputBoxAction" id="MyIdeaDemo.Action.DisplayInputBoxAction" text="Display Input Box"/>
+        </group>
+    </actions>
+</idea-plugin>
