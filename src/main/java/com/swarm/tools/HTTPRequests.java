@@ -1,5 +1,8 @@
 package com.swarm.tools;
 
+import com.intellij.debugger.DebuggerManagerEx;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiJavaFile;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
@@ -42,11 +45,22 @@ public class HTTPRequests {
     }
 
     //just a test
-    public static int createInvocation(String invokingFilePath, String invokedFilePath, int invokingId, String invokedName, int invokingLine, int invokedLine, int sessionId){
+    public static int createInvocation(int invokingId, String invokedName, String invokedSignature, int sessionId, Project project){
+        var file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
+        String typeName = file.getName();
+        String typeFullName;
+        if(!(typeFullName = file.getPackageName()).equals("")){
+            typeFullName += ".";
+        }
+        typeFullName += typeName;
 
-        int invokedTypeId = 56;
+        var typePath = file.getVirtualFile().getPath();
 
-        int invokedId = createMethod(invokedTypeId,"signature", invokedName);
+        String sourceCode = file.getText();
+        //maybe we could find the type instead of creating a new one?
+        int invokedTypeId = createType(20, typeFullName, typeName, typePath, sourceCode);
+
+        int invokedId = createMethod(invokedTypeId,invokedSignature, invokedName);
 
         //TODO: must save methods before create the invocation
 
@@ -79,12 +93,11 @@ public class HTTPRequests {
                 .asString();
 
         JSONObject jsonObject = new JSONObject(response.getBody());
-        int methodId = jsonObject.getJSONObject("data").getJSONObject("methodCreate").getInt("id");
 
-        return methodId;
+        return jsonObject.getJSONObject("data").getJSONObject("methodCreate").getInt("id");
     }
 
-    public static String createType(int sessionId, String fullName, String name, String fullPath, String sourceCode) {
+    public static int createType(int sessionId, String fullName, String name, String fullPath, String sourceCode) {
         String source = sourceCode.replace("\n", "\\\\n");
         source = source.replace("\"", "\\\"");
         HttpResponse<String> response = Unirest.post(URL)
@@ -100,8 +113,7 @@ public class HTTPRequests {
                 .asString();
 
         JSONObject jsonObject = new JSONObject(response.getBody());
-        int id = jsonObject.getJSONObject("data").getJSONObject("typeCreate").getInt("id");
 
-        return "id: " + id;
+        return jsonObject.getJSONObject("data").getJSONObject("typeCreate").getInt("id");
     }
 }

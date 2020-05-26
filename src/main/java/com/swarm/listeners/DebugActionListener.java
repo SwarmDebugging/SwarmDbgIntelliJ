@@ -47,27 +47,30 @@ public class DebugActionListener implements AnActionListener{
         var debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
         var location = debuggerManagerEx.getContext().getFrameProxy().location();
 
+        var position = debuggerManagerEx.getContext().getSourcePosition();
+
         invokingMethod.setMethod(location.method());
         States.eventType = "StepInto";
 
+        var file = (PsiJavaFile) position.getFile();
+        String typeName = file.getName();
         String typeFullName;
-        String typeName;
-        ReferenceType typePath;
-        try {
-            typePath = location.declaringType();
-            typeFullName = typePath.sourceName();
-            typeName = typePath.name();
-        } catch (AbsentInformationException e) {
-            e.printStackTrace();
+        if(!(typeFullName = file.getPackageName()).equals("")){
+            typeFullName += ".";
         }
+        typeFullName += typeName;
 
-        /*int typeId = HTTPRequests.createType(20, )
-        int methodId = HTTPRequests.createMethod()*/
-        //we must save an event
+        var typePath = file.getVirtualFile().getPath();
 
-            /*int methodId = HTTPRequests.createMethod(60, "signature", lineContent);
-            int eventId = HTTPRequests.createEvent(20, line, "StepInto", methodId);
-            invokingMethod.setId(methodId);*/
+        String sourceCode = file.getText();
+
+        String methodSignature = location.method().signature();
+        String methodname = location.method().name();
+
+        int typeId = HTTPRequests.createType(20, typeFullName, typeName, typePath, sourceCode);
+        int methodId = HTTPRequests.createMethod(typeId, methodSignature, methodname);
+        int eventId = HTTPRequests.createEvent(20, position.getLine(),"StepInto" , methodId);
+        invokingMethod.setId(methodId);
     }
 
     @Override

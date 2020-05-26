@@ -8,6 +8,7 @@ import com.intellij.debugger.jdi.StackFrameProxyImpl;
 import com.intellij.openapi.project.Project;
 import com.sun.jdi.Method;
 import com.swarm.States;
+import com.swarm.tools.HTTPRequests;
 
 import java.util.List;
 
@@ -45,8 +46,9 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener {
 
             if (isInvocation(currentStackFrames)){
                 //we save the invocation
-                Method invoking = currentStackFrames.get(1).location().method();
                 Method invoked = currentStackFrames.get(0).location().method();
+
+                int invocationId = HTTPRequests.createInvocation(DebugActionListener.invokingMethod.getId(), invoked.name(), invoked.signature(), 20, project);
             }
         } catch (EvaluateException e) {
             e.printStackTrace();
