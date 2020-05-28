@@ -1,20 +1,11 @@
 package com.swarm.listeners;
 
-import com.intellij.debugger.engine.ContextUtil;
 import com.intellij.lang.jvm.JvmParameter;
-import com.intellij.notification.NotificationDisplayType;
-import com.intellij.notification.NotificationGroup;
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiSubstitutor;
-import com.intellij.psi.impl.source.tree.java.MethodElement;
-import com.intellij.psi.util.PsiClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
-import com.intellij.util.xml.JavaMethod;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
 import com.swarm.States;
@@ -31,10 +22,22 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
 
     @Override
     public void breakpointAdded(@NotNull XBreakpoint breakpoint) {
-        NotificationGroup notificationGroup = new NotificationGroup("NotificationBreakpointAdded", NotificationDisplayType.BALLOON, true);
+        if(breakpoint.getSourcePosition() == null) {
+            return;
+        }
+        int typeId = handleBreakpointEvent("Breakpoint Added", breakpoint);
+        HTTPRequests.createBreakpoint(breakpoint.getSourcePosition().getLine(), typeId);
+    }
 
-        //i need lineNumber, method which needs name and signature, type which need full name, full path, name and source code
+    @Override
+    public void breakpointRemoved(@NotNull XBreakpoint<?> breakpoint) {
+        if(breakpoint.getSourcePosition() == null) {
+            return;
+        }
+        handleBreakpointEvent("Breakpoint Removed", breakpoint);
+    }
 
+    private int handleBreakpointEvent(String eventKind, @NotNull XBreakpoint breakpoint) {
         PsiJavaFile file = (PsiJavaFile) PsiManager.getInstance(project).findFile(breakpoint.getSourcePosition().getFile());
 
         String typeName = file.getName();
@@ -54,7 +57,7 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
 
         if(element == null) {
             //that means that there's no element where the breakpoint is(unlikely)
-            return;
+            return typeId;
         }
 
         var method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
@@ -62,31 +65,26 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
             method = PsiTreeUtil.getNextSiblingOfType(element, PsiMethod.class);
         } else if(method == null){
             //the breakpoint is not a method(could be on a class or a field)
-            return;
+            return typeId;
         }
 
-
-
-        var children = method.getChildren();
         String methodName = method.getName();
-        String methodReturnType = method.getReturnType().getPresentableText();
-        var parameters = method.getParameters();
+        String methodReturnType;
 
-        var methodSignature = method.getSignature(PsiSubstitutor.EMPTY);
+        if(method.getReturnType() == null){
+            methodReturnType = "Constructor";
+        } else {
+            methodReturnType = method.getReturnType().getCanonicalText();
+        }
 
-        int methodId = 0;
-    }
+        //var parameters = method.getParameters();
 
-    @Override
-    public void breakpointRemoved(@NotNull XBreakpoint<?> breakpoint) {
-        NotificationGroup notificationGroup = new NotificationGroup("NotificationBreakpointAdded", NotificationDisplayType.BALLOON, true);
+        //TODO: get right signature
+        //MethodSignature methodSignature = method.getSignature(PsiSubstitutor.EMPTY);
 
-        int x = breakpoint.getSourcePosition().getLine();
-
-        notificationGroup.createNotification("Hello from first plugin",
-                "line number: " + x,
-                NotificationType.INFORMATION,
-                null).notify(project);
+        int methodId = HTTPRequests.createMethod(typeId, methodReturnType, methodName);
+        HTTPRequests.createEvent(States.currentSessionId, lineNumber, eventKind, methodId);
+        return typeId;
     }
 
     private String encodeSignature(JvmParameter[] parameters, String returnType) {

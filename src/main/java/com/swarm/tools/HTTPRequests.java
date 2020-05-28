@@ -8,6 +8,7 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
 
+//TODO: handle all case and errors
 public class HTTPRequests {
 
     private static final String URL = "http://localhost:8080/graphql";
@@ -111,5 +112,18 @@ public class HTTPRequests {
         JSONObject jsonObject = new JSONObject(response.getBody());
 
         return jsonObject.getJSONObject("data").getJSONObject("typeCreate").getInt("id");
+    }
+
+    public static int createBreakpoint(int lineNumber, int typeId) {
+        HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
+                .header("content-type", "application/json")
+                .body("{\"query\":\"mutation breakpointCreate($typeId: Long!, $lineNumber: Int!) {\\n  breakpointCreate(breakpoint:{type:{id:$typeId}, lineNumber:$lineNumber}) {\\n " +
+                        "   id\\n  }\\n}\",\"variables\":{\"typeId\":\"" + typeId +
+                        "\",\"lineNumber\":" + lineNumber +
+                        "},\"operationName\":\"breakpointCreate\"}")
+                .asString();
+
+        JSONObject jsonObject = new JSONObject((response.getBody()));
+        return jsonObject.getJSONObject("data").getJSONObject("breakpointCreate").getInt("id");
     }
 }

@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.xdebugger.impl.actions.*;
+import com.sun.jdi.Location;
 import com.swarm.States;
 import com.swarm.invokingMethod;
 import com.swarm.tools.HTTPRequests;
@@ -41,6 +42,7 @@ public class DebugActionListener implements AnActionListener {
         String methodName = "";
         String methodSignature = "";
         try {
+            Location loc = debuggerManagerEx.getContext().getFrameProxy().location();
             methodName = debuggerManagerEx.getContext().getFrameProxy().location().method().name();
             methodSignature = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
         } catch (EvaluateException e) {
