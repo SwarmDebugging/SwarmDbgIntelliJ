@@ -1,10 +1,7 @@
 package com.swarm.listeners;
 
-import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiMethod;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
@@ -52,43 +49,53 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
         int typeId = HTTPRequests.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
 
         int lineNumber = breakpoint.getSourcePosition().getLine();
-        int offset = breakpoint.getSourcePosition().getOffset();
-        var element = file.findElementAt(offset);
 
-        if(element == null) {
-            //that means that there's no element where the breakpoint is(unlikely)
-            return typeId;
-        }
-
-        var method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-        if(method == null && element.getNextSibling() instanceof PsiMethod) {
-            method = PsiTreeUtil.getNextSiblingOfType(element, PsiMethod.class);
-        } else if(method == null){
-            //the breakpoint is not a method(could be on a class or a field)
+        PsiMethod method = findMethodByBreakpointAndFile(breakpoint, file);
+        if(method == null) {
             return typeId;
         }
 
         String methodName = method.getName();
         String methodReturnType;
-
         if(method.getReturnType() == null){
             methodReturnType = "Constructor";
         } else {
             methodReturnType = method.getReturnType().getCanonicalText();
         }
+        PsiParameter[] parameters = method.getParameterList().getParameters();
+        String methodSignature = encodeSignature(parameters, methodReturnType);
 
-        //var parameters = method.getParameters();
-
-        //TODO: get right signature
-        //MethodSignature methodSignature = method.getSignature(PsiSubstitutor.EMPTY);
-
-        int methodId = HTTPRequests.createMethod(typeId, methodReturnType, methodName);
+        int methodId = HTTPRequests.createMethod(typeId, methodSignature, methodName);
         HTTPRequests.createEvent(States.currentSessionId, lineNumber, eventKind, methodId);
         return typeId;
     }
 
-    private String encodeSignature(JvmParameter[] parameters, String returnType) {
-        //TODO Is it better to encode signature or to decode in the stepping events???
-        return "Encoded signature";
+    private PsiMethod findMethodByBreakpointAndFile(XBreakpoint breakpoint, PsiJavaFile file) {
+        int offset = breakpoint.getSourcePosition().getOffset();
+        var element = file.findElementAt(offset);
+
+        if(element == null) {
+            //that means that there's no element where the breakpoint is(unlikely)
+            return null;
+        }
+
+        PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        if(method == null && element.getNextSibling() instanceof PsiMethod) {
+            method = PsiTreeUtil.getNextSiblingOfType(element, PsiMethod.class);
+        }
+
+        return method;
+    }
+
+    private String encodeSignature(PsiParameter[] parameters, String returnType) {
+        String result = "(";
+        for (int i = 0; i < parameters.length; i++) {
+            result += parameters[i].getType().getCanonicalText();
+            if(i != parameters.length-1){
+                result += ",";
+            }
+        }
+        result += ")" + returnType;
+        return result;
     }
 }

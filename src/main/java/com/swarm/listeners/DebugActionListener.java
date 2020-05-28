@@ -13,9 +13,13 @@ import com.swarm.invokingMethod;
 import com.swarm.tools.HTTPRequests;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+
 public class DebugActionListener implements AnActionListener {
 
     Project project;
+    private long lastEventTime = -1;
 
     public static invokingMethod invokingMethod = new invokingMethod();
 
@@ -56,6 +60,15 @@ public class DebugActionListener implements AnActionListener {
 
     @Override
     public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
+        // The following is a hack to work around an issue with IDEA, where certain events arrive
+        // twice. See https://youtrack.jetbrains.com/issue/IDEA-219133
+        final InputEvent input = event.getInputEvent();
+        if(input instanceof MouseEvent) {
+            if(input.getWhen() != 0 && lastEventTime == input.getWhen()) {
+                return;
+            }
+            lastEventTime = input.getWhen();
+        }
         if (action instanceof StepIntoAction || action instanceof ForceStepIntoAction) {
             invokingMethod.setId(handleEvent("StepInto"));
             States.isSteppedInto = true;
