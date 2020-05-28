@@ -24,7 +24,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener {
     @Override
     public void sessionCreated(DebuggerSession session) {
         session.getContextManager().addListener((newContext, event) -> {
-            if (event.name().equals("PAUSE") && States.eventType.equals("StepInto")) {
+            if (event.name().equals("PAUSE") && States.isSteppedInto) {
                 handleStepInto(newContext);
             }
             if (event.name().equals("PAUSE")) {
@@ -38,28 +38,26 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener {
         });
     }
 
-    private void handleStepInto(DebuggerContextImpl newContext){
+    private void handleStepInto(DebuggerContextImpl newContext) {
         try {
-            States.eventType = "";
+            States.isSteppedInto = false;
             assert newContext.getThreadProxy() != null;
             List<StackFrameProxyImpl> currentStackFrames = newContext.getThreadProxy().frames();
 
-            if (isInvocation(currentStackFrames)){
-                //we save the invocation
+            if (isInvocation(currentStackFrames)) {
                 Method invoked = currentStackFrames.get(0).location().method();
-
-                int invocationId = HTTPRequests.createInvocation(DebugActionListener.invokingMethod.getId(), invoked.name(), invoked.signature(), 20, project);
+                HTTPRequests.createInvocation(DebugActionListener.invokingMethod.getId(), invoked.name(), invoked.signature(), States.currentSessionId, project);
             }
         } catch (EvaluateException e) {
             e.printStackTrace();
         }
     }
 
-    //Checks if invocation is only a return and removes from the callstack if so
     private boolean isInvocation(List<StackFrameProxyImpl> currentStackFrames) {
-        if(currentStackFrames.size() < States.lastStackFrames.size()) {
+        if (currentStackFrames.size() < States.lastStackFrames.size()) {
             //here it's certain that it wasn't an invocation because the current stackFrames count is less than before. We just return true
             return false;
-        } else return currentStackFrames.size() != States.lastStackFrames.size(); //Here if it's not the same frame count, it's an invocation
+        } else
+            return currentStackFrames.size() != States.lastStackFrames.size(); //Here if it's not the same frame count, it's an invocation
     }
 }

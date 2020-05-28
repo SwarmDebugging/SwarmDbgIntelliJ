@@ -3,6 +3,7 @@ package com.swarm.tools;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
+import com.swarm.States;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
@@ -11,7 +12,7 @@ public class HTTPRequests {
 
     private static final String URL = "http://localhost:8080/graphql";
 
-    public static String createDeveloper(String username) {
+    public static int createDeveloper(String username) {
 
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
@@ -22,9 +23,8 @@ public class HTTPRequests {
 
 
         JSONObject jsonObject = new JSONObject(response.getBody());
-        int id = jsonObject.getJSONObject("data").getJSONObject("developerCreate").getInt("id");
 
-        return "id: " + id;
+        return jsonObject.getJSONObject("data").getJSONObject("developerCreate").getInt("id");
     }
 
     public static int createEvent(int sessionId, int eventLineNumber, String eventKind, int methodId) {
@@ -39,12 +39,10 @@ public class HTTPRequests {
                 .asString();
 
         JSONObject jsonObject = new JSONObject(response.getBody());
-        int id = jsonObject.getJSONObject("data").getJSONObject("eventCreate").getInt("id");
 
-        return id;
+        return jsonObject.getJSONObject("data").getJSONObject("eventCreate").getInt("id");
     }
 
-    //just a test
     public static int createInvocation(int invokingId, String invokedName, String invokedSignature, int sessionId, Project project){
         var file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
         String typeName = file.getName();
@@ -58,7 +56,7 @@ public class HTTPRequests {
 
         String sourceCode = file.getText();
         //maybe we could find the type instead of creating a new one?
-        int invokedTypeId = createType(20, typeFullName, typeName, typePath, sourceCode);
+        int invokedTypeId = createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
 
         int invokedId = createMethod(invokedTypeId,invokedSignature, invokedName);
 
@@ -75,10 +73,8 @@ public class HTTPRequests {
                 .asString();
 
         JSONObject jsonObject = new JSONObject(response.getBody());
-        int invocationId = jsonObject.getJSONObject("data").getJSONObject("invocationCreate").getInt("id");
 
-
-        return invocationId;
+        return jsonObject.getJSONObject("data").getJSONObject("invocationCreate").getInt("id");
     }
 
     public static int createMethod(int typeId, String signature, String name) {
