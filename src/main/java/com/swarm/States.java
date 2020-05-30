@@ -9,5 +9,5 @@ public class States {
 
     public static List<StackFrameProxyImpl> lastStackFrames;
 
-    public static int currentSessionId = 20;
+    public static int currentSessionId = 3;
 }

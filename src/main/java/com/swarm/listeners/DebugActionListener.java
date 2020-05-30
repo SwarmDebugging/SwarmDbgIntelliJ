@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.xdebugger.impl.actions.*;
-import com.sun.jdi.Location;
 import com.swarm.States;
 import com.swarm.invokingMethod;
 import com.swarm.tools.HTTPRequests;
@@ -28,7 +27,7 @@ public class DebugActionListener implements AnActionListener {
     }
 
     private int handleEvent(String eventName) {
-        var debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
+        DebuggerManagerEx debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
         var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
 
         String typeName = file.getName();
@@ -40,19 +39,17 @@ public class DebugActionListener implements AnActionListener {
         }
         typeFullName += typeName;
 
-        int typeId = HTTPRequests.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
-
         int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
         String methodName = "";
         String methodSignature = "";
         try {
-            Location loc = debuggerManagerEx.getContext().getFrameProxy().location();
             methodName = debuggerManagerEx.getContext().getFrameProxy().location().method().name();
             methodSignature = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
         } catch (EvaluateException e) {
             e.printStackTrace();
         }
 
+        int typeId = HTTPRequests.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
         int methodId = HTTPRequests.createMethod(typeId, methodSignature, methodName);
         HTTPRequests.createEvent(States.currentSessionId, lineNumber, eventName, methodId);
         return methodId;

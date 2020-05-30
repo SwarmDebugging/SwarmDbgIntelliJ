@@ -9,6 +9,7 @@ import com.swarm.States;
 import com.swarm.tools.HTTPRequests;
 import org.jetbrains.annotations.NotNull;
 
+
 public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
 
     private final Project project;
@@ -46,6 +47,7 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
         }
         typeFullName += typeName;
 
+        //verification is made in the server for doubles
         int typeId = HTTPRequests.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
 
         int lineNumber = breakpoint.getSourcePosition().getLine();
