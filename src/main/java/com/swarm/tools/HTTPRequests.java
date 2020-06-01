@@ -1,6 +1,7 @@
 package com.swarm.tools;
 
 import com.intellij.debugger.DebuggerManagerEx;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.swarm.States;
@@ -48,17 +49,20 @@ public class HTTPRequests {
     public static int createInvocation(int invokingId, String invokedName, String invokedSignature, int sessionId, Project project){
         var file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
         String typeName = file.getName();
-        String typeFullName;
-        if(!(typeFullName = file.getPackageName()).equals("")){
-            typeFullName += ".";
+        final String[] typeFullName = new String[1];
+        ApplicationManager.getApplication().runReadAction(() -> {
+            typeFullName[0] = file.getPackageName();
+        });
+        if(!typeFullName[0].equals("")) {
+            typeFullName[0] += ".";
         }
-        typeFullName += typeName;
+        typeFullName[0] += typeName;
 
         var typePath = file.getVirtualFile().getPath();
 
         String sourceCode = file.getText();
         //maybe we could find the type instead of creating a new one?
-        int invokedTypeId = createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
+        int invokedTypeId = createType(States.currentSessionId, typeFullName[0], typeName, typePath, sourceCode);
 
         int invokedId = createMethod(invokedTypeId,invokedSignature, invokedName);
 

@@ -2,6 +2,7 @@ package com.swarm.listeners;
 
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.engine.evaluation.EvaluateException;
+import com.intellij.debugger.engine.events.DebuggerCommandImpl;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.project.Project;
@@ -27,32 +28,37 @@ public class DebugActionListener implements AnActionListener {
     }
 
     private int handleEvent(String eventName) {
-        DebuggerManagerEx debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
-        var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
+                DebuggerManagerEx debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
+                var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
 
-        String typeName = file.getName();
-        String typePath = file.getVirtualFile().getPath();
-        String sourceCode = file.getText();
-        String typeFullName;
-        if (!(typeFullName = file.getPackageName()).equals("")) {
-            typeFullName += ".";
-        }
-        typeFullName += typeName;
+                String typeName = file.getName();
+                String typePath = file.getVirtualFile().getPath();
+                String sourceCode = file.getText();
+                String typeFullName;
+                if (!(typeFullName = file.getPackageName()).equals("")) {
+                    typeFullName += ".";
+                }
+                typeFullName += typeName;
 
-        int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
-        String methodName = "";
-        String methodSignature = "";
-        try {
-            methodName = debuggerManagerEx.getContext().getFrameProxy().location().method().name();
-            methodSignature = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
-        } catch (EvaluateException e) {
-            e.printStackTrace();
-        }
+                int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
+                final String[] methodName = {""};
+                final String[] methodSignature = {""};
+                debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
+                    @Override
+                    protected void action() throws Exception {
+                        try {
+                            methodName[0] = debuggerManagerEx.getContext().getFrameProxy().location().method().name();
+                            methodSignature[0] = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
+                        } catch (EvaluateException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
 
-        int typeId = HTTPRequests.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
-        int methodId = HTTPRequests.createMethod(typeId, methodSignature, methodName);
-        HTTPRequests.createEvent(States.currentSessionId, lineNumber, eventName, methodId);
-        return methodId;
+                int typeId = HTTPRequests.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
+                int methodId = HTTPRequests.createMethod(typeId, methodSignature[0], methodName[0]);
+                HTTPRequests.createEvent(States.currentSessionId, lineNumber, eventName, methodId);
+                return methodId;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.swarm.listeners;
 
 import com.intellij.debugger.engine.evaluation.EvaluateException;
+import com.intellij.debugger.engine.events.DebuggerCommandImpl;
 import com.intellij.debugger.impl.DebuggerContextImpl;
 import com.intellij.debugger.impl.DebuggerManagerListener;
 import com.intellij.debugger.impl.DebuggerSession;
@@ -24,17 +25,23 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener {
     @Override
     public void sessionCreated(DebuggerSession session) {
         session.getContextManager().addListener((newContext, event) -> {
-            if (event.name().equals("PAUSE") && States.isSteppedInto) {
-                handleStepInto(newContext);
-            }
-            if (event.name().equals("PAUSE")) {
-                try {
-                    assert newContext.getThreadProxy() != null;
-                    States.lastStackFrames = newContext.getThreadProxy().frames();
-                } catch (EvaluateException e) {
-                    e.printStackTrace();
+            assert newContext.getDebugProcess() != null;
+            newContext.getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
+                @Override
+                protected void action() throws Exception {
+                    if (event.name().equals("PAUSE") && States.isSteppedInto) {
+                        handleStepInto(newContext);
+                    }
+                    if (event.name().equals("PAUSE")) {
+                        try {
+                            assert newContext.getThreadProxy() != null;
+                            States.lastStackFrames = newContext.getThreadProxy().frames();
+                        } catch (EvaluateException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
+            });
         });
     }
 
