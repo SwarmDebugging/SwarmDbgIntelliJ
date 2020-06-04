@@ -10,4 +10,5 @@ public class States {
     public static List<StackFrameProxyImpl> lastStackFrames;
 
     public static int currentSessionId = 3;
+    public static int currentDeveloperId = -1;
 }

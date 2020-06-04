@@ -41,7 +41,7 @@ public class DebugActionListener implements AnActionListener {
                 typeFullName += typeName;
 
                 int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
-                final String[] methodName = {""};
+                final String[] methodName = {""}; //is this the best way???
                 final String[] methodSignature = {""};
                 debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
                     @Override

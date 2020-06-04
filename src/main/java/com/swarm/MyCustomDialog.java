@@ -1,5 +1,9 @@
 package com.swarm;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBLabel;
@@ -7,21 +11,23 @@ import com.intellij.uiDesigner.core.AbstractLayout;
 import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.swarm.tools.HTTPRequests;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class MyCustomDialog extends DialogWrapper {
 
-    private JPanel panel = new JPanel(new GridBagLayout());
-    private JTextField firstname = new JTextField();
-    private JTextField lastname = new JTextField();
+    private final JPanel panel = new JPanel(new GridBagLayout());
 
     protected MyCustomDialog(@Nullable Project project) {
         super(project);
         init();
-        setTitle("Yo");
+        setTitle("Log into Your Swarm Debugging Account");
     }
 
     @Nullable
@@ -29,27 +35,63 @@ public class MyCustomDialog extends DialogWrapper {
     protected JComponent createCenterPanel() {
 
         GridBag gb = new GridBag();
-        gb.setDefaultWeightX(1.0);
-        gb.setDefaultFill(GridBagConstraints.HORIZONTAL);
-        gb.setDefaultInsets(new Insets(0,0,AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP));
+        gb.setDefaultInsets(JBUI.insets(0, 0, AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP));
 
-        panel.add(label("fisrt name: "), gb.nextLine().next().weightx(0.2));
-        panel.add(firstname, gb.next().weightx(0.8));
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+
+        JTextField usernameField = new JTextField();
+
+        JBLabel tryAgain = new JBLabel("Username/Password did not match");
+        tryAgain.setVisible(false);
+
+        JButton login = new JButton("login");
+        login.addActionListener(actionEvent -> {
+            int developerId = HTTPRequests.login(usernameField.getText());
+            if(developerId != -1) {
+                States.currentDeveloperId = developerId;
+                //loggedin popup
+                JOptionPane.showMessageDialog(panel, usernameField.getText() + " is now logged in!");
+                doOKAction();
+            } else {
+                //username not valid try again
+                tryAgain.setVisible(true);
+            }
+        });
+
+        gridBagConstraints.fill =GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.2;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        panel.add(label("username: "), gridBagConstraints);
+        gridBagConstraints.gridx = 1;
+        panel.add(usernameField, gridBagConstraints);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        panel.add(login, gridBagConstraints);
+        gridBagConstraints.gridx = 1;
+        panel.add(new JButton("register"), gridBagConstraints);
+        gridBagConstraints.fill = GridBagConstraints.BASELINE;
+        gridBagConstraints.weightx = 0.0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        panel.add(tryAgain, gridBagConstraints);
 
         panel.setPreferredSize(new Dimension(400,200));
 
         return panel;
     }
 
+    @NotNull
+    @Override
+    protected Action[] createActions() {
+        super.createActions();
+        return new Action[]{};
+    }
+
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        String firstnameText = firstname.getText();
-        JOptionPane.showMessageDialog(panel, "name: " + firstnameText);
-    }
-
-    private void createDeveloperQuery(String username) {
-
     }
 
     private JComponent label(String text) {

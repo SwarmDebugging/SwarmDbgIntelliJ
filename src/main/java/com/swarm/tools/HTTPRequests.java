@@ -1,13 +1,19 @@
 package com.swarm.tools;
 
+import com.google.gson.JsonArray;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.swarm.States;
+import com.swarm.models.Product;
+import com.swarm.models.Task;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 
 //TODO: handle all case and errors
@@ -30,6 +36,67 @@ public class HTTPRequests {
         return jsonObject.getJSONObject("data").getJSONObject("developerCreate").getInt("id");
     }
 
+    public static ArrayList<Task> tasksByProductId(int productId) {
+        HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
+                .header("content-type", "application/json")
+                .body("{\"query\":\"{\\n  tasks(productId:" + productId +
+                        ") {\\n    id\\n    title\\n  }\\n}\"}")
+                .asString();
+
+        JSONObject jsonObject = new JSONObject((response.getBody())).getJSONObject("data");
+
+        if(jsonObject.isNull("tasks")){
+            return null;
+        }
+
+        ArrayList<Task> productArray = new ArrayList<>();
+
+        JSONArray jsonArray = jsonObject.getJSONArray("tasks");
+        for (int i = 0; i < jsonArray.length(); i++) {
+            productArray.add(new Task(jsonArray.getJSONObject(i).getInt("id"), jsonArray.getJSONObject(i).getString("title")));
+        }
+        return productArray;
+    }
+
+    public static ArrayList<Product> productsByDeveloperId(int developerId) {
+        HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
+                .header("content-type", "application/json")
+                .body("{\"query\":\"{\\n  products(developerId:" + developerId +
+                        "){\\n    id\\n name \\n  }\\n}\"}")
+                .asString();
+
+        JSONObject jsonObject = new JSONObject((response.getBody())).getJSONObject("data");
+
+        if(jsonObject.isNull("products")){
+            return null;
+        }
+
+        ArrayList<Product> productArray = new ArrayList<>();
+
+        JSONArray jsonArray = jsonObject.getJSONArray("products");
+        for (int i = 0; i < jsonArray.length(); i++) {
+            productArray.add(new Product(jsonArray.getJSONObject(i).getInt("id"), jsonArray.getJSONObject(i).getString("name")));
+        }
+        return productArray;
+    }
+
+    public static int login(String username) {
+        HttpResponse<String> response = Unirest.post(URL)
+                .header("content-type", "application/json")
+                .body("{\"query\":\"{\\n  developer(username:\\\"" + username +
+                        "\\\"){\\n    id\\n  }\\n}\"}")
+                .asString();
+
+        JSONObject jsonObject = new JSONObject(response.getBody());
+
+        int developerId = -1;
+        if(!(jsonObject.getJSONObject("data").isNull("developer"))) {
+            developerId = jsonObject.getJSONObject("data").getJSONObject("developer").getInt("id");
+        }
+
+        return developerId;
+    }
+
     public static int createEvent(int sessionId, int eventLineNumber, String eventKind, int methodId) {
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
@@ -49,7 +116,7 @@ public class HTTPRequests {
     public static int createInvocation(int invokingId, String invokedName, String invokedSignature, int sessionId, Project project){
         var file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
         String typeName = file.getName();
-        final String[] typeFullName = new String[1];
+        final String[] typeFullName = new String[1]; //Is this the best way???
         ApplicationManager.getApplication().runReadAction(() -> {
             typeFullName[0] = file.getPackageName();
         });

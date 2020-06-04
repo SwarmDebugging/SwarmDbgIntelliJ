@@ -12,7 +12,6 @@ public class NotificationAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         String id = "";
-        //id = HTTPRequests.createDeveloper("developer");
         NotificationGroup notificationGroup = new NotificationGroup("NotificationTest", NotificationDisplayType.BALLOON, true);
 
         notificationGroup.createNotification("Hello from first plugin",
