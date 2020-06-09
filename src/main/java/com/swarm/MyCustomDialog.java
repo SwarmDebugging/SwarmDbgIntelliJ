@@ -24,7 +24,7 @@ public class MyCustomDialog extends DialogWrapper {
 
     private final JPanel panel = new JPanel(new GridBagLayout());
 
-    protected MyCustomDialog(@Nullable Project project) {
+    public MyCustomDialog(@Nullable Project project) {
         super(project);
         init();
         setTitle("Log into Your Swarm Debugging Account");

@@ -11,7 +11,7 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Swarm Debugging" anchor="right" factoryClass="com.swarm.toolWindow.ProductToolWindowFactory"/>
+        <toolWindow id="Swarm Debugging" anchor="right" factoryClass="com.swarm.toolWindow.SwarmToolWindowFactory"/>
     </extensions>
     
     <projectListeners>

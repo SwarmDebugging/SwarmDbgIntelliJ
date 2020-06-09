@@ -30,7 +30,7 @@ public class HTTPRequests {
                 .asString();
 
 
-
+//TODO add creation validation
         JSONObject jsonObject = new JSONObject(response.getBody());
 
         return jsonObject.getJSONObject("data").getJSONObject("developerCreate").getInt("id");
@@ -61,23 +61,41 @@ public class HTTPRequests {
     public static ArrayList<Product> productsByDeveloperId(int developerId) {
         HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
                 .header("content-type", "application/json")
-                .body("{\"query\":\"{\\n  products(developerId:" + developerId +
-                        "){\\n    id\\n name \\n  }\\n}\"}")
+                .body("{\"query\":\"{\\n  tasks(developerId:" + developerId +
+                        ") {\\n    product{\\n      id\\n      name\\n    }\\n    id\\n    title\\n  }\\n}\"}")
                 .asString();
 
         JSONObject jsonObject = new JSONObject((response.getBody())).getJSONObject("data");
 
-        if(jsonObject.isNull("products")){
+        if(jsonObject.isNull("tasks")){
             return null;
         }
 
         ArrayList<Product> productArray = new ArrayList<>();
 
-        JSONArray jsonArray = jsonObject.getJSONArray("products");
+        JSONArray jsonArray = jsonObject.getJSONArray("tasks");
         for (int i = 0; i < jsonArray.length(); i++) {
-            productArray.add(new Product(jsonArray.getJSONObject(i).getInt("id"), jsonArray.getJSONObject(i).getString("name")));
+            JSONObject jsonTask = jsonArray.getJSONObject(i);
+            Task newTask = new Task(jsonTask.getInt("id"), jsonTask.getString("title"));
+            int index = productIsInArray(productArray, jsonTask.getJSONObject("product").getInt("id"));
+            if(index != -1) {
+                productArray.get(index).addTask(newTask);
+            } else {
+                Product newProduct = new Product(jsonTask.getJSONObject("product").getInt("id"), jsonTask.getJSONObject("product").getString("name"));
+                newProduct.addTask(newTask);
+                productArray.add(newProduct);
+            }
         }
         return productArray;
+    }
+
+    private static int productIsInArray(ArrayList<Product> productArrayList, int productId) {
+        for (int i = 0; i < productArrayList.size(); i++) {
+            if (productArrayList.get(i).getId() == productId) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static int login(String username) {
