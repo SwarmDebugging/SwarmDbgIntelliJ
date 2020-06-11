@@ -53,16 +53,96 @@ public class HTTPRequests {
 
         JSONArray jsonArray = jsonObject.getJSONArray("tasks");
         for (int i = 0; i < jsonArray.length(); i++) {
-            productArray.add(new Task(jsonArray.getJSONObject(i).getInt("id"), jsonArray.getJSONObject(i).getString("title")));
+            //productArray.add(new Task(jsonArray.getJSONObject(i).getInt("id"), jsonArray.getJSONObject(i).getString("title")));
         }
         return productArray;
     }
+
+    public static int createProduct(String productTitle, int developerId) {
+        HttpResponse<String> response = Unirest.post(URL)
+                .header("content-type", "application/json")
+                .body("{\"query\":\"mutation{\\n  productCreate(product:{name:\\\"" + productTitle +
+                        "\\\"}){\\n    id\\n  }\\n}\"}")
+                .asString();
+
+        JSONObject jsonProduct = new JSONObject(response.getBody()).getJSONObject("data");
+
+        if(jsonProduct.isNull("productCreate")) {
+            return -1;
+        }
+
+        int productId = jsonProduct.getJSONObject("productCreate").getInt("id");
+
+        /*response = Unirest.post(URL)
+                .header("content-type", "application/json")
+                .body("{\"query\":\"mutation {\\n  sessionCreate(session:{developer:{id:" + developerId +
+                        "}, task:{id: " + taskId +
+                        ", done: true}}){ \\n    id\\n  }\\n}\"}")
+                .asString();
+
+        JSONObject jsonSession = new JSONObject(response.getBody()).getJSONObject("data");
+
+        if(jsonSession.isNull("sessionCreate")) {
+            return -1;
+        }*/
+        return createTask(productId, "productCreation", true, developerId);
+    }
+
+    public static int createTask(int productId, String taskTitle, boolean done, int developerId) {
+        HttpResponse<String> response = Unirest.post(URL)
+                .header("content-type", "application/json")
+                .body("{\"query\":\"mutation {\\n  taskCreate(task:{title: \\\"" + taskTitle +
+                        "\\\", done:" + done +
+                        ", product:{id:" + productId +
+                        "}}){\\n    id\\n  }\\n}\"}")
+                .asString();
+
+        JSONObject jsonTask = new JSONObject(response.getBody()).getJSONObject("data");
+
+        if(jsonTask.isNull("taskCreate")) {
+            return -1;
+        }
+
+        int taskId =  jsonTask.getJSONObject("taskCreate").getInt("id");
+
+        response = Unirest.post(URL)
+                .header("content-type", "application/json")
+                .body("{\"query\":\"mutation {\\n  sessionCreate(session:{developer:{id:" + developerId +
+                        "}, task:{id: " + taskId +
+                        ", done: true}}){ \\n    id\\n  }\\n}\"}")
+                .asString();
+
+        JSONObject jsonSession = new JSONObject(response.getBody()).getJSONObject("data");
+
+        if(jsonSession.isNull("sessionCreate")) {
+            return -1;
+        }
+
+        return taskId;
+    }
+
+    public static int taskDone(int taskId) {
+        HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
+                .header("content-type", "application/json")
+                .body("{\"query\":\"mutation {\\n  taskDone(taskId:" + taskId +
+                        "){\\n    id\\n  }\\n}\"}")
+                .asString();
+
+        JSONObject jsonTask = new JSONObject((response.getBody())).getJSONObject("data");
+
+        if(jsonTask.isNull("taskDone")){
+            return -1;
+        }
+
+        return taskId;
+    }
+
 
     public static ArrayList<Product> productsByDeveloperId(int developerId) {
         HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
                 .header("content-type", "application/json")
                 .body("{\"query\":\"{\\n  tasks(developerId:" + developerId +
-                        ") {\\n    product{\\n      id\\n      name\\n    }\\n    id\\n    title\\n  }\\n}\"}")
+                        ") {\\n    product{\\n      id\\n      name\\n    }\\n    id\\n    title\\n done \\n }\\n}\"}")
                 .asString();
 
         JSONObject jsonObject = new JSONObject((response.getBody())).getJSONObject("data");
@@ -72,11 +152,10 @@ public class HTTPRequests {
         }
 
         ArrayList<Product> productArray = new ArrayList<>();
-
         JSONArray jsonArray = jsonObject.getJSONArray("tasks");
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonTask = jsonArray.getJSONObject(i);
-            Task newTask = new Task(jsonTask.getInt("id"), jsonTask.getString("title"));
+            Task newTask = new Task(jsonTask.getInt("id"), jsonTask.getString("title"), jsonTask.getBoolean("done"));
             int index = productIsInArray(productArray, jsonTask.getJSONObject("product").getInt("id"));
             if(index != -1) {
                 productArray.get(index).addTask(newTask);
@@ -150,8 +229,6 @@ public class HTTPRequests {
         int invokedTypeId = createType(States.currentSessionId, typeFullName[0], typeName, typePath, sourceCode);
 
         int invokedId = createMethod(invokedTypeId,invokedSignature, invokedName);
-
-        //TODO: must save methods before create the invocation
 
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")

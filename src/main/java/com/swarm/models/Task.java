@@ -4,8 +4,19 @@ public class Task {
     private int id;
     private String title;
 
-    public Task(int id, String title) {
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
+    }
+
+    private boolean done;
+
+    public Task(int id, String title, boolean done) {
         this.id = id;
+        this.done = done;
         this.title = title;
     }
 

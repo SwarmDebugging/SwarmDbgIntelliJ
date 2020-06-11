@@ -1,10 +1,15 @@
 package com.swarm.toolWindow;
 
+import com.intellij.openapi.util.IconLoader;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 
 public class ProductTreeRenderer extends DefaultTreeCellRenderer {
+
+    Icon taskIcon = IconLoader.getIcon("icons/task.png");
+    Icon productIcon = IconLoader.getIcon("icons/box.png");
 
     public ProductTreeRenderer(){}
 
@@ -23,19 +28,25 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, true);
 
         ProductNode node = (ProductNode)value;
-        int id = node.getId();
         setToolTipText(node.getToolTip() + " (Right click for more options)");
 
-        if(node.isLeaf() && node.getParent() != null) {
-            //it's a child node
-        } else if(!node.isLeaf() && node.getId() != 0 && node.getChildCount() > 0) {
-            //it's a root node
+        //updates constantly, have to wait until parent is set
+        if(node.getParent() == null) {
+            return this;
         }
 
+        //TODO: fix icons
+        if (node.isLeaf() && node.getParent().getParent() != null){
+            //if it's a task
+            setIcon(taskIcon);
+        } else if(!node.isRoot()){
+            //if it's a product
+            setIcon(productIcon);
+        }
         return this;
     }
 
-    protected boolean isCurrentTask(Object value) {
+    /*protected boolean isCurrentTask(Object value) {
         ProductNode node = (ProductNode)value;
 
         int id = node.getId();
@@ -54,6 +65,6 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
 
         }
         return false;
-    }
+    }*/
 
 }

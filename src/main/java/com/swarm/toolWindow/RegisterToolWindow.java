@@ -1,5 +1,6 @@
 package com.swarm.toolWindow;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -11,20 +12,19 @@ import java.awt.event.*;
 
 public class RegisterToolWindow {
     private JPanel registerWindowContent;
-    private JLabel refresh;
     private JPanel registerContent;
     private JButton registerButton;
     private JTextField usernameTextfield;
     private JLabel back;
 
-    public RegisterToolWindow(ToolWindow toolWindow) {
+    public RegisterToolWindow(ToolWindow toolWindow, Project project) {
 
 
         back.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                LoginToolWindow loginToolWindow = new LoginToolWindow(toolWindow);
+                LoginToolWindow loginToolWindow = new LoginToolWindow(toolWindow, project);
                 ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
                 Content content = contentFactory.createContent(loginToolWindow.getContent(), "", false);
                 toolWindow.getContentManager().removeAllContents(true);
@@ -38,7 +38,7 @@ public class RegisterToolWindow {
                 //show wrong username notification
             } else {
                 States.currentDeveloperId = developerId;
-                ProductToolWindow productToolWindow = new ProductToolWindow(toolWindow);
+                ProductToolWindow productToolWindow = new ProductToolWindow(toolWindow, project);
                 ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
                 Content content = contentFactory.createContent(productToolWindow.getContent(), "", false);
                 toolWindow.getContentManager().removeAllContents(true);
