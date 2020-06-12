@@ -1,6 +1,7 @@
 package com.swarm.toolWindow;
 
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.ui.JBColor;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -8,8 +9,9 @@ import java.awt.*;
 
 public class ProductTreeRenderer extends DefaultTreeCellRenderer {
 
-    Icon taskIcon = IconLoader.getIcon("icons/task.png");
-    Icon productIcon = IconLoader.getIcon("icons/box.png");
+    Icon taskIcon = IconLoader.getIcon("/icons/task.svg");
+    Icon productIcon = IconLoader.getIcon("/icons/product.svg");
+    Icon productsIcon = IconLoader.getIcon("/icons/products.svg");
 
     public ProductTreeRenderer(){}
 
@@ -30,16 +32,19 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
         ProductNode node = (ProductNode)value;
         setToolTipText(node.getToolTip() + " (Right click for more options)");
 
+        setBorderSelectionColor((Color) null);
+        setBackgroundNonSelectionColor((Color) null);
+        setBackground((Color) null);
         //updates constantly, have to wait until parent is set
         if(node.getParent() == null) {
+            setIcon(productsIcon);
             return this;
         }
 
-        //TODO: fix icons
         if (node.isLeaf() && node.getParent().getParent() != null){
             //if it's a task
             setIcon(taskIcon);
-        } else if(!node.isRoot()){
+        } else if(!node.isRoot()) {
             //if it's a product
             setIcon(productIcon);
         }

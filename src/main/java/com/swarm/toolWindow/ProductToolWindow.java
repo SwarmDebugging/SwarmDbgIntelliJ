@@ -1,6 +1,7 @@
 package com.swarm.toolWindow;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -24,9 +25,13 @@ public class ProductToolWindow {
     private JLabel refresh;
     private JLabel addProduct;
     private JLabel logout;
+    ToolWindow toolWindow;
 
     public ProductToolWindow(ToolWindow toolWindow, Project project) {
+        this.toolWindow = toolWindow;
         this.buildProductTreeView(project);
+
+        refresh.setIcon(IconLoader.getIcon("/icons/refresh.svg"));
         refresh.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -34,6 +39,7 @@ public class ProductToolWindow {
                 buildProductTreeView(project);
             }
         });
+        logout.setIcon(IconLoader.getIcon("/icons/logout.svg"));
         logout.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -47,6 +53,7 @@ public class ProductToolWindow {
                 //show logged out notification
             }
         });
+        addProduct.setIcon(IconLoader.getIcon("/icons/add.svg"));
         addProduct.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -113,7 +120,7 @@ public class ProductToolWindow {
                         //TODO: refresh after
                         if (node.isLeaf() && node.getParent().getParent() != null){
                             //if it's a task
-                            JPopupMenu popupMenu = PopupMenuBuilder.buildTaskPopupMenu(project, node.getId());
+                            JPopupMenu popupMenu = PopupMenuBuilder.buildTaskPopupMenu(project, node.getId(), 1, toolWindow); //TODO:developerID
                             popupMenu.show(e.getComponent(), e.getX(), e.getY());
                         } else if(!node.isRoot()){
                             //if it's a product

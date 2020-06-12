@@ -1,6 +1,7 @@
 package com.swarm.toolWindow;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -19,8 +20,8 @@ public class RegisterToolWindow {
 
     public RegisterToolWindow(ToolWindow toolWindow, Project project) {
 
-
-        back.addMouseListener(new MouseAdapter() {
+       back.setIcon(IconLoader.getIcon("/icons/back.svg"));
+       back.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);

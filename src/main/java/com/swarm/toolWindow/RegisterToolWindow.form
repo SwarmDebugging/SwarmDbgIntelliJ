@@ -84,7 +84,6 @@
           <gridbag weightx="0.0" weighty="0.0"/>
         </constraints>
         <properties>
-          <icon value="icons/back.png"/>
           <text value=""/>
         </properties>
       </component>

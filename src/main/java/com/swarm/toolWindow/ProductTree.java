@@ -25,10 +25,6 @@ public class ProductTree extends JTree {
         super.setModel(newModel);
     }
 
-    public void setExpandState(boolean expandState) {
-        this.expandState = !expandState;
-    }
-
     @Override
     public TreeCellRenderer getCellRenderer() {
         return super.getCellRenderer();

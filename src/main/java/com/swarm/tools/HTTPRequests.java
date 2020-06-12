@@ -13,7 +13,10 @@ import kong.unirest.Unirest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
 
 
 //TODO: handle all case and errors
@@ -73,18 +76,6 @@ public class HTTPRequests {
 
         int productId = jsonProduct.getJSONObject("productCreate").getInt("id");
 
-        /*response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation {\\n  sessionCreate(session:{developer:{id:" + developerId +
-                        "}, task:{id: " + taskId +
-                        ", done: true}}){ \\n    id\\n  }\\n}\"}")
-                .asString();
-
-        JSONObject jsonSession = new JSONObject(response.getBody()).getJSONObject("data");
-
-        if(jsonSession.isNull("sessionCreate")) {
-            return -1;
-        }*/
         return createTask(productId, "productCreation", true, developerId);
     }
 
@@ -121,8 +112,49 @@ public class HTTPRequests {
         return taskId;
     }
 
+    public static int sessionFinish(int sessionId) {
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("CET"));
+        String stringDate = simpleDateFormat.format(date);
+        HttpResponse<String> response = Unirest.post(URL)
+                .header("content-type", "application/json")
+                .body("{\"query\":\"mutation($sessionId: Long!, $finished:Date!) {\\n  sessionUpdate(id:$sessionId, finished:$finished){\\n" +
+                        "    id\\n  }\\n}\",\"variables\":{\"sessionId\":" + sessionId +
+                        ",\"finished\":\"" + stringDate +
+                        "\"}}")
+                .asString();
+
+        JSONObject jsonSession = new JSONObject(response.getBody()).getJSONObject("data");
+
+        if(jsonSession.isNull("sessionUpdate")){
+            return -1;
+        }
+
+        return jsonSession.getJSONObject("sessionUpdate").getInt("id");
+    }
+
+    public static int sessionStart(int developerId, int taskId) {
+        HttpResponse<String> response = Unirest.post(URL)
+                .header("content-type", "application/json")
+                .body("{\"query\":\"mutation($developerId: Long!, $taskId: Long!) {\\n  sessionStart(session:{developer:{id:$developerId}, task:{id: $taskId, done: false}}){ \\n" +
+                        "    id\\n  }\\n}\",\"variables\":{\"developerId\":" + developerId +
+                        ",\"taskId\":" + taskId +
+                        "}}")
+                .asString();
+
+        JSONObject jsonSession = new JSONObject(response.getBody()).getJSONObject("data");
+
+        if(jsonSession.isNull("sessionStart")){
+            return -1;
+        }
+
+        return jsonSession.getJSONObject("sessionStart").getInt("id");
+
+    }
+
     public static int taskDone(int taskId) {
-        HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
+        HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
                 .body("{\"query\":\"mutation {\\n  taskDone(taskId:" + taskId +
                         "){\\n    id\\n  }\\n}\"}")
