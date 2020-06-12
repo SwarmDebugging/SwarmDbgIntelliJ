@@ -63,6 +63,9 @@ public class DebugActionListener implements AnActionListener {
 
     @Override
     public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
+        if(States.currentSessionId == -1) {
+            return;
+        }
         // The following is a hack to work around an issue with IDEA, where certain events arrive
         // twice. See https://youtrack.jetbrains.com/issue/IDEA-219133
         final InputEvent input = event.getInputEvent();

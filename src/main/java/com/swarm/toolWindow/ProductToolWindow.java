@@ -75,7 +75,7 @@ public class ProductToolWindow {
             return; //TODO: display no products message
         }
 
-        ProductNode productNode = new ProductNode("Developers name Products", 0);
+        ProductNode productNode = new ProductNode("Products", 0);
         DefaultTreeModel productTreeModel = new DefaultTreeModel(productNode);
         productNode.setModel(productTreeModel);
 

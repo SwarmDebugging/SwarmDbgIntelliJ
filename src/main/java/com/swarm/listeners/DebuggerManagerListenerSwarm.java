@@ -23,14 +23,11 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener {
     }
 
     @Override
-    public void sessionRemoved(DebuggerSession session) {
-        //TODO: make a button press on stop session button?
-
-    }
-
-    @Override
     public void sessionCreated(DebuggerSession session) {
         session.getContextManager().addListener((newContext, event) -> {
+            if(States.currentSessionId == -1) {
+                return;
+            }
             assert newContext.getDebugProcess() != null;
             newContext.getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
                 @Override

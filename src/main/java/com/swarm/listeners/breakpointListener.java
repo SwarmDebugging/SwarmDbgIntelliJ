@@ -20,6 +20,9 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
 
     @Override
     public void breakpointAdded(@NotNull XBreakpoint breakpoint) {
+        if(States.currentSessionId == -1) { //There needs to be a session for the types
+            return;
+        }
         if(breakpoint.getSourcePosition() == null) {
             return;
         }
@@ -29,6 +32,9 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
 
     @Override
     public void breakpointRemoved(@NotNull XBreakpoint<?> breakpoint) {
+        if(States.currentSessionId == -1) {
+            return;
+        }
         if(breakpoint.getSourcePosition() == null) {
             return;
         }

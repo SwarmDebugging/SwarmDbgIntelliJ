@@ -7,6 +7,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.xdebugger.impl.frame.XDebugView;
+import com.swarm.States;
 import com.swarm.tools.HTTPRequests;
 
 import javax.swing.*;
@@ -37,6 +38,7 @@ public class PopupMenuBuilder {
             if(DebuggerManagerEx.getInstanceEx(project).getSessions().size()>0) {
                 //there's a debugging session
                 int sessionId = HTTPRequests.sessionStart(developerId, taskId);
+                States.currentSessionId = sessionId;
                 if(sessionId != -1) {
                     //then change view to session in progress
                     SessionToolWindow sessionToolWindow = new SessionToolWindow(sessionId, toolWindow, project);

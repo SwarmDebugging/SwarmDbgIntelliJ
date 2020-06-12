@@ -1,6 +1,5 @@
 package com.swarm.tools;
 
-import com.google.gson.JsonArray;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
