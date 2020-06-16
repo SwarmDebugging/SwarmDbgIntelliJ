@@ -56,7 +56,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener {
 
             if (isInvocation(currentStackFrames)) {
                 Method invoked = currentStackFrames.get(0).location().method();
-                HTTPRequests.createInvocation(DebugActionListener.invokingMethod.getId(), invoked.name(), invoked.signature(), States.currentSessionId, project);
+                HTTPRequests.createInvocation(DebugActionListener.invokingMethodId, invoked.name(), invoked.signature(), States.currentSessionId, project);
             }
         } catch (EvaluateException e) {
             e.printStackTrace();

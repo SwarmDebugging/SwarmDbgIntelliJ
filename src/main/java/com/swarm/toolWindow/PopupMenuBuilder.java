@@ -1,6 +1,5 @@
 package com.swarm.toolWindow;
 
-import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
@@ -32,13 +31,10 @@ public class PopupMenuBuilder {
         JMenuItem newSwarmSession = new JMenuItem("Start a New Swarm Debugging Session");
         newSwarmSession.addActionListener(actionEvent -> {
             //try to launch a new session
-            var instance = DebuggerManagerEx.getInstanceEx(project).getSessions();
-            if(DebuggerManagerEx.getInstanceEx(project).getSessions().size()>0) {
                 //there's a debugging session
                 int sessionId = HTTPRequests.sessionStart(developerId, taskId);
                 States.currentSessionId = sessionId;
                 if(sessionId != -1) {
-                    //then change view to session in progress
                     SessionToolWindow sessionToolWindow = new SessionToolWindow(sessionId, toolWindow, project);
                     ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
                     Content content = contentFactory.createContent(sessionToolWindow.getContent(), "", false);
@@ -47,11 +43,7 @@ public class PopupMenuBuilder {
                 } else {
                     //there has been an error in session creation
                 }
-            } else {
-                //there's no debugging session show error message or start new session
-
-            }
-        });
+            });
 
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.add(newSwarmSession);

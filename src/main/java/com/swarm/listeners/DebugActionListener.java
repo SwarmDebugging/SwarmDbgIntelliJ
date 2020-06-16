@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.xdebugger.impl.actions.*;
 import com.swarm.States;
-import com.swarm.invokingMethod;
 import com.swarm.tools.HTTPRequests;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +22,7 @@ public class DebugActionListener implements AnActionListener {
     Project project;
     private long lastEventTime = -1;
 
-    public static com.swarm.invokingMethod invokingMethod = new invokingMethod();
+    public static int invokingMethodId;
 
     public DebugActionListener(Project project) {
         this.project = project;
@@ -78,7 +77,7 @@ public class DebugActionListener implements AnActionListener {
             lastEventTime = input.getWhen();
         }
         if (action instanceof StepIntoAction || action instanceof ForceStepIntoAction) {
-            invokingMethod.setId(handleEvent("StepInto"));
+            invokingMethodId =  handleEvent("StepInto");
             States.isSteppedInto = true;
         } else if (action instanceof StepOverAction || action instanceof ForceStepOverAction) {
             handleEvent("StepOver");
