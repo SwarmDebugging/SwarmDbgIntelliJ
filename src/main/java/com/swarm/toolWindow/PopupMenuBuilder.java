@@ -1,12 +1,10 @@
 package com.swarm.toolWindow;
 
-import com.intellij.debugger.DebuggerManager;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.xdebugger.impl.frame.XDebugView;
 import com.swarm.States;
 import com.swarm.tools.HTTPRequests;
 

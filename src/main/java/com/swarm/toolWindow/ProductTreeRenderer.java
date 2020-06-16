@@ -1,7 +1,6 @@
 package com.swarm.toolWindow;
 
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.ui.JBColor;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;

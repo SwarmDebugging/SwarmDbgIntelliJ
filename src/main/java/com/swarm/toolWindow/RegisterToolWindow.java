@@ -9,7 +9,8 @@ import com.swarm.States;
 import com.swarm.tools.HTTPRequests;
 
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class RegisterToolWindow {
     private JPanel registerWindowContent;

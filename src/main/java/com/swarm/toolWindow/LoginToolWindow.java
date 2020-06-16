@@ -8,7 +8,6 @@ import com.swarm.States;
 import com.swarm.tools.HTTPRequests;
 
 import javax.swing.*;
-import java.awt.event.*;
 
 public class LoginToolWindow {
 

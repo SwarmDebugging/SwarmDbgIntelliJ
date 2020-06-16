@@ -7,8 +7,6 @@ import com.intellij.ui.content.ContentFactory;
 import com.swarm.tools.HTTPRequests;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class SessionToolWindow {
     private JPanel sessionWindowContent;

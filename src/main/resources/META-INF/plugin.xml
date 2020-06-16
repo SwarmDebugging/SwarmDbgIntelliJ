@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>org.test.PluginTest</id>
+    <id>org.test.SwarmDbgIntelliJ</id>
     <name>Swarm Debugging</name>
     <vendor email="supporte@yourcompany.com" url="https://www.yourcompany.com">Yourscompany</vendor>
 

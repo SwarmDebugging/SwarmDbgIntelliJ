@@ -5,7 +5,6 @@ import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.swarm.tools.HTTPRequests;
 import org.jetbrains.annotations.NotNull;
 
 public class NotificationAction extends AnAction {
