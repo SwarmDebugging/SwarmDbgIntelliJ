@@ -10,9 +10,12 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
 
     Icon taskIcon = IconLoader.getIcon("/icons/task.svg");
     Icon productIcon = IconLoader.getIcon("/icons/product.svg");
-    Icon productsIcon = IconLoader.getIcon("/icons/products.svg");
+    Icon productsIcon = IconLoader.getIcon("/icons/ant.svg");
 
-    public ProductTreeRenderer(){}
+    ProductNode node;
+
+    public ProductTreeRenderer() {
+    }
 
     public Component getTreeCellRendererComponent(
             JTree tree,
@@ -22,53 +25,28 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
             boolean leaf,
             int row,
             boolean hasFocus) {
-        if(sel) {
+        if (sel) {
             tree.requestFocusInWindow();
         }
-
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, true);
+        this.node = (ProductNode) value;
 
-        ProductNode node = (ProductNode)value;
-        setToolTipText(node.getToolTip() + " (Right click for more options)");
-
-        setBorderSelectionColor((Color) null);
-        setBackgroundNonSelectionColor((Color) null);
-        setBackground((Color) null);
-        //updates constantly, have to wait until parent is set
-        if(node.getParent() == null) {
+        if (node.getParent() == null) {
             setIcon(productsIcon);
             return this;
         }
-
-        if (node.isLeaf() && node.getParent().getParent() != null){
-            //if it's a task
+        if (node.isTask()) {
             setIcon(taskIcon);
-        } else if(!node.isRoot()) {
-            //if it's a product
+        } else if (node.isProduct()) {
             setIcon(productIcon);
         }
         return this;
     }
 
-    /*protected boolean isCurrentTask(Object value) {
-        ProductNode node = (ProductNode)value;
-
-        int id = node.getId();
-        ProductNode root = (ProductNode)node.getRoot();
-        if(true){
-            //some condition
-        }
-        return false;
+    private void buildTreeAppearance() {
+        setToolTipText(node.getToolTip() + " (Right click for more options)");
+        setBorderSelectionColor((Color) null);
+        setBackgroundNonSelectionColor((Color) null);
+        setBackground((Color) null);
     }
-
-    protected boolean isCurrentProduct(Object value) {
-        ProductNode node = (ProductNode)value;
-
-        int id = node.getId();
-        if(true){//something like currentProduct == id
-
-        }
-        return false;
-    }*/
-
 }

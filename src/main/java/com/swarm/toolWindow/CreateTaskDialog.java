@@ -23,7 +23,6 @@ public class CreateTaskDialog extends DialogWrapper {
     public CreateTaskDialog(@Nullable Project project, int productId, int developerId) {
         super(project);
         init();
-        setTitle("Log into Your Swarm Debugging Account");
         this.productId = productId;
         this.developerId = developerId;
     }
@@ -31,26 +30,25 @@ public class CreateTaskDialog extends DialogWrapper {
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-
-        GridBag gb = new GridBag();
-        gb.setDefaultInsets(JBUI.insets(0, 0, AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP));
-
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-
-        gridBagConstraints.fill =GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.2;
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        panel.add(label("Task Name: "), gridBagConstraints);
-        gridBagConstraints.gridx = 1;
-        panel.add(taskTextFiled, gridBagConstraints);
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-
+        setTitle("Log into Your Swarm Debugging Account");
+        GridBagConstraints constraints = createGridBagConstraints();
+        panel.add(label("Task Name: "), constraints);
+        constraints.gridx = 1;
+        panel.add(taskTextFiled, constraints);
         panel.setPreferredSize(new Dimension(400,200));
 
         return panel;
+    }
+
+    private GridBagConstraints createGridBagConstraints() {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill =GridBagConstraints.HORIZONTAL;
+        constraints.weightx = 0.2;
+        constraints.anchor = GridBagConstraints.EAST;
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+
+        return constraints;
     }
 
     @Override

@@ -65,4 +65,12 @@ public class ProductNode extends DefaultMutableTreeNode {
         }
     }
 
+    public boolean isTask() {
+        return this.isLeaf() && this.getParent().getParent() != null;
+    }
+
+    public boolean isProduct() {
+        return !this.isRoot();
+    }
+
 }

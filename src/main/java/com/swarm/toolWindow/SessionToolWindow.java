@@ -13,17 +13,26 @@ public class SessionToolWindow {
     private JPanel sessionWindowContent;
     private JButton stopSessionButton;
 
-    public SessionToolWindow(int currentSessionId, ToolWindow toolWindow, Project project) {
+    private ToolWindow toolWindow;
+    private Project project;
+
+    public SessionToolWindow(int currentSessionId, ToolWindow toolWindow, Project project, int developerId) {
+
+        this.toolWindow = toolWindow;
+        this.project = project;
 
         stopSessionButton.addActionListener(actionEvent -> {
             HTTPRequests.sessionFinish(currentSessionId);
             States.currentSessionId = -1;
-            ProductToolWindow productToolWindow = new ProductToolWindow(toolWindow, project);
-            ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-            Content content = contentFactory.createContent(productToolWindow.getContent(), "", false);
-            toolWindow.getContentManager().removeAllContents(true);
-            toolWindow.getContentManager().addContent(content);
+            switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developerId));
         });
+    }
+
+    private void switchToolWindowContentToProductToolWindow(ProductToolWindow productToolWindow) {
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(productToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
     }
 
     public JPanel getContent() {

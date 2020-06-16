@@ -11,43 +11,79 @@ import javax.swing.*;
 
 public class PopupMenuBuilder {
 
-    public static JPopupMenu buildProductPopupMenu(int productId, Project project, int developerId) {
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem createNewTask = new JMenuItem("Create a new Task");
-        createNewTask.addActionListener(actionEvent -> {
-            CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, productId, developerId);//States.developerId);
-            createTaskDialog.showAndGet();
-        });
-        popupMenu.add(createNewTask);
-        return popupMenu;
+    JMenuItem createNewTask;
+    JPopupMenu productPopupMenu;
+
+    JMenuItem markAsDone;
+    JMenuItem newSwarmSession;
+    JPopupMenu taskPopupMenu;
+
+    private Project project;
+    private ToolWindow toolWindow;
+    private int developerId;
+    private int taskId;
+    private int productId;
+
+    public PopupMenuBuilder(ToolWindow toolWindow, Project project, int developerId) {
+        this.project = project;
+        this.toolWindow = toolWindow;
+        this.developerId = developerId;
     }
 
-    public static JPopupMenu buildTaskPopupMenu(Project project, int taskId, int developerId, ToolWindow toolWindow) {
-        JMenuItem markAsDone = new JMenuItem("Mark As Done");
+    public JPopupMenu buildProductNodePopupMenu(int productId) {
+        this.productId = productId;
+        buildCreateNewTaskMenuItem();
+        return buildProductPopupMenu();
+    }
+
+    private JPopupMenu buildProductPopupMenu() {
+        productPopupMenu = new JPopupMenu();
+        productPopupMenu.add(createNewTask);
+        return productPopupMenu;
+    }
+
+    private void buildCreateNewTaskMenuItem() {
+        createNewTask = new JMenuItem("Create a new Task");
+        createNewTask.addActionListener(actionEvent -> {
+            CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, productId, developerId);
+            createTaskDialog.showAndGet();
+        });
+    }
+
+    public JPopupMenu buildTaskNodePopupMenu(int taskId) {
+        this.taskId = taskId;
+        buildMarkAsDoneMenuItem();
+        buildNewSwarmSessionMenuItem();
+        return buildTaskPopupMenu();
+    }
+
+    private JPopupMenu buildTaskPopupMenu() {
+        taskPopupMenu = new JPopupMenu();
+        taskPopupMenu.add(newSwarmSession);
+        taskPopupMenu.add(markAsDone);
+        return taskPopupMenu;
+    }
+
+    private void buildNewSwarmSessionMenuItem() {
+        newSwarmSession = new JMenuItem("Start a New Swarm Debugging Session");
+        newSwarmSession.addActionListener(actionEvent -> {
+            int sessionId = HTTPRequests.sessionStart(developerId, taskId);
+            States.currentSessionId = sessionId;
+            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(sessionId, toolWindow, project, developerId));
+        });
+    }
+
+    private void buildMarkAsDoneMenuItem() {
+        markAsDone = new JMenuItem("Mark As Done");
         markAsDone.addActionListener(actionEvent -> {
             HTTPRequests.taskDone(taskId);
         });
+    }
 
-        JMenuItem newSwarmSession = new JMenuItem("Start a New Swarm Debugging Session");
-        newSwarmSession.addActionListener(actionEvent -> {
-            //try to launch a new session
-                //there's a debugging session
-                int sessionId = HTTPRequests.sessionStart(developerId, taskId);
-                States.currentSessionId = sessionId;
-                if(sessionId != -1) {
-                    SessionToolWindow sessionToolWindow = new SessionToolWindow(sessionId, toolWindow, project);
-                    ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-                    Content content = contentFactory.createContent(sessionToolWindow.getContent(), "", false);
-                    toolWindow.getContentManager().removeAllContents(true);
-                    toolWindow.getContentManager().addContent(content);
-                } else {
-                    //there has been an error in session creation
-                }
-            });
-
-        JPopupMenu popupMenu = new JPopupMenu();
-        popupMenu.add(newSwarmSession);
-        popupMenu.add(markAsDone);
-        return popupMenu;
+    private void switchToolWindowContentToSessionToolWindow(SessionToolWindow sessionToolWindow) {
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(sessionToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
     }
 }

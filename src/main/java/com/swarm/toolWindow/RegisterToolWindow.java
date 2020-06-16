@@ -19,34 +19,44 @@ public class RegisterToolWindow {
     private JTextField usernameTextfield;
     private JLabel back;
 
+    private ToolWindow toolWindow;
+    private Project project;
+
     public RegisterToolWindow(ToolWindow toolWindow, Project project) {
+
+        this.project = project;
+        this.toolWindow = toolWindow;
 
        back.setIcon(IconLoader.getIcon("/icons/back.svg"));
        back.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                LoginToolWindow loginToolWindow = new LoginToolWindow(toolWindow, project);
-                ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-                Content content = contentFactory.createContent(loginToolWindow.getContent(), "", false);
-                toolWindow.getContentManager().removeAllContents(true);
-                toolWindow.getContentManager().addContent(content);
+                switchToolWindowContentToLoginToolWindow(new LoginToolWindow(toolWindow, project));
             }
         });
         registerButton.addActionListener(actionEvent -> {
-            String username = usernameTextfield.getText();
-            int developerId = HTTPRequests.createDeveloper(username);
+            int developerId = HTTPRequests.createDeveloper(usernameTextfield.getText());
             if(developerId == -1) {
                 //show wrong username notification
             } else {
-                States.currentDeveloperId = developerId;
-                ProductToolWindow productToolWindow = new ProductToolWindow(toolWindow, project);
-                ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-                Content content = contentFactory.createContent(productToolWindow.getContent(), "", false);
-                toolWindow.getContentManager().removeAllContents(true);
-                toolWindow.getContentManager().addContent(content);
+                switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developerId));
             }
         });
+    }
+
+    private void switchToolWindowContentToProductToolWindow(ProductToolWindow productToolWindow) {
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(productToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
+    }
+
+    private void switchToolWindowContentToLoginToolWindow(LoginToolWindow loginToolWindow) {
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(loginToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
     }
 
     public JPanel getContent() {

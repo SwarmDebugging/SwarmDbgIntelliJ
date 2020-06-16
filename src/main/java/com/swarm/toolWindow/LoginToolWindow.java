@@ -17,30 +17,35 @@ public class LoginToolWindow {
     private JButton signUpButton;
     private JTextField usernameTextfield;
 
+    private ToolWindow toolWindow;
+    private Project project;
+
     public LoginToolWindow(ToolWindow toolWindow, Project project) {
 
+        this.toolWindow = toolWindow;
+        this.project = project;
+
         signUpButton.addActionListener(actionEvent -> {
-            RegisterToolWindow registerToolWindow = new RegisterToolWindow(toolWindow, project);
-            ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-            Content content = contentFactory.createContent(registerToolWindow.getContent(), "", false);
-            toolWindow.getContentManager().removeAllContents(true);
-            toolWindow.getContentManager().addContent(content);
+            switchToolWindowContentToRegisterToolWindow(new RegisterToolWindow(toolWindow, project));
         });
         loginButton.addActionListener(actionEvent -> {
-            String username = usernameTextfield.getText();
-            int developerId = HTTPRequests.login(username);
-            if (developerId == -1) {
-                //show wrong username notification
-            } else {
-                States.currentDeveloperId = developerId;
-                ProductToolWindow productToolWindow = new ProductToolWindow(toolWindow, project);
-                ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-                Content content = contentFactory.createContent(productToolWindow.getContent(), "", false);
-                toolWindow.getContentManager().removeAllContents(true);
-                toolWindow.getContentManager().addContent(content);
-            }
-
+            int developerId = HTTPRequests.login(usernameTextfield.getText());
+            switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developerId));
         });
+    }
+
+    private void switchToolWindowContentToProductToolWindow(ProductToolWindow productToolWindow) {
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(productToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
+    }
+
+    private void switchToolWindowContentToRegisterToolWindow(RegisterToolWindow registerToolWindow) {
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(registerToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
     }
 
     public JPanel getContent() {

@@ -3,8 +3,6 @@ package com.swarm.toolWindow;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.uiDesigner.core.AbstractLayout;
-import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.swarm.tools.HTTPRequests;
@@ -22,7 +20,6 @@ public class CreateProductDialog extends DialogWrapper {
     public CreateProductDialog(@Nullable Project project, int developerId) {
         super(project);
         init();
-        setTitle("Log into Your Swarm Debugging Account");
         this.developerId = developerId;
     }
 
@@ -30,25 +27,25 @@ public class CreateProductDialog extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
 
-        GridBag gb = new GridBag();
-        gb.setDefaultInsets(JBUI.insets(0, 0, AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP));
+        setTitle("Log into Your Swarm Debugging Account");
+        GridBagConstraints constraints = createGridBagConstraints();
+        panel.add(label("Product Name: "), constraints);
+        constraints.gridx = 1;
+        panel.add(productTitleField, constraints);
+        panel.setPreferredSize(new Dimension(400,200));
 
+        return panel;
+    }
+
+    private GridBagConstraints createGridBagConstraints() {
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
-
         gridBagConstraints.fill =GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.2;
         gridBagConstraints.anchor = GridBagConstraints.EAST;
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        panel.add(label("Product Name: "), gridBagConstraints);
-        gridBagConstraints.gridx = 1;
-        panel.add(productTitleField, gridBagConstraints);
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
 
-        panel.setPreferredSize(new Dimension(400,200));
-
-        return panel;
+        return gridBagConstraints;
     }
 
     @Override
