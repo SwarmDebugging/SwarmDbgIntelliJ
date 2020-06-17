@@ -27,7 +27,7 @@ public class CreateProductDialog extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
 
-        setTitle("Log into Your Swarm Debugging Account");
+        setTitle("Create a New Product");
         GridBagConstraints constraints = createGridBagConstraints();
         panel.add(label("Product Name: "), constraints);
         constraints.gridx = 1;

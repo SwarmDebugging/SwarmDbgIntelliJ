@@ -1,5 +1,7 @@
 package com.swarm.toolWindow;
 
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
@@ -9,6 +11,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import com.swarm.tools.HTTPRequests;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -24,6 +27,9 @@ public class ProductToolWindow {
     private JLabel refresh;
     private JLabel addProduct;
     private JLabel logout;
+    private JLabel addTask;
+    private JLabel markTaskAsDone;
+    private JLabel startRecordingEvents;
 
     private ToolWindow toolWindow;
     private Project project;
@@ -33,6 +39,7 @@ public class ProductToolWindow {
 
     private ArrayList<Product> productArrayList;
     private ProductNode allProductsNode;
+    private ProductTree allProductsTree;
 
     private final int RIGHT_CLICK = MouseEvent.BUTTON3;
 
@@ -40,12 +47,83 @@ public class ProductToolWindow {
         this.toolWindow = toolWindow;
         this.project = project;
         this.developerId = developerId;
-        this.popupMenuBuilder = new PopupMenuBuilder(toolWindow, project, developerId);
-        this.buildProductTreeView();
+        popupMenuBuilder = new PopupMenuBuilder(toolWindow, project, developerId);
 
+        buildProductTreeView();
+        buildToolBar();
+    }
+
+    private void buildToolBar() {
         createRefreshLabel();
-        createLogoutLabel();
         createAddProductLabel();
+        createAddTaskLabel();
+        createMarkAsDoneLabel();
+        createStartRecordingEventsLabel();
+        createLogoutLabel();
+    }
+
+    private void createStartRecordingEventsLabel() {
+        startRecordingEvents.setIcon(IconLoader.getIcon("/icons/startRecordingEvents.svg"));
+    }
+
+    private void createMarkAsDoneLabel() {
+        markTaskAsDone.setIcon(IconLoader.getIcon("/icons/markAsDone.svg"));
+    }
+
+    private void createAddTaskLabel() {
+        addTask.setIcon(IconLoader.getIcon("/icons/task.svg"));
+        addTask.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                ProductNode node = (ProductNode) allProductsTree.getLastSelectedPathComponent();
+                if(node == null) {
+                    return;
+                }
+                CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, node.getId(), developerId);
+                createTaskDialog.showAndGet();
+                buildProductTreeView();
+            }
+        });
+    }
+
+    private final class addTaskAction extends AnAction {
+        addTaskAction() {
+            super("Add a New Task", "Add a new task to the selected product", IconLoader.getIcon("/icons/markAsDone.svg"));
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            addNewTaskToSelectedProduct();
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            e.getPresentation().setEnabled(getSelectedProductFromTree() != null);
+        }
+    }
+
+    private void addNewTaskToSelectedProduct() {
+        ProductNode node = getSelectedProductFromTree();
+        if(node == null) {
+            return;
+        }
+        CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, node.getId(), developerId);
+        createTaskDialog.showAndGet();
+        buildProductTreeView();
+    }
+
+    private ProductNode getSelectedProductFromTree() {
+        ProductNode node = (ProductNode) allProductsTree.getLastSelectedPathComponent();
+        if (node == null || node.isRoot()) {
+            return null;
+        }
+        if (node.isTask()) {
+            return null;
+        } else if (node.isProduct()) {
+            return node;
+        }
+        return null;
     }
 
     private void createAddProductLabel() {
@@ -105,26 +183,21 @@ public class ProductToolWindow {
     }
 
     private ProductTree buildAllProductsTree(DefaultTreeModel allProductsTreeModel) {
-        ProductTree allProductsTree = new ProductTree(allProductsTreeModel);
+        allProductsTree = new ProductTree(allProductsTreeModel);
         allProductsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         allProductsTree.setCellRenderer(new ProductTreeRenderer());
         //TODO create new mouseAdapter and mousemotionadpater classes
-        allProductsTree.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                super.mouseMoved(e);
-                JTree tree = (JTree) e.getSource();
-                int selRow = tree.getRowForLocation(e.getX(), e.getY());
-                tree.setSelectionRow(selRow);
-                tree.requestFocusInWindow();
-            }
-        });
         allProductsTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
                 if (e.getButton() == RIGHT_CLICK) {
+                    JTree tree = (JTree) e.getSource();
+                    int selRow = tree.getRowForLocation(e.getX(), e.getY());
+                    tree.setSelectionRow(selRow);
+                    tree.requestFocusInWindow();
+
                     ProductNode node = (ProductNode) allProductsTree.getLastSelectedPathComponent();
                     if (node == null || node.isRoot()) {
                         return;

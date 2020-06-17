@@ -30,7 +30,7 @@ public class CreateTaskDialog extends DialogWrapper {
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        setTitle("Log into Your Swarm Debugging Account");
+        setTitle("Create a New Task");
         GridBagConstraints constraints = createGridBagConstraints();
         panel.add(label("Task Name: "), constraints);
         constraints.gridx = 1;

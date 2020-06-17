@@ -30,6 +30,7 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
         }
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, true);
         this.node = (ProductNode) value;
+        buildTreeNodesAppearance();
 
         if (node.getParent() == null) {
             setIcon(productsIcon);
@@ -43,7 +44,7 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
         return this;
     }
 
-    private void buildTreeAppearance() {
+    private void buildTreeNodesAppearance() {
         setToolTipText(node.getToolTip() + " (Right click for more options)");
         setBorderSelectionColor((Color) null);
         setBackgroundNonSelectionColor((Color) null);
