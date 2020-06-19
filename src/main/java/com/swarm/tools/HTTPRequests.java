@@ -9,9 +9,11 @@ import com.swarm.models.Product;
 import com.swarm.models.Task;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import org.apache.batik.util.io.ISO_8859_1Decoder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -293,8 +295,12 @@ public class HTTPRequests {
     }
 
     public static int createType(int sessionId, String fullName, String name, String fullPath, String sourceCode) {
-        String source = sourceCode.replace("\n", "\\\\n");
-        source = source.replace("\"", "\\\"");
+        sourceCode = sourceCode.replace("\n", "\\n");
+        sourceCode = sourceCode.replace("\"", "\\\"");
+
+        JSONObject body = new JSONObject();
+        //body.put("body", )
+        //source = source.replace("\"", "\\\"");
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
                 .body("{\"query\":\"mutation typeCreate($sessionId: Long!,$name: String!, $fullPath: String!, $fullName: String!, $source:String){\\n  " +
@@ -303,8 +309,9 @@ public class HTTPRequests {
                         "\",\"name\":\"" + name +
                         "\",\"fullPath\":\"" + fullPath +
                         "\",\"fullName\":\"" + fullName +
-                        "\",\"source\":\"" + source +
+                        "\",\"source\":\"" + sourceCode +
                         "\"},\"operationName\":\"typeCreate\"}")
+                .charset(StandardCharsets.UTF_8)
                 .asString();
 
         JSONObject jsonObject = new JSONObject(response.getBody());

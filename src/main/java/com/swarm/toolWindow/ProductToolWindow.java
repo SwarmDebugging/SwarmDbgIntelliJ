@@ -1,12 +1,20 @@
 package com.swarm.toolWindow;
 
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.ScrollPaneFactory;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
+import com.intellij.util.ui.JBUI;
+import com.swarm.States;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import com.swarm.tools.HTTPRequests;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -39,11 +47,29 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         this.developerId = developerId;
         popupMenuBuilder = new PopupMenuBuilder(toolWindow, project, developerId);
 
+        setToolbar(createToolBarPanel());
+        buildToolWindowContent();
+    }
+
+    private void buildToolWindowContent() {
         buildProductTreeView();
         setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
     }
 
-    public void buildProductTreeView() {
+    private JPanel createToolBarPanel() {
+        final DefaultActionGroup group = new DefaultActionGroup();
+        group.add(new RefreshAction());
+        group.add(new AddProductAction());
+        group.add(new AddTaskAction());
+        group.add(new MarkTaskAsDoneAction());
+        group.add(new StartRecordingEventsAction());
+        group.add(new LogoutAction());
+        final ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("swarm", group, true);
+        return JBUI.Panels.simplePanel(actionToolbar.getComponent());
+    }
+
+            //TODO: rename
+    private void buildProductTreeView() {
         productArrayList = HTTPRequests.productsByDeveloperId(developerId);
         if (productArrayList != null) {
             buildProductTree();
@@ -91,7 +117,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
                         JPopupMenu popupMenu = popupMenuBuilder.buildTaskNodePopupMenu(node.getId());
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     } else if (node.isProduct()) {
-                        //TODO: how to get developerID?
                         JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(node.getId());
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     }
@@ -130,6 +155,175 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
     //TODO
     private void displayNoProductsMessage() {
         String todo = "todo";
+    }
+
+    private final class AddProductAction extends AnAction {
+        AddProductAction() {
+            super("Add a New Product", "Add a new product to the developer's products", IconLoader.getIcon("/icons/add.svg"));
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            addNewProduct();
+            buildToolWindowContent();
+        }
+    }
+
+    private void addNewProduct() {
+        CreateProductDialog createProductDialog = new CreateProductDialog(project, developerId);
+        createProductDialog.showAndGet();
+    }
+
+    private final class AddTaskAction extends AnAction {
+        AddTaskAction() {
+            super("Add a New Task", "Add a new task to the selected product", IconLoader.getIcon("/icons/task.svg"));
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            addNewTaskToSelectedProduct();
+            buildToolWindowContent();
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(getSelectedProductFromTree() != null);
+        }
+    }
+
+    private void addNewTaskToSelectedProduct() {
+        ProductNode product = getSelectedProductFromTree();
+        if(product == null) {
+            return;
+        }
+        CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product.getId(), developerId);
+        createTaskDialog.showAndGet();
+    }
+
+    private ProductNode getSelectedProductFromTree() {
+        ProductNode node = (ProductNode) allProductsTree.getLastSelectedPathComponent();
+        if (node == null || node.isRoot()) {
+            return null;
+        }
+        if (node.isTask()) {
+            return null;
+        } else if (node.isProduct()) {
+            return node;
+        }
+        return null;
+    }
+
+    private final class RefreshAction extends AnAction {
+        RefreshAction() {
+            super("Refresh Products", "Refresh the developer's products", IconLoader.getIcon("/icons/refresh.svg"));
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            buildToolWindowContent();
+        }
+    }
+
+    private final class MarkTaskAsDoneAction extends AnAction {
+        MarkTaskAsDoneAction() {
+            super("Mark Task as Done", "Mark the selected task as done", IconLoader.getIcon("/icons/markAsDone.svg"));
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            markSelectedTaskAsDone();
+            buildToolWindowContent();
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(getSelectedTaskFromTree() != null);
+        }
+    }
+
+    private void markSelectedTaskAsDone() {
+        ProductNode task = getSelectedTaskFromTree();
+        if (task == null) {
+            return;
+        }
+        markTaskAsDone(task.getId());
+    }
+
+    private void markTaskAsDone(int taskId) {
+        HTTPRequests.taskDone(taskId);
+    }
+
+    private ProductNode getSelectedTaskFromTree() {
+        ProductNode node = (ProductNode) allProductsTree.getLastSelectedPathComponent();
+        if (node == null || node.isRoot()) {
+            return null;
+        }
+        if (node.isTask()) {
+            return node;
+        }
+        return null;
+    }
+
+    private class StartRecordingEventsAction extends AnAction{
+        StartRecordingEventsAction(){
+            super("Start Recording Events",
+                    "Start recording breakpoint and debugging events in the selected task",
+                    IconLoader.getIcon("/icons/startRecordingEvents.svg"));
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            States.currentSessionId = createSwarmSession();
+            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(States.currentSessionId, toolWindow, project, developerId));
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(getSelectedTaskFromTree() != null);
+        }
+    }
+
+    private int createSwarmSession() {
+        ProductNode task = getSelectedTaskFromTree();
+        if (task == null) {
+            return -1;
+        }
+        return HTTPRequests.sessionStart(developerId, task.getId());
+    }
+
+    private void switchToolWindowContentToSessionToolWindow(SessionToolWindow sessionToolWindow) {
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(sessionToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
+    }
+
+    private class LogoutAction extends AnAction {
+        LogoutAction() {
+            super("Logout", "Logs out developer and takes him back to login screen", IconLoader.getIcon("/icons/logout.svg"));
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            switchToolWindowContentToLoginToolWindow(new LoginToolWindow(toolWindow, project));
+        }
+    }
+
+    private void switchToolWindowContentToLoginToolWindow(LoginToolWindow loginToolWindow) {
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(loginToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
+    }
+
+    //May not be best practice
+    @Nullable
+    @Override
+    public JComponent getContent() {
+        return this.getComponent();
     }
 
 }

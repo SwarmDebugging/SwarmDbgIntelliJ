@@ -23,7 +23,7 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
 
     @Override
     public void breakpointAdded(@NotNull XBreakpoint breakpoint) {
-        if(States.currentSessionId == -1) { //There needs to be a session for the types
+        if(States.currentSessionId == -1) {
             return;
         }
         if(breakpoint.getSourcePosition() == null) {
@@ -86,7 +86,6 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
         var element = file.findElementAt(offset);
 
         if(element == null) {
-            //that means that there's no element where the breakpoint is(unlikely)
             return null;
         }
 
