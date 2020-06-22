@@ -1,5 +1,6 @@
 package com.swarm.tools;
 
+import com.google.gson.Gson;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -8,16 +9,16 @@ import com.swarm.States;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import org.apache.batik.util.io.ISO_8859_1Decoder;
+import org.apache.http.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
 
 
 //TODO: handle all case and errors
@@ -211,10 +212,11 @@ public class HTTPRequests {
     }
 
     public static int login(String username) {
+        JSONObject body = new JSONObject();
+        body.put("query", "{developer(username:\"" + username + "\"){id}}");
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
-                .body("{\"query\":\"{\\n  developer(username:\\\"" + username +
-                        "\\\"){\\n    id\\n  }\\n}\"}")
+                .body(body.toString())
                 .asString();
 
         JSONObject jsonObject = new JSONObject(response.getBody());
@@ -295,28 +297,29 @@ public class HTTPRequests {
     }
 
     public static int createType(int sessionId, String fullName, String name, String fullPath, String sourceCode) {
-        sourceCode = sourceCode.replace("\n", "\\n");
-        sourceCode = sourceCode.replace("\"", "\\\"");
-
-        JSONObject body = new JSONObject();
-        //body.put("body", )
-        //source = source.replace("\"", "\\\"");
+        //to deal with special character in sourceCode
+        JSONObject body = createBodyJSONObjectForCreateType(sessionId, fullName, name, fullPath, sourceCode);
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
-                .body("{\"query\":\"mutation typeCreate($sessionId: Long!,$name: String!, $fullPath: String!, $fullName: String!, $source:String){\\n  " +
-                        "typeCreate(typeWrapper:{type:{session:{id:$sessionId},name:$name,fullPath:$fullPath,fullName:$fullName},source:$source}){\\n    " +
-                        "id\\n  }\\n}\\n\",\"variables\":{\"sessionId\":\"" + sessionId +
-                        "\",\"name\":\"" + name +
-                        "\",\"fullPath\":\"" + fullPath +
-                        "\",\"fullName\":\"" + fullName +
-                        "\",\"source\":\"" + sourceCode +
-                        "\"},\"operationName\":\"typeCreate\"}")
-                .charset(StandardCharsets.UTF_8)
+                .body(body.toString())
                 .asString();
 
-        JSONObject jsonObject = new JSONObject(response.getBody());
+        JSONObject jsonResponse = new JSONObject(response.getBody());
+        return jsonResponse.getJSONObject("data").getJSONObject("typeCreate").getInt("id");
+    }
 
-        return jsonObject.getJSONObject("data").getJSONObject("typeCreate").getInt("id");
+    private static JSONObject createBodyJSONObjectForCreateType(int sessionId, String fullName, String name, String fullPath, String sourceCode) {
+        JSONObject body = new JSONObject();
+        body.put("query", "mutation typeCreate($sessionId: Long!,$name: String!, $fullPath: String!, $fullName: String!, $source:String){" +
+                "  typeCreate(typeWrapper:{type:{session:{id:$sessionId},name:$name,fullPath:$fullPath,fullName:$fullName},source:$source}){    id  }}");
+        JSONObject variables = new JSONObject();
+        variables.put("sessionId", sessionId);
+        variables.put("name", name);
+        variables.put("fullPath", fullPath);
+        variables.put("fullName", fullName);
+        variables.put("source", sourceCode);
+        body.put("variables", variables);
+        return body;
     }
 
     public static int createBreakpoint(int lineNumber, int typeId) {

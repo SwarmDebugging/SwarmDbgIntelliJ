@@ -61,8 +61,8 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         group.add(new RefreshAction());
         group.add(new AddProductAction());
         group.add(new AddTaskAction());
-        group.add(new MarkTaskAsDoneAction());
         group.add(new StartRecordingEventsAction());
+        group.add(new MarkTaskAsDoneAction());
         group.add(new LogoutAction());
         final ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("swarm", group, true);
         return JBUI.Panels.simplePanel(actionToolbar.getComponent());
@@ -319,7 +319,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         toolWindow.getContentManager().addContent(content);
     }
 
-    //May not be best practice
+    //May not be best practice, we may want to create a new function called getComponent instead
     @Nullable
     @Override
     public JComponent getContent() {
