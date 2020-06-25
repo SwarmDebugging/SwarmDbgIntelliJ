@@ -1,5 +1,6 @@
 package com.swarm.listeners;
 
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiManager;
@@ -13,7 +14,7 @@ import com.swarm.tools.HTTPRequests;
 import org.jetbrains.annotations.NotNull;
 
 
-public class breakpointListener implements XBreakpointListener<XBreakpoint<?>> {
+public class breakpointListener implements XBreakpointListener<XBreakpoint<?>>, DumbAware {
 
     private final Project project;
 

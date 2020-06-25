@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.xdebugger.impl.actions.*;
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 
-public class DebugActionListener implements AnActionListener {
+public class DebugActionListener implements AnActionListener, DumbAware {
 
     Project project;
     private long lastEventTime = -1;

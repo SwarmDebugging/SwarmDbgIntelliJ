@@ -6,6 +6,7 @@ import com.intellij.debugger.impl.DebuggerContextImpl;
 import com.intellij.debugger.impl.DebuggerManagerListener;
 import com.intellij.debugger.impl.DebuggerSession;
 import com.intellij.debugger.jdi.StackFrameProxyImpl;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.sun.jdi.Method;
 import com.swarm.States;
@@ -14,7 +15,7 @@ import com.swarm.tools.HTTPRequests;
 import java.util.List;
 
 
-public class DebuggerManagerListenerSwarm implements DebuggerManagerListener {
+public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, DumbAware {
 
     Project project;
 
@@ -29,7 +30,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener {
                 return;
             }
             assert newContext.getDebugProcess() != null;
-            newContext.getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
+            newContext.getDebugProcess().getManagerThread().invoke(new DebuggerCommandImpl() {
                 @Override
                 protected void action() throws Exception {
                     if (event.name().equals("PAUSE") && States.isSteppedInto) {

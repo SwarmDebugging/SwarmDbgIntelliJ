@@ -1,6 +1,7 @@
 package com.swarm.toolWindow;
 
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.IconLoader;
@@ -157,7 +158,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         String todo = "todo";
     }
 
-    private final class AddProductAction extends AnAction {
+    private final class AddProductAction extends DumbAwareAction {
         AddProductAction() {
             super("Add a New Product", "Add a new product to the developer's products", IconLoader.getIcon("/icons/add.svg"));
         }
@@ -174,7 +175,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         createProductDialog.showAndGet();
     }
 
-    private final class AddTaskAction extends AnAction {
+    private final class AddTaskAction extends DumbAwareAction {
         AddTaskAction() {
             super("Add a New Task", "Add a new task to the selected product", IconLoader.getIcon("/icons/task.svg"));
         }
@@ -214,7 +215,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         return null;
     }
 
-    private final class RefreshAction extends AnAction {
+    private final class RefreshAction extends DumbAwareAction {
         RefreshAction() {
             super("Refresh Products", "Refresh the developer's products", IconLoader.getIcon("/icons/refresh.svg"));
         }
@@ -225,7 +226,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         }
     }
 
-    private final class MarkTaskAsDoneAction extends AnAction {
+    private final class MarkTaskAsDoneAction extends DumbAwareAction {
         MarkTaskAsDoneAction() {
             super("Mark Task as Done", "Mark the selected task as done", IconLoader.getIcon("/icons/markAsDone.svg"));
         }
@@ -266,7 +267,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         return null;
     }
 
-    private class StartRecordingEventsAction extends AnAction{
+    private class StartRecordingEventsAction extends DumbAwareAction{
         StartRecordingEventsAction(){
             super("Start Recording Events",
                     "Start recording breakpoint and debugging events in the selected task",
@@ -301,7 +302,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         toolWindow.getContentManager().addContent(content);
     }
 
-    private class LogoutAction extends AnAction {
+    private class LogoutAction extends DumbAwareAction {
         LogoutAction() {
             super("Logout", "Logs out developer and takes him back to login screen", IconLoader.getIcon("/icons/logout.svg"));
         }
