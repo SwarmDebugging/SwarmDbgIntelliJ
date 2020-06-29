@@ -5,7 +5,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.swarm.States;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.tools.HTTPUtils;
 
 import javax.swing.*;
 
@@ -67,7 +67,7 @@ public class PopupMenuBuilder {
     private void buildNewSwarmSessionMenuItem() {
         newSwarmSession = new JMenuItem("Start a New Swarm Debugging Session");
         newSwarmSession.addActionListener(actionEvent -> {
-            int sessionId = HTTPRequests.sessionStart(developerId, taskId);
+            int sessionId = HTTPUtils.sessionStart(developerId, taskId);
             States.currentSessionId = sessionId;
             switchToolWindowContentToSessionToolWindow(new SessionToolWindow(sessionId, toolWindow, project, developerId));
         });
@@ -76,7 +76,7 @@ public class PopupMenuBuilder {
     private void buildMarkAsDoneMenuItem() {
         markAsDone = new JMenuItem("Mark As Done");
         markAsDone.addActionListener(actionEvent -> {
-            HTTPRequests.taskDone(taskId);
+            HTTPUtils.taskDone(taskId);
         });
     }
 

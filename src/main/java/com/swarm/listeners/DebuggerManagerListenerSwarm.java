@@ -10,7 +10,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.sun.jdi.Method;
 import com.swarm.States;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.tools.HTTPUtils;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
             assert newContext.getDebugProcess() != null;
             newContext.getDebugProcess().getManagerThread().invoke(new DebuggerCommandImpl() {
                 @Override
-                protected void action() throws Exception {
+                protected void action(){
                     if (event.name().equals("PAUSE") && States.isSteppedInto) {
                         handleStepInto(newContext);
                     }
@@ -57,7 +57,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
 
             if (isInvocation(currentStackFrames)) {
                 Method invoked = currentStackFrames.get(0).location().method();
-                HTTPRequests.createInvocation(DebugActionListener.invokingMethodId, invoked.name(), invoked.signature(), States.currentSessionId, project);
+                HTTPUtils.createInvocation(DebugActionListener.invokingMethodId, invoked.name(), invoked.signature(), States.currentSessionId, project);
             }
         } catch (EvaluateException e) {
             e.printStackTrace();

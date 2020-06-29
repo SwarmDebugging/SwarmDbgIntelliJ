@@ -3,11 +3,9 @@ package com.swarm.toolWindow;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.uiDesigner.core.AbstractLayout;
-import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -54,7 +52,7 @@ public class CreateTaskDialog extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        HTTPRequests.createTask(productId, taskTextFiled.getText(), false, developerId);
+        HTTPUtils.createTask(productId, taskTextFiled.getText(), false, developerId);
     }
 
     private JComponent label(String text) {

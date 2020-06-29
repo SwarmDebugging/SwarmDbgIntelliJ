@@ -1,6 +1,5 @@
 package com.swarm.tools;
 
-import com.google.gson.Gson;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -9,59 +8,18 @@ import com.swarm.States;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
-import org.apache.batik.util.io.ISO_8859_1Decoder;
-import org.apache.http.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 //TODO: handle all case and errors
-public class HTTPRequests {
+public class HTTPUtils {
 
     private static final String URL = "http://localhost:8080/graphql";
-
-    public static int createDeveloper(String username) {
-
-        HttpResponse<String> response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation developerCreate($username: String!) {\\n  developerCreate(developer: {username:$username}){\\n    id\\n    username\\n  }\\n}\"," +
-                        "\"variables\":{\"username\":\"" + username + "\"},\"operationName\":\"developerCreate\"}")
-                .asString();
-
-
-//TODO add creation validation
-        JSONObject jsonObject = new JSONObject(response.getBody());
-
-        return jsonObject.getJSONObject("data").getJSONObject("developerCreate").getInt("id");
-    }
-
-    public static ArrayList<Task> tasksByProductId(int productId) {
-        HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
-                .header("content-type", "application/json")
-                .body("{\"query\":\"{\\n  tasks(productId:" + productId +
-                        ") {\\n    id\\n    title\\n  }\\n}\"}")
-                .asString();
-
-        JSONObject jsonObject = new JSONObject((response.getBody())).getJSONObject("data");
-
-        if(jsonObject.isNull("tasks")){
-            return null;
-        }
-
-        ArrayList<Task> productArray = new ArrayList<>();
-
-        JSONArray jsonArray = jsonObject.getJSONArray("tasks");
-        for (int i = 0; i < jsonArray.length(); i++) {
-            //productArray.add(new Task(jsonArray.getJSONObject(i).getInt("id"), jsonArray.getJSONObject(i).getString("title")));
-        }
-        return productArray;
-    }
 
     public static int createProduct(String productTitle, int developerId) {
         HttpResponse<String> response = Unirest.post(URL)
@@ -209,24 +167,6 @@ public class HTTPRequests {
             }
         }
         return -1;
-    }
-
-    public static int login(String username) {
-        JSONObject body = new JSONObject();
-        body.put("query", "{developer(username:\"" + username + "\"){id}}");
-        HttpResponse<String> response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body(body.toString())
-                .asString();
-
-        JSONObject jsonObject = new JSONObject(response.getBody());
-
-        int developerId = -1;
-        if(!(jsonObject.getJSONObject("data").isNull("developer"))) {
-            developerId = jsonObject.getJSONObject("data").getJSONObject("developer").getInt("id");
-        }
-
-        return developerId;
     }
 
     public static int createEvent(int sessionId, int eventLineNumber, String eventKind, int methodId) {

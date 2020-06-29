@@ -1,18 +1,19 @@
 package com.swarm.toolWindow;
 
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.swarm.States;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.models.Developer;
+import com.swarm.tools.HTTPUtils;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class RegisterToolWindow {
+public class RegisterToolWindow implements DumbAware {
     private JPanel registerWindowContent;
     private JPanel registerContent;
     private JButton registerButton;
@@ -36,11 +37,13 @@ public class RegisterToolWindow {
             }
         });
         registerButton.addActionListener(actionEvent -> {
-            int developerId = HTTPRequests.createDeveloper(usernameTextfield.getText());
-            if(developerId == -1) {
+            Developer developer = new Developer();
+            developer.setUsername(usernameTextfield.getText());
+            developer.registerNewDeveloper();
+            if(developer.getId() == -1) {
                 //show wrong username notification
             } else {
-                switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developerId));
+                switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer.getId()));
             }
         });
     }

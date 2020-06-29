@@ -1,15 +1,16 @@
 package com.swarm.toolWindow;
 
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.swarm.States;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.models.Developer;
+import com.swarm.tools.HTTPUtils;
 
 import javax.swing.*;
 
-public class LoginToolWindow {
+public class LoginToolWindow implements DumbAware {
 
     private JPanel loginWindowContent;
     private JPanel loginContent;
@@ -20,7 +21,7 @@ public class LoginToolWindow {
     private ToolWindow toolWindow;
     private Project project;
 
-    public LoginToolWindow(ToolWindow toolWindow, Project project) {
+    public LoginToolWindow(ToolWindow toolWindow, Project project){
 
         this.toolWindow = toolWindow;
         this.project = project;
@@ -29,8 +30,11 @@ public class LoginToolWindow {
             switchToolWindowContentToRegisterToolWindow(new RegisterToolWindow(toolWindow, project));
         });
         loginButton.addActionListener(actionEvent -> {
-            int developerId = HTTPRequests.login(usernameTextfield.getText());
-            switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developerId));
+            Developer developer = new Developer();
+            developer.setUsername(usernameTextfield.getText());
+            developer.login();
+           // int developerId = HTTPUtils.login(usernameTextfield.getText());
+            switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer.getId()));
         });
     }
 

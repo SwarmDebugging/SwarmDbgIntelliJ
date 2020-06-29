@@ -1,6 +1,7 @@
 package com.swarm.toolWindow;
 
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -13,7 +14,7 @@ import com.intellij.util.ui.JBUI;
 import com.swarm.States;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +25,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
-public class ProductToolWindow extends SimpleToolWindowPanel {
+public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAware {
 
     private final int RIGHT_CLICK = MouseEvent.BUTTON3;
 
@@ -71,7 +72,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
 
             //TODO: rename
     private void buildProductTreeView() {
-        productArrayList = HTTPRequests.productsByDeveloperId(developerId);
+        productArrayList = HTTPUtils.productsByDeveloperId(developerId);
         if (productArrayList != null) {
             buildProductTree();
         } else {
@@ -253,7 +254,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
     }
 
     private void markTaskAsDone(int taskId) {
-        HTTPRequests.taskDone(taskId);
+        HTTPUtils.taskDone(taskId);
     }
 
     private ProductNode getSelectedTaskFromTree() {
@@ -292,7 +293,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel {
         if (task == null) {
             return -1;
         }
-        return HTTPRequests.sessionStart(developerId, task.getId());
+        return HTTPUtils.sessionStart(developerId, task.getId());
     }
 
     private void switchToolWindowContentToSessionToolWindow(SessionToolWindow sessionToolWindow) {

@@ -15,7 +15,7 @@
     </extensions>
     
     <projectListeners>
-        <listener class="com.swarm.listeners.breakpointListener" topic="com.intellij.xdebugger.breakpoints.XBreakpointListener"/>
+        <listener class="com.swarm.listeners.BreakpointListener" topic="com.intellij.xdebugger.breakpoints.XBreakpointListener"/>
         <listener class="com.swarm.listeners.DebugActionListener" topic="com.intellij.openapi.actionSystem.ex.AnActionListener"/>
         <listener class="com.swarm.listeners.DebuggerManagerListenerSwarm" topic="com.intellij.debugger.impl.DebuggerManagerListener"/>
     </projectListeners>

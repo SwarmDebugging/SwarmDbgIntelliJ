@@ -10,17 +10,19 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
 import com.swarm.States;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
 
 
-public class breakpointListener implements XBreakpointListener<XBreakpoint<?>>, DumbAware {
+public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, DumbAware {
 
-    private final Project project;
+    private Project project;
 
-    public breakpointListener(Project project) {
+    public BreakpointListener(Project project) {
         this.project = project;
     }
+
+    public BreakpointListener(){};
 
     @Override
     public void breakpointAdded(@NotNull XBreakpoint breakpoint) {
@@ -31,7 +33,7 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
             return;
         }
         int typeId = handleBreakpointEvent("Breakpoint Added", breakpoint);
-        HTTPRequests.createBreakpoint(breakpoint.getSourcePosition().getLine(), typeId);
+        HTTPUtils.createBreakpoint(breakpoint.getSourcePosition().getLine(), typeId);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         typeFullName += typeName;
 
         //verification is made in the server for doubles
-        int typeId = HTTPRequests.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
+        int typeId = HTTPUtils.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
 
         int lineNumber = breakpoint.getSourcePosition().getLine();
 
@@ -77,8 +79,8 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         PsiParameter[] parameters = method.getParameterList().getParameters();
         String methodSignature = encodeSignature(parameters, methodReturnType);
 
-        int methodId = HTTPRequests.createMethod(typeId, methodSignature, methodName);
-        HTTPRequests.createEvent(States.currentSessionId, lineNumber, eventKind, methodId);
+        int methodId = HTTPUtils.createMethod(typeId, methodSignature, methodName);
+        HTTPUtils.createEvent(States.currentSessionId, lineNumber, eventKind, methodId);
         return typeId;
     }
 
@@ -108,5 +110,9 @@ public class breakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         }
         result += ")" + returnType;
         return result;
+    }
+
+    private void setProject(Project project) {
+        this.project = project;
     }
 }

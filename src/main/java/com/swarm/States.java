@@ -9,4 +9,6 @@ public class States {
     public static List<StackFrameProxyImpl> lastStackFrames;
 
     public static int currentSessionId = -1;
+
+    public static String URL = "http://localhost:8080/graphql";
 }

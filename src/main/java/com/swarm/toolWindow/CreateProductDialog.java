@@ -5,7 +5,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -51,7 +51,7 @@ public class CreateProductDialog extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        HTTPRequests.createProduct(productTitleField.getText(), developerId);
+        HTTPUtils.createProduct(productTitleField.getText(), developerId);
     }
 
     private JComponent label(String text) {

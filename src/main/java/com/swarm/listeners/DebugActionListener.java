@@ -12,11 +12,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.xdebugger.impl.actions.*;
 import com.swarm.States;
-import com.swarm.tools.HTTPRequests;
+import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 
 public class DebugActionListener implements AnActionListener, DumbAware {
 
@@ -45,11 +46,12 @@ public class DebugActionListener implements AnActionListener, DumbAware {
                 int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
                 final String[] methodName = {""}; //is this the best way???
                 final String[] methodSignature = {""};
-                debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
+                debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invoke(new DebuggerCommandImpl() {
                     @Override
                     protected void action() throws Exception {
                         try {
-                            methodName[0] = debuggerManagerEx.getContext().getFrameProxy().location().method().name();
+                            //TODO: bug here
+                            methodName[0] = Objects.requireNonNull(debuggerManagerEx.getContext().getFrameProxy()).location().method().name();
                             methodSignature[0] = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
                         } catch (EvaluateException e) {
                             e.printStackTrace();
@@ -57,9 +59,9 @@ public class DebugActionListener implements AnActionListener, DumbAware {
                     }
                 });
 
-                int typeId = HTTPRequests.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
-                int methodId = HTTPRequests.createMethod(typeId, methodSignature[0], methodName[0]);
-                HTTPRequests.createEvent(States.currentSessionId, lineNumber, eventName, methodId);
+                int typeId = HTTPUtils.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
+                int methodId = HTTPUtils.createMethod(typeId, methodSignature[0], methodName[0]);
+                HTTPUtils.createEvent(States.currentSessionId, lineNumber, eventName, methodId);
                 return methodId;
     }
 
