@@ -17,7 +17,7 @@ public class HTTPRequest {
         if(variables != null) {
             body.put("variables", variables);
         }
-        String bodyString = body.toString();
+        String bodyString = body.toString(); //TODO: remove after debugging
         HttpResponse<String> response = Unirest.post(url)
                 .header("content-type", "application/json")
                 .body(body.toString())

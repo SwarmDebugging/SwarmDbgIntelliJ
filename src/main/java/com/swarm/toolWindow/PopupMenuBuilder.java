@@ -5,6 +5,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.swarm.States;
+import com.swarm.models.Developer;
 import com.swarm.tools.HTTPUtils;
 
 import javax.swing.*;
@@ -20,14 +21,14 @@ public class PopupMenuBuilder {
 
     private Project project;
     private ToolWindow toolWindow;
-    private int developerId;
+    private Developer developer;
     private int taskId;
     private int productId;
 
-    public PopupMenuBuilder(ToolWindow toolWindow, Project project, int developerId) {
+    public PopupMenuBuilder(ToolWindow toolWindow, Project project, Developer developer) {
         this.project = project;
         this.toolWindow = toolWindow;
-        this.developerId = developerId;
+        this.developer = developer;
     }
 
     public JPopupMenu buildProductNodePopupMenu(int productId) {
@@ -45,7 +46,7 @@ public class PopupMenuBuilder {
     private void buildCreateNewTaskMenuItem() {
         createNewTask = new JMenuItem("Create a new Task");
         createNewTask.addActionListener(actionEvent -> {
-            CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, productId, developerId);
+            CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, productId, developer.getId());
             createTaskDialog.showAndGet();
         });
     }
@@ -67,9 +68,9 @@ public class PopupMenuBuilder {
     private void buildNewSwarmSessionMenuItem() {
         newSwarmSession = new JMenuItem("Start a New Swarm Debugging Session");
         newSwarmSession.addActionListener(actionEvent -> {
-            int sessionId = HTTPUtils.sessionStart(developerId, taskId);
+            int sessionId = HTTPUtils.sessionStart(developer.getId(), taskId);
             States.currentSessionId = sessionId;
-            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(sessionId, toolWindow, project, developerId));
+            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(sessionId, toolWindow, project, developer));
         });
     }
 

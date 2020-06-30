@@ -43,7 +43,7 @@ public class RegisterToolWindow implements DumbAware {
             if(developer.getId() == -1) {
                 //show wrong username notification
             } else {
-                switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer.getId()));
+                switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer));
             }
         });
     }

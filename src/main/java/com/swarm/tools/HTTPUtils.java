@@ -21,24 +21,6 @@ public class HTTPUtils {
 
     private static final String URL = "http://localhost:8080/graphql";
 
-    public static int createProduct(String productTitle, int developerId) {
-        HttpResponse<String> response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation{\\n  productCreate(product:{name:\\\"" + productTitle +
-                        "\\\"}){\\n    id\\n  }\\n}\"}")
-                .asString();
-
-        JSONObject jsonProduct = new JSONObject(response.getBody()).getJSONObject("data");
-
-        if(jsonProduct.isNull("productCreate")) {
-            return -1;
-        }
-
-        int productId = jsonProduct.getJSONObject("productCreate").getInt("id");
-
-        return createTask(productId, "productCreation", true, developerId);
-    }
-
     public static int createTask(int productId, String taskTitle, boolean done, int developerId) {
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")

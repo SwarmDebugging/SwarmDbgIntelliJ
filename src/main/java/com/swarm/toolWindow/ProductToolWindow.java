@@ -12,6 +12,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
 import com.swarm.States;
+import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import com.swarm.tools.HTTPUtils;
@@ -32,7 +33,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private ToolWindow toolWindow;
     private Project project;
-    private int developerId;
+    private Developer developer;
 
     private PopupMenuBuilder popupMenuBuilder;
 
@@ -41,13 +42,13 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     private ProductTree allProductsTree;
 
 
-    public ProductToolWindow(ToolWindow toolWindow, Project project, int developerId) {
+    public ProductToolWindow(ToolWindow toolWindow, Project project, Developer developer) {
         super(true, true);
 
         this.toolWindow = toolWindow;
         this.project = project;
-        this.developerId = developerId;
-        popupMenuBuilder = new PopupMenuBuilder(toolWindow, project, developerId);
+        this.developer = developer;
+        popupMenuBuilder = new PopupMenuBuilder(toolWindow, project, developer);
 
         setToolbar(createToolBarPanel());
         buildToolWindowContent();
@@ -72,7 +73,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
             //TODO: rename
     private void buildProductTreeView() {
-        productArrayList = HTTPUtils.productsByDeveloperId(developerId);
+        productArrayList = HTTPUtils.productsByDeveloperId(developer.getId());
         if (productArrayList != null) {
             buildProductTree();
         } else {
@@ -136,7 +137,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private ProductNode createProductNodeFromProduct(Product product) {
-        ProductNode productNode = new ProductNode(product.getTitle(), product.getId());
+        ProductNode productNode = new ProductNode(product.getName(), product.getId());
         DefaultTreeModel newProductTreeModel = new DefaultTreeModel(productNode);
         productNode.setModel(newProductTreeModel);
         ProductTree newProductTree = new ProductTree(newProductTreeModel);
@@ -172,7 +173,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void addNewProduct() {
-        CreateProductDialog createProductDialog = new CreateProductDialog(project, developerId);
+        CreateProductDialog createProductDialog = new CreateProductDialog(project, developer);
         createProductDialog.showAndGet();
     }
 
@@ -199,7 +200,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         if(product == null) {
             return;
         }
-        CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product.getId(), developerId);
+        CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product.getId(), developer.getId());
         createTaskDialog.showAndGet();
     }
 
@@ -278,7 +279,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             States.currentSessionId = createSwarmSession();
-            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(States.currentSessionId, toolWindow, project, developerId));
+            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(States.currentSessionId, toolWindow, project, developer));
         }
 
         @Override
@@ -293,7 +294,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         if (task == null) {
             return -1;
         }
-        return HTTPUtils.sessionStart(developerId, task.getId());
+        return HTTPUtils.sessionStart(developer.getId(), task.getId());
     }
 
     private void switchToolWindowContentToSessionToolWindow(SessionToolWindow sessionToolWindow) {
