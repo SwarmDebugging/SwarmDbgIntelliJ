@@ -24,6 +24,7 @@ public class SessionTests {
     public SessionTests(ClientAndServer client) {
         this.client = client;
         setupSessionStartRequest();
+        setupSessionStopRequest();
         setupSessionCreationForProductCreationRequest();
     }
 
@@ -41,6 +42,21 @@ public class SessionTests {
                 .withBody(body.toString()))
                 .respond(HttpResponse.response()
                         .withBody("{\"data\":{\"sessionStart\":{\"id\":3}}}"));
+    }
+
+    private void setupSessionStopRequest() {
+        JSONObject body = new JSONObject();
+        body.put("query", "mutation sessionStop($sessionId:Long!)" +
+                "{sessionStop(id:$sessionId){id}}");
+        JSONObject variables = new JSONObject();
+        variables.put("sessionId", 1);
+        body.put("variables", variables);
+        client.when(HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/graphql")
+                .withBody(body.toString()))
+                .respond(HttpResponse.response()
+                        .withBody("{\"data\":{\"sessionStop\":{\"id\":2}}}"));
     }
 
     private void setupSessionCreationForProductCreationRequest() {
@@ -77,6 +93,18 @@ public class SessionTests {
         session.setDeveloper(developer);
         session.setTask(task);
         session.start();
+    }
+
+    @Test
+    void stopSessionTest() {
+        sendStopSession();
+
+        assertEquals(2, session.getId());
+    }
+
+    private void sendStopSession() {
+        session.setId(1);
+        session.stop();
     }
 
     @Test

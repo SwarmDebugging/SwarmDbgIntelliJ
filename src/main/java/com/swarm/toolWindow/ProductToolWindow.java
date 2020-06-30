@@ -285,8 +285,8 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            States.currentSessionId = createSwarmSession();
-            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(States.currentSessionId, toolWindow, project, developer));
+            States.currentSession.setId(createSwarmSession());
+            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(States.currentSession, toolWindow, project, developer));
         }
 
         @Override

@@ -59,15 +59,15 @@ public class DebugActionListener implements AnActionListener, DumbAware {
                     }
                 });
 
-                int typeId = HTTPUtils.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
+                int typeId = HTTPUtils.createType(States.currentSession.getId(), typeFullName, typeName, typePath, sourceCode);
                 int methodId = HTTPUtils.createMethod(typeId, methodSignature[0], methodName[0]);
-                HTTPUtils.createEvent(States.currentSessionId, lineNumber, eventName, methodId);
+                HTTPUtils.createEvent(States.currentSession.getId(), lineNumber, eventName, methodId);
                 return methodId;
     }
 
     @Override
     public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
-        if(States.currentSessionId == -1) {
+        if(States.currentSession.getId() == -1) {
             return;
         }
         // The following is a hack to work around an issue with IDEA, where certain events arrive

@@ -26,7 +26,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
 
     @Override
     public void breakpointAdded(@NotNull XBreakpoint breakpoint) {
-        if(States.currentSessionId == -1) {
+        if(States.currentSession.getId() == -1) {
             return;
         }
         if(breakpoint.getSourcePosition() == null) {
@@ -38,7 +38,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
 
     @Override
     public void breakpointRemoved(@NotNull XBreakpoint<?> breakpoint) {
-        if(States.currentSessionId == -1) {
+        if(States.currentSession.getId() == -1) {
             return;
         }
         if(breakpoint.getSourcePosition() == null) {
@@ -60,7 +60,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         typeFullName += typeName;
 
         //verification is made in the server for doubles
-        int typeId = HTTPUtils.createType(States.currentSessionId, typeFullName, typeName, typePath, sourceCode);
+        int typeId = HTTPUtils.createType(States.currentSession.getId(), typeFullName, typeName, typePath, sourceCode);
 
         int lineNumber = breakpoint.getSourcePosition().getLine();
 
@@ -80,7 +80,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         String methodSignature = encodeSignature(parameters, methodReturnType);
 
         int methodId = HTTPUtils.createMethod(typeId, methodSignature, methodName);
-        HTTPUtils.createEvent(States.currentSessionId, lineNumber, eventKind, methodId);
+        HTTPUtils.createEvent(States.currentSession.getId(), lineNumber, eventKind, methodId);
         return typeId;
     }
 

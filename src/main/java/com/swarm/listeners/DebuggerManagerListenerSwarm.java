@@ -26,7 +26,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
     @Override
     public void sessionCreated(DebuggerSession session) {
         session.getContextManager().addListener((newContext, event) -> {
-            if(States.currentSessionId == -1) {
+            if(States.currentSession.getId() == -1) {
                 return;
             }
             assert newContext.getDebugProcess() != null;
@@ -57,7 +57,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
 
             if (isInvocation(currentStackFrames)) {
                 Method invoked = currentStackFrames.get(0).location().method();
-                HTTPUtils.createInvocation(DebugActionListener.invokingMethodId, invoked.name(), invoked.signature(), States.currentSessionId, project);
+                HTTPUtils.createInvocation(DebugActionListener.invokingMethodId, invoked.name(), invoked.signature(), States.currentSession.getId(), project);
             }
         } catch (EvaluateException e) {
             e.printStackTrace();

@@ -10,6 +10,19 @@ public class Session {
     private Task task;
 
 
+    public void stop() {
+        HTTPRequest stopSession = new HTTPRequest();
+        stopSession.setUrl(States.URL);
+        stopSession.setQuery("mutation sessionStop($sessionId:Long!)" +
+                "{sessionStop(id:$sessionId){id}}");
+        JSONObject variables = new JSONObject();
+        variables.put("sessionId", id);
+        stopSession.setVariables(variables);
+        JSONObject response = new JSONObject(stopSession.post().getString("body"));
+
+        this.id = response.getJSONObject("data").getJSONObject("sessionStop").getInt("id");
+    }
+
     public void start() {
         HTTPRequest startSession = new HTTPRequest();
         startSession.setUrl(States.URL);
@@ -41,6 +54,10 @@ public class Session {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setDeveloper(Developer developer) {

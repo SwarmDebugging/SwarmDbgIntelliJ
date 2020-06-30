@@ -75,8 +75,8 @@ public class PopupMenuBuilder {
             session.setTask(task);
             session.setDeveloper(developer);
             session.start();
-            States.currentSessionId = session.getId();
-            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(session.getId(), toolWindow, project, developer));
+            States.currentSession = session;
+            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(session, toolWindow, project, developer));
         });
     }
 

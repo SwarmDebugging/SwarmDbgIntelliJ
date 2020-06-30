@@ -7,6 +7,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.swarm.States;
 import com.swarm.models.Developer;
+import com.swarm.models.Session;
 import com.swarm.tools.HTTPUtils;
 
 import javax.swing.*;
@@ -18,14 +19,14 @@ public class SessionToolWindow implements DumbAware {
     private ToolWindow toolWindow;
     private Project project;
 
-    public SessionToolWindow(int currentSessionId, ToolWindow toolWindow, Project project, Developer developer) {
+    public SessionToolWindow(Session currentSession, ToolWindow toolWindow, Project project, Developer developer) {
 
         this.toolWindow = toolWindow;
         this.project = project;
 
         stopSessionButton.addActionListener(actionEvent -> {
-            HTTPUtils.sessionFinish(currentSessionId);
-            States.currentSessionId = -1;
+            currentSession.stop();
+            States.currentSession.setId(-1);
             switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer));
         });
     }
