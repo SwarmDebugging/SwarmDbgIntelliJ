@@ -14,6 +14,7 @@ import com.intellij.util.ui.JBUI;
 import com.swarm.States;
 import com.swarm.models.Developer;
 import com.swarm.models.Product;
+import com.swarm.models.Session;
 import com.swarm.models.Task;
 import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
@@ -117,10 +118,14 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
                     }
                     //TODO: refresh after
                     if (node.isTask()) {
-                        JPopupMenu popupMenu = popupMenuBuilder.buildTaskNodePopupMenu(node.getId());
+                        Task task = new Task();
+                        task.setId(node.getId());
+                        JPopupMenu popupMenu = popupMenuBuilder.buildTaskNodePopupMenu(task);
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     } else if (node.isProduct()) {
-                        JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(node.getId());
+                        Product product = new Product();
+                        product.setId(node.getId());
+                        JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(product);
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     }
                 }
@@ -196,11 +201,13 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void addNewTaskToSelectedProduct() {
-        ProductNode product = getSelectedProductFromTree();
-        if(product == null) {
+        ProductNode productNode = getSelectedProductFromTree();
+        if(productNode == null) {
             return;
         }
-        CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product.getId(), developer.getId());
+        Product product = new Product();
+        product.setId(productNode.getId());
+        CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product, developer);
         createTaskDialog.showAndGet();
     }
 
@@ -290,11 +297,17 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private int createSwarmSession() {
-        ProductNode task = getSelectedTaskFromTree();
-        if (task == null) {
+        ProductNode taskNode = getSelectedTaskFromTree();
+        if (taskNode == null) {
             return -1;
         }
-        return HTTPUtils.sessionStart(developer.getId(), task.getId());
+        Task task = new Task();
+        task.setId(taskNode.getId());
+        Session session = new Session();
+        session.setDeveloper(developer);
+        session.setTask(task);
+        session.start();
+        return session.getId();
     }
 
     private void switchToolWindowContentToSessionToolWindow(SessionToolWindow sessionToolWindow) {

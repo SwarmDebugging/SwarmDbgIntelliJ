@@ -5,6 +5,10 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.swarm.models.Developer;
+import com.swarm.models.Product;
+import com.swarm.models.Session;
+import com.swarm.models.Task;
 import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,15 +18,15 @@ import java.awt.*;
 public class CreateTaskDialog extends DialogWrapper {
 
     private final JPanel panel = new JPanel(new GridBagLayout());
-    private final int productId;
-    private final JTextField taskTextFiled = new JTextField();
-    private final int developerId;
+    private final Product product;
+    private final JTextField taskTitleField = new JTextField();
+    private final Developer developer;
 
-    public CreateTaskDialog(@Nullable Project project, int productId, int developerId) {
+    public CreateTaskDialog(@Nullable Project project, Product product, Developer developer) {
         super(project);
         init();
-        this.productId = productId;
-        this.developerId = developerId;
+        this.product = product;
+        this.developer = developer;
     }
 
     @Nullable
@@ -32,7 +36,7 @@ public class CreateTaskDialog extends DialogWrapper {
         GridBagConstraints constraints = createGridBagConstraints();
         panel.add(label("Task Name: "), constraints);
         constraints.gridx = 1;
-        panel.add(taskTextFiled, constraints);
+        panel.add(taskTitleField, constraints);
         panel.setPreferredSize(new Dimension(400,200));
 
         return panel;
@@ -52,7 +56,17 @@ public class CreateTaskDialog extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        HTTPUtils.createTask(productId, taskTextFiled.getText(), false, developerId);
+        Task task = new Task();
+
+        task.setProduct(product);
+        task.setDone(false);
+        task.setTitle(taskTitleField.getText());
+        task.create();
+
+        Session session = new Session();
+        session.setTask(task);
+        session.setDeveloper(developer);
+        session.createSessionForDeveloperLinking();
     }
 
     private JComponent label(String text) {

@@ -10,7 +10,21 @@ public class Session {
     private Task task;
 
 
-    public void createForNewProductLink() { //TODO: find a better name
+    public void start() {
+        HTTPRequest startSession = new HTTPRequest();
+        startSession.setUrl(States.URL);
+        startSession.setQuery("mutation sessionStart($developerId:Long!,$taskId:Long!)" +
+        "{sessionStart(session:{developer:{id:$developerId},task:{id:$taskId,done:false}}){id}}");
+        JSONObject variables = new JSONObject();
+        variables.put("developerId", developer.getId());
+        variables.put("taskId", task.getId());
+        startSession.setVariables(variables);
+        JSONObject response = new JSONObject(startSession.post().getString("body"));
+
+        this.id = response.getJSONObject("data").getJSONObject("sessionStart").getInt("id");
+    }
+
+    public void createSessionForDeveloperLinking() {
         HTTPRequest createSessionForProductLink = new HTTPRequest();
         createSessionForProductLink.setUrl(States.URL);
         createSessionForProductLink.setQuery("mutation sessionCreate($developerId:Long!,$taskId:Long!,$done:Boolean!)" +

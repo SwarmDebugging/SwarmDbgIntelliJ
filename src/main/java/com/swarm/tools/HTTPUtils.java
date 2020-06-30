@@ -21,40 +21,7 @@ public class HTTPUtils {
 
     private static final String URL = "http://localhost:8080/graphql";
 
-    public static int createTask(int productId, String taskTitle, boolean done, int developerId) {
-        HttpResponse<String> response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation {\\n  taskCreate(task:{title: \\\"" + taskTitle +
-                        "\\\", done:" + done +
-                        ", product:{id:" + productId +
-                        "}}){\\n    id\\n  }\\n}\"}")
-                .asString();
-
-        JSONObject jsonTask = new JSONObject(response.getBody()).getJSONObject("data");
-
-        if(jsonTask.isNull("taskCreate")) {
-            return -1;
-        }
-
-        int taskId =  jsonTask.getJSONObject("taskCreate").getInt("id");
-
-        response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation {\\n  sessionCreate(session:{developer:{id:" + developerId +
-                        "}, task:{id: " + taskId +
-                        ", done: true}}){ \\n    id\\n  }\\n}\"}")
-                .asString();
-
-        JSONObject jsonSession = new JSONObject(response.getBody()).getJSONObject("data");
-
-        if(jsonSession.isNull("sessionCreate")) {
-            return -1;
-        }
-
-        return taskId;
-    }
-
-    public static int sessionFinish(int sessionId) {
+        public static int sessionFinish(int sessionId) {
         Date date = new Date(System.currentTimeMillis());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("CET"));
@@ -76,7 +43,7 @@ public class HTTPUtils {
         return jsonSession.getJSONObject("sessionUpdate").getInt("id");
     }
 
-    public static int sessionStart(int developerId, int taskId) {
+    /*public static int sessionStart(int developerId, int taskId) {
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
                 .body("{\"query\":\"mutation($developerId: Long!, $taskId: Long!) {\\n  sessionStart(session:{developer:{id:$developerId}, task:{id: $taskId, done: false}}){ \\n" +
@@ -93,7 +60,7 @@ public class HTTPUtils {
 
         return jsonSession.getJSONObject("sessionStart").getInt("id");
 
-    }
+    }*/
 
     public static int taskDone(int taskId) {
         HttpResponse<String> response = Unirest.post(URL)

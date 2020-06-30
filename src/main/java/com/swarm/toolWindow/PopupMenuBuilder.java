@@ -6,6 +6,9 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.swarm.States;
 import com.swarm.models.Developer;
+import com.swarm.models.Product;
+import com.swarm.models.Session;
+import com.swarm.models.Task;
 import com.swarm.tools.HTTPUtils;
 
 import javax.swing.*;
@@ -22,8 +25,8 @@ public class PopupMenuBuilder {
     private Project project;
     private ToolWindow toolWindow;
     private Developer developer;
-    private int taskId;
-    private int productId;
+    private Task task;
+    private Product product;
 
     public PopupMenuBuilder(ToolWindow toolWindow, Project project, Developer developer) {
         this.project = project;
@@ -31,8 +34,8 @@ public class PopupMenuBuilder {
         this.developer = developer;
     }
 
-    public JPopupMenu buildProductNodePopupMenu(int productId) {
-        this.productId = productId;
+    public JPopupMenu buildProductNodePopupMenu(Product product) {
+        this.product = product;
         buildCreateNewTaskMenuItem();
         return buildProductPopupMenu();
     }
@@ -46,13 +49,13 @@ public class PopupMenuBuilder {
     private void buildCreateNewTaskMenuItem() {
         createNewTask = new JMenuItem("Create a new Task");
         createNewTask.addActionListener(actionEvent -> {
-            CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, productId, developer.getId());
+            CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product, developer);
             createTaskDialog.showAndGet();
         });
     }
 
-    public JPopupMenu buildTaskNodePopupMenu(int taskId) {
-        this.taskId = taskId;
+    public JPopupMenu buildTaskNodePopupMenu(Task task) {
+        this.task = task;
         buildMarkAsDoneMenuItem();
         buildNewSwarmSessionMenuItem();
         return buildTaskPopupMenu();
@@ -68,16 +71,19 @@ public class PopupMenuBuilder {
     private void buildNewSwarmSessionMenuItem() {
         newSwarmSession = new JMenuItem("Start a New Swarm Debugging Session");
         newSwarmSession.addActionListener(actionEvent -> {
-            int sessionId = HTTPUtils.sessionStart(developer.getId(), taskId);
-            States.currentSessionId = sessionId;
-            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(sessionId, toolWindow, project, developer));
+            Session session = new Session();
+            session.setTask(task);
+            session.setDeveloper(developer);
+            session.start();
+            States.currentSessionId = session.getId();
+            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(session.getId(), toolWindow, project, developer));
         });
     }
 
     private void buildMarkAsDoneMenuItem() {
         markAsDone = new JMenuItem("Mark As Done");
         markAsDone.addActionListener(actionEvent -> {
-            HTTPUtils.taskDone(taskId);
+            HTTPUtils.taskDone(task.getId());
         });
     }
 

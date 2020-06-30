@@ -47,7 +47,7 @@ public class Product {
         Session session = new Session();
         session.setDeveloper(developer);
         session.setTask(task);
-        session.createForNewProductLink();
+        session.createSessionForDeveloperLinking();
     }
 
 
