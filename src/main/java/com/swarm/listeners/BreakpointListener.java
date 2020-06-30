@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
 import com.swarm.States;
+import com.swarm.models.Type;
 import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,13 +61,19 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         typeFullName += typeName;
 
         //verification is made in the server for doubles
-        int typeId = HTTPUtils.createType(States.currentSession.getId(), typeFullName, typeName, typePath, sourceCode);
+        Type type = new Type();
+        type.setSession(States.currentSession);
+        type.setFullName(typeFullName);
+        type.setName(typeName);
+        type.setFullPath(typePath);
+        type.setSourceCode(sourceCode);
+        type.create();
 
         int lineNumber = breakpoint.getSourcePosition().getLine();
 
         PsiMethod method = findMethodByBreakpointAndFile(breakpoint, file);
         if(method == null) {
-            return typeId;
+            return type.getId();
         }
 
         String methodName = method.getName();
@@ -79,9 +86,9 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         PsiParameter[] parameters = method.getParameterList().getParameters();
         String methodSignature = encodeSignature(parameters, methodReturnType);
 
-        int methodId = HTTPUtils.createMethod(typeId, methodSignature, methodName);
+        int methodId = HTTPUtils.createMethod(type.getId(), methodSignature, methodName);
         HTTPUtils.createEvent(States.currentSession.getId(), lineNumber, eventKind, methodId);
-        return typeId;
+        return type.getId();
     }
 
     private PsiMethod findMethodByBreakpointAndFile(XBreakpoint breakpoint, PsiJavaFile file) {

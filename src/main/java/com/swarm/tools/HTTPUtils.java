@@ -7,6 +7,7 @@ import com.intellij.psi.PsiJavaFile;
 import com.swarm.States;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
+import com.swarm.models.Type;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONArray;
@@ -108,9 +109,15 @@ public class HTTPUtils {
 
         String sourceCode = file.getText();
         //maybe we could find the type instead of creating a new one?
-        int invokedTypeId = createType(States.currentSession.getId(), typeFullName[0], typeName, typePath, sourceCode);
+        Type invokedType = new Type();
+        invokedType.setSession(States.currentSession);
+        invokedType.setFullName(typeFullName[0]);
+        invokedType.setName(typeName);
+        invokedType.setFullPath(typePath);
+        invokedType.setSourceCode(sourceCode);
+        invokedType.create();
 
-        int invokedId = createMethod(invokedTypeId,invokedSignature, invokedName);
+        int invokedId = createMethod(invokedType.getId(),invokedSignature, invokedName);
 
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
@@ -141,18 +148,6 @@ public class HTTPUtils {
         JSONObject jsonObject = new JSONObject(response.getBody());
 
         return jsonObject.getJSONObject("data").getJSONObject("methodCreate").getInt("id");
-    }
-
-    public static int createType(int sessionId, String fullName, String name, String fullPath, String sourceCode) {
-        //to deal with special character in sourceCode
-        JSONObject body = createBodyJSONObjectForCreateType(sessionId, fullName, name, fullPath, sourceCode);
-        HttpResponse<String> response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body(body.toString())
-                .asString();
-
-        JSONObject jsonResponse = new JSONObject(response.getBody());
-        return jsonResponse.getJSONObject("data").getJSONObject("typeCreate").getInt("id");
     }
 
     private static JSONObject createBodyJSONObjectForCreateType(int sessionId, String fullName, String name, String fullPath, String sourceCode) {

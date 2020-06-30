@@ -42,7 +42,6 @@ public class TaskTests {
                 .withBody("{\"data\":{\"taskCreate\":{\"id\":2}}}"));
     }
 
-    //TODO: error when  running all tests
     @Test
     void createTaskTest() {
         sendTaskCreate();

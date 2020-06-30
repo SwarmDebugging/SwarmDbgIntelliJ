@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.xdebugger.impl.actions.*;
 import com.swarm.States;
+import com.swarm.models.Type;
 import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,8 +60,14 @@ public class DebugActionListener implements AnActionListener, DumbAware {
                     }
                 });
 
-                int typeId = HTTPUtils.createType(States.currentSession.getId(), typeFullName, typeName, typePath, sourceCode);
-                int methodId = HTTPUtils.createMethod(typeId, methodSignature[0], methodName[0]);
+        Type type = new Type();
+        type.setSession(States.currentSession);
+        type.setFullName(typeFullName);
+        type.setName(typeName);
+        type.setFullPath(typePath);
+        type.setSourceCode(sourceCode);
+        type.create();
+                int methodId = HTTPUtils.createMethod(type.getId(), methodSignature[0], methodName[0]);
                 HTTPUtils.createEvent(States.currentSession.getId(), lineNumber, eventName, methodId);
                 return methodId;
     }
