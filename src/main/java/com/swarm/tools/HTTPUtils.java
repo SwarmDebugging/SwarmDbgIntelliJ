@@ -78,22 +78,6 @@ public class HTTPUtils {
         return -1;
     }
 
-    public static int createEvent(int sessionId, int eventLineNumber, String eventKind, int methodId) {
-        HttpResponse<String> response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation eventCreate($sessionId: Long!, $eventLineNumber: Int!, $eventKind: String!, $methodId: Long!){\\n  eventCreate(event:{session:{id:$sessionId}," +
-                        "lineNumber:$eventLineNumber, kind:$eventKind, method:{id:$methodId}}){\\n    id\\n  }\\n}\\n\",\"variables\":{\"sessionId\":\"" + sessionId +
-                        "\",\"eventLineNumber\":" + eventLineNumber +
-                        ",\"eventKind\":\"" + eventKind +
-                        "\",\"methodId\":\"" + methodId +
-                        "\"},\"operationName\":\"eventCreate\"}")
-                .asString();
-
-        JSONObject jsonObject = new JSONObject(response.getBody());
-
-        return jsonObject.getJSONObject("data").getJSONObject("eventCreate").getInt("id");
-    }
-
     public static int createInvocation(int invokingId, String invokedName, String invokedSignature, int sessionId, Project project){
         var file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
         String typeName = file.getName();

@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.xdebugger.impl.actions.*;
 import com.swarm.States;
+import com.swarm.models.Event;
 import com.swarm.models.Method;
 import com.swarm.models.Type;
 import com.swarm.tools.HTTPUtils;
@@ -32,7 +33,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         this.project = project;
     }
 
-    private int handleEvent(String eventName) {
+    private int handleEvent(String eventKind) {
         DebuggerManagerEx debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
         var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
 
@@ -75,7 +76,13 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         method.setName(methodName[0]);
         method.create();
 
-        HTTPUtils.createEvent(States.currentSession.getId(), lineNumber, eventName, method.getId());
+        Event event = new Event();
+        event.setSession(States.currentSession);
+        event.setMethod(method);
+        event.setLineNumber(lineNumber);
+        event.setKind(eventKind);
+        event.create();
+
         return method.getId();
     }
 

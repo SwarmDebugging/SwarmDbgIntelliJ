@@ -11,6 +11,7 @@ import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
 import com.swarm.States;
 import com.swarm.models.Breakpoint;
+import com.swarm.models.Event;
 import com.swarm.models.Method;
 import com.swarm.models.Type;
 import com.swarm.tools.HTTPUtils;
@@ -98,7 +99,13 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         method.setName(methodName);
         method.create();
 
-        HTTPUtils.createEvent(States.currentSession.getId(), lineNumber, eventKind, method.getId());
+        Event event = new Event();
+        event.setKind(eventKind);
+        event.setLineNumber(lineNumber);
+        event.setSession(States.currentSession);
+        event.setMethod(method);
+        event.create();
+
         return type.getId();
     }
 
