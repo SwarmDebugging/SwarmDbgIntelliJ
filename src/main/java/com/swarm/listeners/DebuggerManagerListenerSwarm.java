@@ -10,6 +10,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.sun.jdi.Method;
 import com.swarm.States;
+import com.swarm.models.Invocation;
 import com.swarm.tools.HTTPUtils;
 
 import java.util.List;
@@ -57,7 +58,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
 
             if (isInvocation(currentStackFrames)) {
                 Method invoked = currentStackFrames.get(0).location().method();
-                HTTPUtils.createInvocation(DebugActionListener.invokingMethodId, invoked.name(), invoked.signature(), States.currentSession.getId(), project);
+                HTTPUtils.createInvocation(DebugActionListener.invokingMethod.getId(), invoked.name(), invoked.signature(), States.currentSession.getId(), project);
             }
         } catch (EvaluateException e) {
             e.printStackTrace();

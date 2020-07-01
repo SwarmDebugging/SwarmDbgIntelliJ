@@ -15,7 +15,6 @@ import com.swarm.States;
 import com.swarm.models.Event;
 import com.swarm.models.Method;
 import com.swarm.models.Type;
-import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.InputEvent;
@@ -27,7 +26,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
     Project project;
     private long lastEventTime = -1;
 
-    public static int invokingMethodId;
+    public static Method invokingMethod = new Method();
 
     public DebugActionListener(Project project) {
         this.project = project;
@@ -101,7 +100,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
             lastEventTime = input.getWhen();
         }
         if (action instanceof StepIntoAction || action instanceof ForceStepIntoAction) {
-            invokingMethodId = handleEvent("StepInto");
+            invokingMethod.setId(handleEvent("StepInto"));
             States.isSteppedInto = true;
         } else if (action instanceof StepOverAction || action instanceof ForceStepOverAction) {
             handleEvent("StepOver");

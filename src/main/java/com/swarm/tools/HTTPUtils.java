@@ -5,10 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.swarm.States;
-import com.swarm.models.Method;
-import com.swarm.models.Product;
-import com.swarm.models.Task;
-import com.swarm.models.Type;
+import com.swarm.models.*;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONArray;
@@ -108,18 +105,19 @@ public class HTTPUtils {
         invokedMethod.setSignature(invokedSignature);
         invokedMethod.create();
 
-        HttpResponse<String> response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation invocationCreate($sessionId: Long!, $invokingId: Long!, $invokedId: Long!){\\n  " +
-                        "invocationCreate(invocation:{session:{id:$sessionId}, invoking:{id:$invokingId},invoked:{id:$invokedId}," +
-                        "virtual:false}){\\nid\\n  }\\n}\\n\",\"variables\":{\"sessionId\":\"" + sessionId +
-                        "\",\"invokingId\":\"" + invokingId +
-                        "\",\"invokedId\":\"" + invokedMethod.getId() +
-                        "\"},\"operationName\":\"invocationCreate\"}")
-                .asString();
+        Invocation invocation = new Invocation();
+        Session session = new Session();
+        session.setId(sessionId);
+        invocation.setSession(session);
 
-        JSONObject jsonObject = new JSONObject(response.getBody());
+        invocation.setInvoked(invokedMethod);
 
-        return jsonObject.getJSONObject("data").getJSONObject("invocationCreate").getInt("id");
+        Method invokingMethod = new Method();
+        invokingMethod.setId(invokingId);
+        invocation.setInvoking(invokingMethod);
+
+        invocation.create();
+
+        return invocation.getId();
     }
 }
