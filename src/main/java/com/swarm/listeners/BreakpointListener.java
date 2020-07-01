@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
 import com.swarm.States;
+import com.swarm.models.Breakpoint;
 import com.swarm.models.Type;
 import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
@@ -26,20 +27,25 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
     public BreakpointListener(){};
 
     @Override
-    public void breakpointAdded(@NotNull XBreakpoint breakpoint) {
-        if(States.currentSession.getId() == -1) {
+    public void breakpointAdded(@NotNull XBreakpoint xBreakpoint) {
+        if(States.currentSession.getId() == 0) {
             return;
         }
-        if(breakpoint.getSourcePosition() == null) {
+        if(xBreakpoint.getSourcePosition() == null) {
             return;
         }
-        int typeId = handleBreakpointEvent("Breakpoint Added", breakpoint);
-        HTTPUtils.createBreakpoint(breakpoint.getSourcePosition().getLine(), typeId);
+        int typeId = handleBreakpointEvent("Breakpoint Added", xBreakpoint);
+        Breakpoint breakpoint = new Breakpoint();
+        Type type = new Type();
+        type.setId(typeId);
+        breakpoint.setType(type);
+        breakpoint.setLineNumber(xBreakpoint.getSourcePosition().getLine());
+        breakpoint.create();
     }
 
     @Override
     public void breakpointRemoved(@NotNull XBreakpoint<?> breakpoint) {
-        if(States.currentSession.getId() == -1) {
+        if(States.currentSession.getId() == 0) {
             return;
         }
         if(breakpoint.getSourcePosition() == null) {
@@ -60,7 +66,6 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         }
         typeFullName += typeName;
 
-        //verification is made in the server for doubles
         Type type = new Type();
         type.setSession(States.currentSession);
         type.setFullName(typeFullName);
@@ -117,9 +122,5 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         }
         result += ")" + returnType;
         return result;
-    }
-
-    private void setProject(Project project) {
-        this.project = project;
     }
 }

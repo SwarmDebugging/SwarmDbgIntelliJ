@@ -149,31 +149,4 @@ public class HTTPUtils {
 
         return jsonObject.getJSONObject("data").getJSONObject("methodCreate").getInt("id");
     }
-
-    private static JSONObject createBodyJSONObjectForCreateType(int sessionId, String fullName, String name, String fullPath, String sourceCode) {
-        JSONObject body = new JSONObject();
-        body.put("query", "mutation typeCreate($sessionId: Long!,$name: String!, $fullPath: String!, $fullName: String!, $source:String){" +
-                "  typeCreate(typeWrapper:{type:{session:{id:$sessionId},name:$name,fullPath:$fullPath,fullName:$fullName},source:$source}){    id  }}");
-        JSONObject variables = new JSONObject();
-        variables.put("sessionId", sessionId);
-        variables.put("name", name);
-        variables.put("fullPath", fullPath);
-        variables.put("fullName", fullName);
-        variables.put("source", sourceCode);
-        body.put("variables", variables);
-        return body;
-    }
-
-    public static int createBreakpoint(int lineNumber, int typeId) {
-        HttpResponse<String> response = Unirest.post("http://localhost:8080/graphql")
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation breakpointCreate($typeId: Long!, $lineNumber: Int!) {\\n  breakpointCreate(breakpoint:{type:{id:$typeId}, lineNumber:$lineNumber}) {\\n " +
-                        "   id\\n  }\\n}\",\"variables\":{\"typeId\":\"" + typeId +
-                        "\",\"lineNumber\":" + lineNumber +
-                        "},\"operationName\":\"breakpointCreate\"}")
-                .asString();
-
-        JSONObject jsonObject = new JSONObject((response.getBody()));
-        return jsonObject.getJSONObject("data").getJSONObject("breakpointCreate").getInt("id");
-    }
 }

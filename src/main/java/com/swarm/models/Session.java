@@ -21,6 +21,7 @@ public class Session {
         JSONObject response = new JSONObject(stopSession.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("sessionStop").getInt("id");
+        States.currentSession = new Session();
     }
 
     public void start() {
@@ -35,6 +36,7 @@ public class Session {
         JSONObject response = new JSONObject(startSession.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("sessionStart").getInt("id");
+        States.currentSession = this;
     }
 
     public void createSessionForDeveloperLinking() {
