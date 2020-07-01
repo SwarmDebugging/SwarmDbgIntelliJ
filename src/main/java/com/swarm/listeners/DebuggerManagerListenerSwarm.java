@@ -26,7 +26,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
     @Override
     public void sessionCreated(DebuggerSession session) {
         session.getContextManager().addListener((newContext, event) -> {
-            if(States.currentSession.getId() == -1) {
+            if(States.currentSession.getId() == 0) {
                 return;
             }
             assert newContext.getDebugProcess() != null;

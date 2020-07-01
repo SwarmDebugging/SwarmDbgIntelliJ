@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.xdebugger.impl.actions.*;
 import com.swarm.States;
+import com.swarm.models.Method;
 import com.swarm.models.Type;
 import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
@@ -32,33 +33,33 @@ public class DebugActionListener implements AnActionListener, DumbAware {
     }
 
     private int handleEvent(String eventName) {
-                DebuggerManagerEx debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
-                var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
+        DebuggerManagerEx debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
+        var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
 
-                String typeName = file.getName();
-                String typePath = file.getVirtualFile().getPath();
-                String sourceCode = file.getText();
-                String typeFullName;
-                if (!(typeFullName = file.getPackageName()).equals("")) {
-                    typeFullName += ".";
+        String typeName = file.getName();
+        String typePath = file.getVirtualFile().getPath();
+        String sourceCode = file.getText();
+        String typeFullName;
+        if (!(typeFullName = file.getPackageName()).equals("")) {
+            typeFullName += ".";
+        }
+        typeFullName += typeName;
+
+        int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
+        final String[] methodName = {""}; //is this the best way???
+        final String[] methodSignature = {""};
+        debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invoke(new DebuggerCommandImpl() {
+            @Override
+            protected void action() throws Exception {
+                try {
+                    //TODO: bug here
+                    methodName[0] = Objects.requireNonNull(debuggerManagerEx.getContext().getFrameProxy()).location().method().name();
+                    methodSignature[0] = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
+                } catch (EvaluateException e) {
+                    e.printStackTrace();
                 }
-                typeFullName += typeName;
-
-                int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
-                final String[] methodName = {""}; //is this the best way???
-                final String[] methodSignature = {""};
-                debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invoke(new DebuggerCommandImpl() {
-                    @Override
-                    protected void action() throws Exception {
-                        try {
-                            //TODO: bug here
-                            methodName[0] = Objects.requireNonNull(debuggerManagerEx.getContext().getFrameProxy()).location().method().name();
-                            methodSignature[0] = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
-                        } catch (EvaluateException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+            }
+        });
 
         Type type = new Type();
         type.setSession(States.currentSession);
@@ -67,27 +68,33 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         type.setFullPath(typePath);
         type.setSourceCode(sourceCode);
         type.create();
-                int methodId = HTTPUtils.createMethod(type.getId(), methodSignature[0], methodName[0]);
-                HTTPUtils.createEvent(States.currentSession.getId(), lineNumber, eventName, methodId);
-                return methodId;
+
+        Method method = new Method();
+        method.setType(type);
+        method.setSignature(methodSignature[0]);
+        method.setName(methodName[0]);
+        method.create();
+
+        HTTPUtils.createEvent(States.currentSession.getId(), lineNumber, eventName, method.getId());
+        return method.getId();
     }
 
     @Override
     public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
-        if(States.currentSession.getId() == -1) {
+        if (States.currentSession.getId() == 0) {
             return;
         }
         // The following is a hack to work around an issue with IDEA, where certain events arrive
         // twice. See https://youtrack.jetbrains.com/issue/IDEA-219133
         final InputEvent input = event.getInputEvent();
-        if(input instanceof MouseEvent) {
-            if(input.getWhen() != 0 && lastEventTime == input.getWhen()) {
+        if (input instanceof MouseEvent) {
+            if (input.getWhen() != 0 && lastEventTime == input.getWhen()) {
                 return;
             }
             lastEventTime = input.getWhen();
         }
         if (action instanceof StepIntoAction || action instanceof ForceStepIntoAction) {
-            invokingMethodId =  handleEvent("StepInto");
+            invokingMethodId = handleEvent("StepInto");
             States.isSteppedInto = true;
         } else if (action instanceof StepOverAction || action instanceof ForceStepOverAction) {
             handleEvent("StepOver");

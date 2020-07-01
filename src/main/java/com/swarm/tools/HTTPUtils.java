@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.swarm.States;
+import com.swarm.models.Method;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import com.swarm.models.Type;
@@ -117,7 +118,11 @@ public class HTTPUtils {
         invokedType.setSourceCode(sourceCode);
         invokedType.create();
 
-        int invokedId = createMethod(invokedType.getId(),invokedSignature, invokedName);
+        Method invokedMethod = new Method();
+        invokedMethod.setType(invokedType);
+        invokedMethod.setName(invokedName);
+        invokedMethod.setSignature(invokedSignature);
+        invokedMethod.create();
 
         HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
@@ -125,28 +130,12 @@ public class HTTPUtils {
                         "invocationCreate(invocation:{session:{id:$sessionId}, invoking:{id:$invokingId},invoked:{id:$invokedId}," +
                         "virtual:false}){\\nid\\n  }\\n}\\n\",\"variables\":{\"sessionId\":\"" + sessionId +
                         "\",\"invokingId\":\"" + invokingId +
-                        "\",\"invokedId\":\"" + invokedId +
+                        "\",\"invokedId\":\"" + invokedMethod.getId() +
                         "\"},\"operationName\":\"invocationCreate\"}")
                 .asString();
 
         JSONObject jsonObject = new JSONObject(response.getBody());
 
         return jsonObject.getJSONObject("data").getJSONObject("invocationCreate").getInt("id");
-    }
-
-    public static int createMethod(int typeId, String signature, String name) {
-
-        HttpResponse<String> response = Unirest.post(URL)
-                .header("content-type", "application/json")
-                .body("{\"query\":\"mutation methodCreate($typeId: Long!, $signature:String!, $name:String!){\\n  methodCreate(method:{type:{id:$typeId}, signature:$signature, name:$name}){\\n" +
-                        "    id\\n  }\\n}\\n\",\"variables\":{\"typeId\":\"" + typeId +
-                        "\",\"signature\":\"" + signature +
-                        "\",\"name\":\"" + name +
-                        "\"},\"operationName\":\"methodCreate\"}")
-                .asString();
-
-        JSONObject jsonObject = new JSONObject(response.getBody());
-
-        return jsonObject.getJSONObject("data").getJSONObject("methodCreate").getInt("id");
     }
 }
