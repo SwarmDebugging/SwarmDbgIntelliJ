@@ -6,14 +6,14 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import static com.swarm.States.URL;
 
 public class Developer {
 
     private int id;
     private String username;
-
-    public Developer(){};
 
     public void login() {
         HTTPRequest loginRequest = new HTTPRequest();

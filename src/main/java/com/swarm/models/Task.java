@@ -10,14 +10,6 @@ public class Task {
     private boolean done;
     private Product product;
 
-    public Task() {}
-
-    public Task(int id, String title, boolean done) {
-        this.id = id;
-        this.done = done;
-        this.title = title;
-    }
-
     public void create() {
         HTTPRequest createTaskRequest = new HTTPRequest();
         createTaskRequest.setUrl(States.URL);

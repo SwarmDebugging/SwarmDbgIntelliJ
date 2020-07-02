@@ -12,13 +12,6 @@ public class Product {
     private Developer developer;
     private final ArrayList<Task> tasks = new ArrayList<>();
 
-    public Product() {}
-
-    public Product(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
     //TODO: this needs to create a task too for association with developer
     public void create() {
         HTTPRequest createProductRequest = new HTTPRequest();

@@ -7,7 +7,6 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.swarm.models.Developer;
 import com.swarm.models.Product;
-import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

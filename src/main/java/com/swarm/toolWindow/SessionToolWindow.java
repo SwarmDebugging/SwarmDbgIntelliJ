@@ -8,7 +8,6 @@ import com.intellij.ui.content.ContentFactory;
 import com.swarm.States;
 import com.swarm.models.Developer;
 import com.swarm.models.Session;
-import com.swarm.tools.HTTPUtils;
 
 import javax.swing.*;
 

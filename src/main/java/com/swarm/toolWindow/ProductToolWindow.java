@@ -16,9 +16,11 @@ import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Session;
 import com.swarm.models.Task;
-import com.swarm.tools.HTTPUtils;
+import com.swarm.tools.HTTPRequest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -38,7 +40,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private PopupMenuBuilder popupMenuBuilder;
 
-    private ArrayList<Product> productArrayList;
+    private final ArrayList<Product> productList = new ArrayList<>();
     private ProductNode allProductsNode;
     private ProductTree allProductsTree;
 
@@ -72,19 +74,60 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         return JBUI.Panels.simplePanel(actionToolbar.getComponent());
     }
 
-            //TODO: rename
+    //TODO: rename
     private void buildProductTreeView() {
-        productArrayList = HTTPUtils.fetchProductsByDeveloperId(developer.getId());//TODO: allProducts
-        if (productArrayList != null) {
+        fetchProducts();
+        if (productList != null) {
             buildProductTree();
         } else {
             displayNoProductsMessage();
         }
     }
 
+    private void fetchProducts() {
+
+        HTTPRequest fetchTasks = new HTTPRequest();
+        fetchTasks.setUrl(States.URL);
+        fetchTasks.setQuery("{tasks{product{id,name},id,title,done}}");
+        JSONObject response = new JSONObject(fetchTasks.post().getString("body"));
+        JSONObject data = response.getJSONObject("data");
+
+        if (data.isNull("tasks")) {
+            return;
+        }
+
+        JSONArray tasks = data.getJSONArray("tasks");
+        for (int i = 0; i < tasks.length(); i++) {
+            JSONObject jsonTask = tasks.getJSONObject(i);
+            Task newTask = new Task();
+            newTask.setId(jsonTask.getInt("id"));
+            newTask.setTitle(jsonTask.getString("title"));
+            newTask.setDone(jsonTask.getBoolean("done"));
+            int index = productIsInArray(jsonTask.getJSONObject("product").getInt("id"));
+            if (index != -1) {
+                productList.get(index).addTask(newTask);
+            } else {
+                Product newProduct = new Product();
+                newProduct.setId(jsonTask.getJSONObject("product").getInt("id"));
+                newProduct.setName(jsonTask.getJSONObject("product").getString("name"));
+                newProduct.addTask(newTask);
+                productList.add(newProduct);
+            }
+        }
+    }
+
+    private int productIsInArray(int productId) {
+        for (int i = 0; i < productList.size(); i++) {
+            if (productList.get(i).getId() == productId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private void buildProductTree() {
         createAllProductsNode();
-        for (Product product : productArrayList) {
+        for (Product product : productList) {
             addProductToAllProductsNode(product);
         }
     }
@@ -202,7 +245,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private void addNewTaskToSelectedProduct() {
         ProductNode productNode = getSelectedProductFromTree();
-        if(productNode == null) {
+        if (productNode == null) {
             return;
         }
         Product product = new Product();
@@ -274,8 +317,8 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         return null;
     }
 
-    private class StartRecordingEventsAction extends DumbAwareAction{
-        StartRecordingEventsAction(){
+    private class StartRecordingEventsAction extends DumbAwareAction {
+        StartRecordingEventsAction() {
             super("Start Recording Events",
                     "Start recording breakpoint and debugging events in the selected task",
                     IconLoader.getIcon("/icons/startRecordingEvents.svg"));

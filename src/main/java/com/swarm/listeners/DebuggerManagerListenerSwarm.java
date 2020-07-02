@@ -1,24 +1,28 @@
 package com.swarm.listeners;
 
+import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.engine.evaluation.EvaluateException;
 import com.intellij.debugger.engine.events.DebuggerCommandImpl;
 import com.intellij.debugger.impl.DebuggerContextImpl;
 import com.intellij.debugger.impl.DebuggerManagerListener;
 import com.intellij.debugger.impl.DebuggerSession;
 import com.intellij.debugger.jdi.StackFrameProxyImpl;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiJavaFile;
 import com.sun.jdi.Method;
 import com.swarm.States;
 import com.swarm.models.Invocation;
-import com.swarm.tools.HTTPUtils;
+import com.swarm.models.Type;
 
 import java.util.List;
 
 
 public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, DumbAware {
 
-    Project project;
+    private final Project project;
+    private List<StackFrameProxyImpl> currentStackFrames;
 
     public DebuggerManagerListenerSwarm(Project project) {
         this.project = project;
@@ -54,11 +58,10 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         try {
             States.isSteppedInto = false;
             assert newContext.getThreadProxy() != null;
-            List<StackFrameProxyImpl> currentStackFrames = newContext.getThreadProxy().frames();
+            currentStackFrames = newContext.getThreadProxy().frames();
 
             if (isInvocation(currentStackFrames)) {
-                Method invoked = currentStackFrames.get(0).location().method();
-                HTTPUtils.createInvocation(DebugActionListener.invokingMethod.getId(), invoked.name(), invoked.signature(), States.currentSession.getId(), project);
+                makeInvocation();
             }
         } catch (EvaluateException e) {
             e.printStackTrace();
@@ -71,5 +74,35 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
             return false;
         } else
             return currentStackFrames.size() != States.lastStackFrames.size(); //Here if it's not the same frame count, it's an invocation
+    }
+    private void makeInvocation() throws EvaluateException {
+        Type invokedType = new Type();
+        PsiJavaFile file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
+        ApplicationManager.getApplication().runReadAction(() -> {
+            String fullName = file.getPackageName();
+            invokedType.setFullName(fullName);
+        });
+        if(!invokedType.getFullName().equals("")) {
+            invokedType.setFullName(invokedType.getFullName() + ".");
+        }
+        invokedType.setName(file.getName());
+        invokedType.setFullPath(file.getVirtualFile().getPath());
+        invokedType.setSession(States.currentSession);
+        invokedType.setSourceCode(file.getText());
+        invokedType.create();
+
+        Method invoked = currentStackFrames.get(0).location().method();
+        com.swarm.models.Method invokedSwarmMethod = new com.swarm.models.Method();
+        invokedSwarmMethod.setSignature(invoked.signature());
+        invokedSwarmMethod.setName(invoked.name());
+        invokedSwarmMethod.setType(invokedType);
+        invokedSwarmMethod.create();
+
+
+        Invocation invocation = new Invocation();
+        invocation.setInvoking(DebugActionListener.invokingMethod);
+        invocation.setInvoked(invokedSwarmMethod);
+        invocation.setSession(States.currentSession);
+        invocation.create();
     }
 }

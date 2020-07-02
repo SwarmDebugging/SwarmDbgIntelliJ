@@ -14,7 +14,6 @@ import com.swarm.models.Breakpoint;
 import com.swarm.models.Event;
 import com.swarm.models.Method;
 import com.swarm.models.Type;
-import com.swarm.tools.HTTPUtils;
 import org.jetbrains.annotations.NotNull;
 
 
