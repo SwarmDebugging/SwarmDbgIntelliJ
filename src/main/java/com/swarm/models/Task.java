@@ -33,6 +33,18 @@ public class Task {
         this.id = response.getJSONObject("data").getJSONObject("taskCreate").getInt("id");
     }
 
+    public void markAsDone() {
+        HTTPRequest markAsDoneRequest = new HTTPRequest();
+        markAsDoneRequest.setUrl(States.URL);
+        markAsDoneRequest.setQuery("mutation taskDone($taskId:Long!){taskDone(taskId:$taskId){done}}");
+        JSONObject variables = new JSONObject();
+        variables.put("taskId", this.id);
+        markAsDoneRequest.setVariables(variables);
+        JSONObject response = new JSONObject(markAsDoneRequest.post().getString("body"));
+
+        this.done = response.getJSONObject("data").getJSONObject("taskDone").getBoolean("done");
+    }
+
 
     public int getId() {
         return id;

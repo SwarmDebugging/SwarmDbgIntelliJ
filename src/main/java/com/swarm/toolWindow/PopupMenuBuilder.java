@@ -83,7 +83,7 @@ public class PopupMenuBuilder {
     private void buildMarkAsDoneMenuItem() {
         markAsDone = new JMenuItem("Mark As Done");
         markAsDone.addActionListener(actionEvent -> {
-            HTTPUtils.taskDone(task.getId());
+            task.markAsDone();
         });
     }
 

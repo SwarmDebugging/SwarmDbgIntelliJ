@@ -74,7 +74,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
             //TODO: rename
     private void buildProductTreeView() {
-        productArrayList = HTTPUtils.productsByDeveloperId(developer.getId());
+        productArrayList = HTTPUtils.fetchProductsByDeveloperId(developer.getId());//TODO: allProducts
         if (productArrayList != null) {
             buildProductTree();
         } else {
@@ -254,15 +254,13 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void markSelectedTaskAsDone() {
-        ProductNode task = getSelectedTaskFromTree();
-        if (task == null) {
+        ProductNode taskNode = getSelectedTaskFromTree();
+        if (taskNode == null) {
             return;
         }
-        markTaskAsDone(task.getId());
-    }
-
-    private void markTaskAsDone(int taskId) {
-        HTTPUtils.taskDone(taskId);
+        Task task = new Task();
+        task.setId(taskNode.getId());
+        task.markAsDone();
     }
 
     private ProductNode getSelectedTaskFromTree() {

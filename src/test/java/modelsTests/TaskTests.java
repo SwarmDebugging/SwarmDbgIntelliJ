@@ -11,6 +11,7 @@ import org.mockserver.junit.jupiter.MockServerSettings;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @ExtendWith(MockServerExtension.class)
@@ -23,6 +24,7 @@ public class TaskTests {
     public TaskTests(ClientAndServer client) {
         this.client = client;
         setupTaskCreationRequest();
+        setupTaskDoneRequest();
     }
 
     private void setupTaskCreationRequest() {
@@ -42,6 +44,20 @@ public class TaskTests {
                 .withBody("{\"data\":{\"taskCreate\":{\"id\":2}}}"));
     }
 
+    private void setupTaskDoneRequest() {
+        JSONObject body = new JSONObject();
+        body.put("query", "mutation taskDone($taskId:Long!){taskDone(taskId:$taskId){done}}");
+        JSONObject variables = new JSONObject();
+        variables.put("taskId", 1);
+        body.put("variables", variables);
+        client.when(HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/graphql")
+                .withBody(body.toString()))
+                .respond(HttpResponse.response()
+                        .withBody("{\"data\":{\"taskDone\":{\"done\":true}}}"));
+    }
+
     @Test
     void createTaskTest() {
         sendTaskCreate();
@@ -58,6 +74,20 @@ public class TaskTests {
 
         task.setProduct(product);
         task.create();
+    }
+
+    @Test
+    void markTaskAsDoneTest() {
+        sendTaskDone();
+
+        assertTrue(task.isDone());
+    }
+
+    private void sendTaskDone() {
+        task.setId(1);
+        task.setDone(false);
+
+        task.markAsDone();
     }
 
 
