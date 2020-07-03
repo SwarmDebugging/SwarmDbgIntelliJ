@@ -39,12 +39,11 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private final int RIGHT_CLICK = MouseEvent.BUTTON3;
 
+    private final ToolWindow toolWindow;
+    private final Project project;
+    private final Developer developer;
 
-    private ToolWindow toolWindow;
-    private Project project;
-    private Developer developer;
-
-    private PopupMenuBuilder popupMenuBuilder;
+    private final PopupMenuBuilder popupMenuBuilder;
 
     private final ArrayList<Product> productList = new ArrayList<>();
     private ProductTreeNode allProductsNode;
@@ -80,17 +79,17 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         return JBUI.Panels.simplePanel(actionToolbar.getComponent());
     }
 
-    //TODO: rename
     private void buildProductTreeView() {
         productList.clear();
         fetchProducts();
-        if (productList != null) {
+        if (!productList.isEmpty()) {
             buildProductTree();
         } else {
             displayNoProductsMessage();
         }
     }
 
+    //not very efficient todo:refractor so it's more readable
     private void fetchProducts() {
         HTTPRequest fetchTasks = new HTTPRequest();
         fetchTasks.setUrl(States.URL);
@@ -128,9 +127,9 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             JSONArray products = data.getJSONArray("allProducts");
             for (int i = 0; i < products.length(); i++) {
                 JSONObject jsonProduct = products.getJSONObject(i);
-                Boolean found = false;
-                for (int j = 0; j < productList.size(); j++) {
-                    if(productList.get(j).getId() == jsonProduct.getInt("id")) {
+                boolean found = false;
+                for (Product value : productList) {
+                    if (value.getId() == jsonProduct.getInt("id")) {
                         found = true;
                     }
                 }
@@ -167,7 +166,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         buildAllProductsTree(allProductsTreeModel);
     }
 
-    private ProductTree buildAllProductsTree(DefaultTreeModel allProductsTreeModel) {
+    private void buildAllProductsTree(DefaultTreeModel allProductsTreeModel) {
         allProductsTree = new ProductTree(allProductsTreeModel);
         allProductsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         allProductsTree.setCellRenderer(new ProductTreeRenderer());
@@ -203,7 +202,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             }
         });
 
-        return allProductsTree;
     }
 
     private void addProductToAllProductsNode(Product product) {
@@ -231,7 +229,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         }
     }
 
-    //TODO
+    //TODO: make this function
     private void displayNoProductsMessage() {
         String todo = "todo";
     }

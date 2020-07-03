@@ -25,9 +25,6 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
             boolean leaf,
             int row,
             boolean hasFocus) {
-        if (sel) {
-            tree.requestFocusInWindow();
-        }
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, true);
         this.node = (ProductTreeNode) value;
         buildTreeNodesAppearance();
