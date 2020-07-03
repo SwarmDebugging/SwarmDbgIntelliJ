@@ -55,13 +55,14 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         type.create();
 
         Method method = new Method();
-        debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invoke(new DebuggerCommandImpl() {
+        method.setType(type);
+        debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
             @Override
             protected void action() throws Exception {
                 try {
-                    //TODO: bug here
-                    String methodName = debuggerManagerEx.getContext().getFrameProxy().location().method().name();
-                    String methodSignature = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
+                    var frame = DebuggerManagerEx.getInstanceEx(project).getContext().getThreadProxy().frames().get(0);
+                    String methodName = frame.location().method().name();
+                    String methodSignature = frame.location().method().signature();
                     method.setName(methodName);
                     method.setSignature(methodSignature);
                 } catch (EvaluateException e) {
@@ -69,7 +70,6 @@ public class DebugActionListener implements AnActionListener, DumbAware {
                 }
             }
         });
-        method.setType(type);
         method.create();
 
         Event event = new Event();

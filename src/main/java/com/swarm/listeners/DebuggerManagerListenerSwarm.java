@@ -75,6 +75,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         } else
             return currentStackFrames.size() != States.lastStackFrames.size(); //Here if it's not the same frame count, it's an invocation
     }
+
     private void makeInvocation() throws EvaluateException {
         Type invokedType = new Type();
         PsiJavaFile file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
