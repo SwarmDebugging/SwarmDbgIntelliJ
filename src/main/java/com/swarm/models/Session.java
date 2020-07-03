@@ -1,7 +1,7 @@
 package com.swarm.models;
 
 import com.swarm.States;
-import com.swarm.tools.HTTPRequest;
+import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
 public class Session {
@@ -37,21 +37,6 @@ public class Session {
 
         this.id = response.getJSONObject("data").getJSONObject("sessionStart").getInt("id");
         States.currentSession = this;
-    }
-
-    public void createSessionForDeveloperLinking() {
-        HTTPRequest createSessionForProductLink = new HTTPRequest();
-        createSessionForProductLink.setUrl(States.URL);
-        createSessionForProductLink.setQuery("mutation sessionCreate($developerId:Long!,$taskId:Long!,$done:Boolean!)" +
-                "{sessionCreate(session:{developer:{id:$developerId},task:{id:$taskId,done:$done}}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("developerId", developer.getId());
-        variables.put("taskId", task.getId());
-        variables.put("done", task.isDone());
-        createSessionForProductLink.setVariables(variables);
-        JSONObject response = new JSONObject(createSessionForProductLink.post().getString("body"));
-
-        this.id = response.getJSONObject("data").getJSONObject("sessionCreate").getInt("id");
     }
 
     public int getId() {

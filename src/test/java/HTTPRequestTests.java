@@ -1,4 +1,4 @@
-import com.swarm.tools.HTTPRequest;
+import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;

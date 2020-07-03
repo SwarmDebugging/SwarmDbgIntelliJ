@@ -16,7 +16,13 @@ import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Session;
 import com.swarm.models.Task;
-import com.swarm.tools.HTTPRequest;
+import com.swarm.popupMenu.CreateProductDialog;
+import com.swarm.popupMenu.CreateTaskDialog;
+import com.swarm.popupMenu.PopupMenuBuilder;
+import com.swarm.utils.HTTPRequest;
+import com.swarm.tree.ProductTree;
+import com.swarm.tree.ProductTreeNode;
+import com.swarm.tree.ProductTreeRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
@@ -41,7 +47,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     private PopupMenuBuilder popupMenuBuilder;
 
     private final ArrayList<Product> productList = new ArrayList<>();
-    private ProductNode allProductsNode;
+    private ProductTreeNode allProductsNode;
     private ProductTree allProductsTree;
 
 
@@ -76,6 +82,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     //TODO: rename
     private void buildProductTreeView() {
+        productList.clear();
         fetchProducts();
         if (productList != null) {
             buildProductTree();
@@ -85,33 +92,54 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void fetchProducts() {
-
         HTTPRequest fetchTasks = new HTTPRequest();
         fetchTasks.setUrl(States.URL);
         fetchTasks.setQuery("{tasks{product{id,name},id,title,done}}");
         JSONObject response = new JSONObject(fetchTasks.post().getString("body"));
         JSONObject data = response.getJSONObject("data");
 
-        if (data.isNull("tasks")) {
-            return;
+        if (!data.isNull("tasks")) {
+            JSONArray tasks = data.getJSONArray("tasks");
+            for (int i = 0; i < tasks.length(); i++) {
+                JSONObject jsonTask = tasks.getJSONObject(i);
+                Task newTask = new Task();
+                newTask.setId(jsonTask.getInt("id"));
+                newTask.setTitle(jsonTask.getString("title"));
+                newTask.setDone(jsonTask.getBoolean("done"));
+                int index = productIsInArray(jsonTask.getJSONObject("product").getInt("id"));
+                if (index != -1) {
+                    productList.get(index).addTask(newTask);
+                } else {
+                    Product newProduct = new Product();
+                    newProduct.setId(jsonTask.getJSONObject("product").getInt("id"));
+                    newProduct.setName(jsonTask.getJSONObject("product").getString("name"));
+                    newProduct.addTask(newTask);
+                    productList.add(newProduct);
+                }
+            }
         }
 
-        JSONArray tasks = data.getJSONArray("tasks");
-        for (int i = 0; i < tasks.length(); i++) {
-            JSONObject jsonTask = tasks.getJSONObject(i);
-            Task newTask = new Task();
-            newTask.setId(jsonTask.getInt("id"));
-            newTask.setTitle(jsonTask.getString("title"));
-            newTask.setDone(jsonTask.getBoolean("done"));
-            int index = productIsInArray(jsonTask.getJSONObject("product").getInt("id"));
-            if (index != -1) {
-                productList.get(index).addTask(newTask);
-            } else {
-                Product newProduct = new Product();
-                newProduct.setId(jsonTask.getJSONObject("product").getInt("id"));
-                newProduct.setName(jsonTask.getJSONObject("product").getString("name"));
-                newProduct.addTask(newTask);
-                productList.add(newProduct);
+        HTTPRequest fetchAllProducts = new HTTPRequest();
+        fetchAllProducts.setUrl(States.URL);
+        fetchAllProducts.setQuery("{allProducts{id,name}}");
+        response = new JSONObject(fetchAllProducts.post().getString("body"));
+        data = response.getJSONObject("data");
+        if (!data.isNull("allProducts")) {
+            JSONArray products = data.getJSONArray("allProducts");
+            for (int i = 0; i < products.length(); i++) {
+                JSONObject jsonProduct = products.getJSONObject(i);
+                Boolean found = false;
+                for (int j = 0; j < productList.size(); j++) {
+                    if(productList.get(j).getId() == jsonProduct.getInt("id")) {
+                        found = true;
+                    }
+                }
+                if(!found) {
+                    Product product = new Product();
+                    product.setId(jsonProduct.getInt("id"));
+                    product.setName(jsonProduct.getString("name"));
+                    productList.add(product);
+                }
             }
         }
     }
@@ -133,7 +161,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void createAllProductsNode() {
-        allProductsNode = new ProductNode("Products", 0);
+        allProductsNode = new ProductTreeNode("Products", 0);
         DefaultTreeModel allProductsTreeModel = new DefaultTreeModel(allProductsNode);
         allProductsNode.setModel(allProductsTreeModel);
         buildAllProductsTree(allProductsTreeModel);
@@ -155,7 +183,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
                     tree.setSelectionRow(selRow);
                     tree.requestFocusInWindow();
 
-                    ProductNode node = (ProductNode) allProductsTree.getLastSelectedPathComponent();
+                    ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
                     if (node == null || node.isRoot()) {
                         return;
                     }
@@ -179,26 +207,26 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void addProductToAllProductsNode(Product product) {
-        ProductNode productNode = createProductNodeFromProduct(product);
-        addTasksToProductNode(product.getTasks(), productNode);
-        allProductsNode.add(productNode);
+        ProductTreeNode productTreeNode = createProductNodeFromProduct(product);
+        addTasksToProductNode(product.getTasks(), productTreeNode);
+        allProductsNode.add(productTreeNode);
     }
 
-    private ProductNode createProductNodeFromProduct(Product product) {
-        ProductNode productNode = new ProductNode(product.getName(), product.getId());
-        DefaultTreeModel newProductTreeModel = new DefaultTreeModel(productNode);
-        productNode.setModel(newProductTreeModel);
+    private ProductTreeNode createProductNodeFromProduct(Product product) {
+        ProductTreeNode productTreeNode = new ProductTreeNode(product.getName(), product.getId());
+        DefaultTreeModel newProductTreeModel = new DefaultTreeModel(productTreeNode);
+        productTreeNode.setModel(newProductTreeModel);
         ProductTree newProductTree = new ProductTree(newProductTreeModel);
         newProductTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         newProductTree.setCellRenderer(new ProductTreeRenderer());
-        return productNode;
+        return productTreeNode;
     }
 
-    private void addTasksToProductNode(ArrayList<Task> tasks, ProductNode productNode) {
+    private void addTasksToProductNode(ArrayList<Task> tasks, ProductTreeNode productTreeNode) {
         for (Task task : tasks) {
             if (!(task.isDone())) {
-                ProductNode taskNode = new ProductNode(task.getTitle(), task.getId());
-                productNode.add(taskNode);
+                ProductTreeNode taskNode = new ProductTreeNode(task.getTitle(), task.getId());
+                productTreeNode.add(taskNode);
             }
         }
     }
@@ -221,7 +249,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void addNewProduct() {
-        CreateProductDialog createProductDialog = new CreateProductDialog(project, developer);
+        CreateProductDialog createProductDialog = new CreateProductDialog(project);
         createProductDialog.showAndGet();
     }
 
@@ -244,18 +272,18 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void addNewTaskToSelectedProduct() {
-        ProductNode productNode = getSelectedProductFromTree();
-        if (productNode == null) {
+        ProductTreeNode productTreeNode = getSelectedProductFromTree();
+        if (productTreeNode == null) {
             return;
         }
         Product product = new Product();
-        product.setId(productNode.getId());
+        product.setId(productTreeNode.getId());
         CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product, developer);
         createTaskDialog.showAndGet();
     }
 
-    private ProductNode getSelectedProductFromTree() {
-        ProductNode node = (ProductNode) allProductsTree.getLastSelectedPathComponent();
+    private ProductTreeNode getSelectedProductFromTree() {
+        ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
         if (node == null || node.isRoot()) {
             return null;
         }
@@ -297,7 +325,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void markSelectedTaskAsDone() {
-        ProductNode taskNode = getSelectedTaskFromTree();
+        ProductTreeNode taskNode = getSelectedTaskFromTree();
         if (taskNode == null) {
             return;
         }
@@ -306,8 +334,8 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         task.markAsDone();
     }
 
-    private ProductNode getSelectedTaskFromTree() {
-        ProductNode node = (ProductNode) allProductsTree.getLastSelectedPathComponent();
+    private ProductTreeNode getSelectedTaskFromTree() {
+        ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
         if (node == null || node.isRoot()) {
             return null;
         }
@@ -338,7 +366,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private int createSwarmSession() {
-        ProductNode taskNode = getSelectedTaskFromTree();
+        ProductTreeNode taskNode = getSelectedTaskFromTree();
         if (taskNode == null) {
             return -1;
         }

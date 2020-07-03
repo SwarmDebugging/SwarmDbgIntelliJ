@@ -1,7 +1,7 @@
 package com.swarm.models;
 
 import com.swarm.States;
-import com.swarm.tools.HTTPRequest;
+import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 public class Product {
     private int id;
     private String name;
-    private Developer developer;
     private final ArrayList<Task> tasks = new ArrayList<>();
 
     //TODO: this needs to create a task too for association with developer
@@ -23,24 +22,6 @@ public class Product {
         JSONObject response = new JSONObject(createProductRequest.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("productCreate").getInt("id");
-
-        createTaskLinkingWithDeveloper();
-    }
-
-    private void createTaskLinkingWithDeveloper() {
-        Task task = new Task();
-        task.setProduct(this);
-        task.setDone(true);
-        task.setTitle("productCreation");
-        task.create();
-        createSessionLinkingWithTask(task);
-    }
-
-    private void createSessionLinkingWithTask(Task task) {
-        Session session = new Session();
-        session.setDeveloper(developer);
-        session.setTask(task);
-        session.createSessionForDeveloperLinking();
     }
 
 
@@ -66,9 +47,5 @@ public class Product {
 
     public void addTask(Task task) {
         this.tasks.add(task);
-    }
-
-    public void setDeveloper(Developer developer) {
-        this.developer = developer;
     }
 }

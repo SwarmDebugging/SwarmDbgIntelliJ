@@ -1,12 +1,7 @@
 package com.swarm.models;
 
-import com.swarm.States;
-import com.swarm.tools.HTTPRequest;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
+import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
 
 import static com.swarm.States.URL;
 

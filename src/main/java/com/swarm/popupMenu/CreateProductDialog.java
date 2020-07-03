@@ -1,4 +1,4 @@
-package com.swarm.toolWindow;
+package com.swarm.popupMenu;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -15,13 +15,11 @@ import java.awt.*;
 public class CreateProductDialog extends DialogWrapper {
 
     private final JPanel panel = new JPanel(new GridBagLayout());
-    private final Developer developer;
     private final JTextField productNameField = new JTextField();
 
-    public CreateProductDialog(@Nullable Project project, Developer developer) {
+    public CreateProductDialog(@Nullable Project project) {
         super(project);
         init();
-        this.developer = developer;
     }
 
     @Nullable
@@ -54,9 +52,7 @@ public class CreateProductDialog extends DialogWrapper {
         super.doOKAction();
         Product product = new Product();
         product.setName(productNameField.getText());
-        product.setDeveloper(developer);
         product.create();
-        //HTTPUtils.createProduct(productNameField.getText(), developerId);
     }
 
     private JComponent label(String text) {

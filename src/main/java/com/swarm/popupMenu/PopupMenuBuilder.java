@@ -1,4 +1,4 @@
-package com.swarm.toolWindow;
+package com.swarm.popupMenu;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -9,6 +9,7 @@ import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Session;
 import com.swarm.models.Task;
+import com.swarm.toolWindow.SessionToolWindow;
 
 import javax.swing.*;
 

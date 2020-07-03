@@ -1,7 +1,7 @@
 package com.swarm.models;
 
 import com.swarm.States;
-import com.swarm.tools.HTTPRequest;
+import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
 public class Method {

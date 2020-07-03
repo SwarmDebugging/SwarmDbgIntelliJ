@@ -1,4 +1,4 @@
-package com.swarm.toolWindow;
+package com.swarm.popupMenu;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -61,11 +61,6 @@ public class CreateTaskDialog extends DialogWrapper {
         task.setDone(false);
         task.setTitle(taskTitleField.getText());
         task.create();
-
-        Session session = new Session();
-        session.setTask(task);
-        session.setDeveloper(developer);
-        session.createSessionForDeveloperLinking();
     }
 
     private JComponent label(String text) {

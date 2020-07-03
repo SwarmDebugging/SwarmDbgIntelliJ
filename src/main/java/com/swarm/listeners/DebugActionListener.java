@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
-import java.util.Objects;
 
 public class DebugActionListener implements AnActionListener, DumbAware {
 
@@ -46,20 +45,6 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         typeFullName += typeName;
 
         int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
-        final String[] methodName = {""}; //is this the best way???
-        final String[] methodSignature = {""};
-        debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invoke(new DebuggerCommandImpl() {
-            @Override
-            protected void action() throws Exception {
-                try {
-                    //TODO: bug here
-                    methodName[0] = Objects.requireNonNull(debuggerManagerEx.getContext().getFrameProxy()).location().method().name();
-                    methodSignature[0] = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
-                } catch (EvaluateException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
         Type type = new Type();
         type.setSession(States.currentSession);
@@ -70,9 +55,21 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         type.create();
 
         Method method = new Method();
+        debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invoke(new DebuggerCommandImpl() {
+            @Override
+            protected void action() throws Exception {
+                try {
+                    //TODO: bug here
+                    String methodName = debuggerManagerEx.getContext().getFrameProxy().location().method().name();
+                    String methodSignature = debuggerManagerEx.getContext().getFrameProxy().location().method().signature();
+                    method.setName(methodName);
+                    method.setSignature(methodSignature);
+                } catch (EvaluateException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         method.setType(type);
-        method.setSignature(methodSignature[0]);
-        method.setName(methodName[0]);
         method.create();
 
         Event event = new Event();

@@ -1,4 +1,4 @@
-package com.swarm.toolWindow;
+package com.swarm.tree;
 
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;

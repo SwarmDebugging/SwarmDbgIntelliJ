@@ -25,7 +25,6 @@ public class SessionTests {
         this.client = client;
         setupSessionStartRequest();
         setupSessionStopRequest();
-        setupSessionCreationForProductCreationRequest();
     }
 
     private void setupSessionStartRequest() {
@@ -59,23 +58,6 @@ public class SessionTests {
                         .withBody("{\"data\":{\"sessionStop\":{\"id\":2}}}"));
     }
 
-    private void setupSessionCreationForProductCreationRequest() {
-        JSONObject body = new JSONObject();
-        body.put("query", "mutation sessionCreate($developerId:Long!,$taskId:Long!,$done:Boolean!)" +
-                "{sessionCreate(session:{developer:{id:$developerId},task:{id:$taskId,done:$done}}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("developerId", 1);
-        variables.put("taskId", 2);
-        variables.put("done", true);
-        body.put("variables", variables);
-        client.when(HttpRequest.request()
-        .withMethod("POST")
-        .withPath("/graphql")
-        .withBody(body.toString()))
-                .respond(HttpResponse.response()
-                .withBody("{\"data\":{\"sessionCreate\":{\"id\":3}}}"));
-    }
-
     @Test
     void startSessionTest() {
         sendStartSession();
@@ -106,26 +88,4 @@ public class SessionTests {
         session.setId(1);
         session.stop();
     }
-
-    @Test
-    void createSessionForProductCreation() {
-        sendSessionCreate();
-
-        assertEquals(3, session.getId());
-    }
-
-    private void sendSessionCreate() {
-        Developer developer = new Developer();
-        developer.setId(1);
-
-        Task task = new Task();
-        task.setId(2);
-        task.setDone(true);
-
-        session.setDeveloper(developer);
-        session.setTask(task);
-
-        session.createSessionForDeveloperLinking();
-    }
-
 }

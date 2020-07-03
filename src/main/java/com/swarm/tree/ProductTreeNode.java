@@ -1,11 +1,11 @@
-package com.swarm.toolWindow;
+package com.swarm.tree;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-public class ProductNode extends DefaultMutableTreeNode {
+public class ProductTreeNode extends DefaultMutableTreeNode {
 
     protected DefaultTreeModel model;
 
@@ -13,7 +13,7 @@ public class ProductNode extends DefaultMutableTreeNode {
     private String title;
     private String toolTip;
 
-    public ProductNode(String nodeTitle, int id) {
+    public ProductTreeNode(String nodeTitle, int id) {
         super(nodeTitle);
         this.model = null;
         this.id = id;
@@ -33,20 +33,8 @@ public class ProductNode extends DefaultMutableTreeNode {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getToolTip() {
         return toolTip;
-    }
-
-    public void setToolTip(String toolTip) {
-        this.toolTip = toolTip;
     }
 
     public void add(MutableTreeNode node) {
@@ -56,7 +44,7 @@ public class ProductNode extends DefaultMutableTreeNode {
 
     protected void nodeWasAdded(TreeNode node, int index) {
         if(model == null) {
-            ((ProductNode)node.getParent()).nodeWasAdded(node, index);
+            ((ProductTreeNode)node.getParent()).nodeWasAdded(node, index);
         }
         else {
             int[] childIndices = new int[1];

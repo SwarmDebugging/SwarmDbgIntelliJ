@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DeveloperTests {
 
     private final ClientAndServer client;
-    //TODO: check if reset between tests
     private final Developer developer = new Developer();
 
     public DeveloperTests(ClientAndServer client) {

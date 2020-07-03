@@ -1,4 +1,4 @@
-package com.swarm.toolWindow;
+package com.swarm.tree;
 
 import com.intellij.openapi.util.IconLoader;
 
@@ -12,7 +12,7 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
     Icon productIcon = IconLoader.getIcon("/icons/product.svg");
     Icon productsIcon = IconLoader.getIcon("/icons/ant.svg");
 
-    ProductNode node;
+    ProductTreeNode node;
 
     public ProductTreeRenderer() {
     }
@@ -29,7 +29,7 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
             tree.requestFocusInWindow();
         }
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, true);
-        this.node = (ProductNode) value;
+        this.node = (ProductTreeNode) value;
         buildTreeNodesAppearance();
 
         if (node.getParent() == null) {
