@@ -16,15 +16,13 @@ public class RegisterToolWindow implements DumbAware {
     private JPanel registerWindowContent;
     private JPanel registerContent;
     private JButton registerButton;
-    private JTextField usernameTextfield;
+    private JTextField usernameTextField;
     private JLabel back;
 
-    private ToolWindow toolWindow;
-    private Project project;
+    private final ToolWindow toolWindow;
 
     public RegisterToolWindow(ToolWindow toolWindow, Project project) {
 
-        this.project = project;
         this.toolWindow = toolWindow;
 
        back.setIcon(IconLoader.getIcon("/icons/back.svg"));
@@ -37,10 +35,10 @@ public class RegisterToolWindow implements DumbAware {
         });
         registerButton.addActionListener(actionEvent -> {
             Developer developer = new Developer();
-            developer.setUsername(usernameTextfield.getText());
+            developer.setUsername(usernameTextField.getText());
             developer.registerNewDeveloper();
             if(developer.getId() == -1) {
-                //show wrong username notification
+                //TODO: show wrong username notification
             } else {
                 switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer));
             }

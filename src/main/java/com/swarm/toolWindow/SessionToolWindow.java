@@ -15,13 +15,11 @@ public class SessionToolWindow implements DumbAware {
     private JPanel sessionWindowContent;
     private JButton stopSessionButton;
 
-    private ToolWindow toolWindow;
-    private Project project;
+    private final ToolWindow toolWindow;
 
     public SessionToolWindow(Session currentSession, ToolWindow toolWindow, Project project, Developer developer) {
 
         this.toolWindow = toolWindow;
-        this.project = project;
 
         stopSessionButton.addActionListener(actionEvent -> {
             currentSession.stop();

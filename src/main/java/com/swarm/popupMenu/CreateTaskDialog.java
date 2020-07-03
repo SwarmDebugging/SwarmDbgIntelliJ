@@ -7,7 +7,6 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.swarm.models.Developer;
 import com.swarm.models.Product;
-import com.swarm.models.Session;
 import com.swarm.models.Task;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,8 +17,8 @@ public class CreateTaskDialog extends DialogWrapper {
 
     private final JPanel panel = new JPanel(new GridBagLayout());
     private final Product product;
-    private final JTextField taskTitleField = new JTextField();
     private final Developer developer;
+    private final JTextField taskTitleField = new JTextField();
 
     public CreateTaskDialog(@Nullable Project project, Product product, Developer developer) {
         super(project);
@@ -33,7 +32,7 @@ public class CreateTaskDialog extends DialogWrapper {
     protected JComponent createCenterPanel() {
         setTitle("Create a New Task");
         GridBagConstraints constraints = createGridBagConstraints();
-        panel.add(label("Task Name: "), constraints);
+        panel.add(taskNameLabel(), constraints);
         constraints.gridx = 1;
         panel.add(taskTitleField, constraints);
         panel.setPreferredSize(new Dimension(400,200));
@@ -63,8 +62,8 @@ public class CreateTaskDialog extends DialogWrapper {
         task.create();
     }
 
-    private JComponent label(String text) {
-        JBLabel label = new JBLabel(text);
+    private JComponent taskNameLabel() {
+        JBLabel label = new JBLabel("Task Name: ");
         label.setComponentStyle(UIUtil.ComponentStyle.SMALL);
         label.setFontColor(UIUtil.FontColor.BRIGHTER);
         label.setBorder(JBUI.Borders.empty(0,5,2,0));

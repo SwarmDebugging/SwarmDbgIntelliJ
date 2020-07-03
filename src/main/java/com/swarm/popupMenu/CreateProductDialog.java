@@ -5,7 +5,6 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +27,7 @@ public class CreateProductDialog extends DialogWrapper {
 
         setTitle("Create a New Product");
         GridBagConstraints constraints = createGridBagConstraints();
-        panel.add(label("Product Name: "), constraints);
+        panel.add(productCreationLabel(), constraints);
         constraints.gridx = 1;
         panel.add(productNameField, constraints);
         panel.setPreferredSize(new Dimension(400,200));
@@ -55,8 +54,8 @@ public class CreateProductDialog extends DialogWrapper {
         product.create();
     }
 
-    private JComponent label(String text) {
-        JBLabel label = new JBLabel(text);
+    private JComponent productCreationLabel() {
+        JBLabel label = new JBLabel("Product Name: ");
         label.setComponentStyle(UIUtil.ComponentStyle.SMALL);
         label.setFontColor(UIUtil.FontColor.BRIGHTER);
         label.setBorder(JBUI.Borders.empty(0,5,2,0));

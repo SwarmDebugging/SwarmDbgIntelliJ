@@ -15,24 +15,21 @@ public class LoginToolWindow implements DumbAware {
     private JPanel loginContent;
     private JButton loginButton;
     private JButton signUpButton;
-    private JTextField usernameTextfield;
+    private JTextField usernameTextField;
 
-    private ToolWindow toolWindow;
-    private Project project;
+    private final ToolWindow toolWindow;
 
     public LoginToolWindow(ToolWindow toolWindow, Project project){
 
         this.toolWindow = toolWindow;
-        this.project = project;
 
         signUpButton.addActionListener(actionEvent -> {
             switchToolWindowContentToRegisterToolWindow(new RegisterToolWindow(toolWindow, project));
         });
         loginButton.addActionListener(actionEvent -> {
             Developer developer = new Developer();
-            developer.setUsername(usernameTextfield.getText());
+            developer.setUsername(usernameTextField.getText());
             developer.login();
-           // int developerId = HTTPUtils.login(usernameTextfield.getText());
             switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer));
         });
     }

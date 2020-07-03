@@ -43,8 +43,8 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
 
     private void buildTreeNodesAppearance() {
         setToolTipText(node.getToolTip() + " (Right click for more options)");
-        setBorderSelectionColor((Color) null);
-        setBackgroundNonSelectionColor((Color) null);
-        setBackground((Color) null);
+        setBorderSelectionColor(null);
+        setBackgroundNonSelectionColor(null);
+        setBackground(null);
     }
 }

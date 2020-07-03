@@ -22,9 +22,9 @@ public class PopupMenuBuilder {
     JMenuItem newSwarmSession;
     JPopupMenu taskPopupMenu;
 
-    private Project project;
-    private ToolWindow toolWindow;
-    private Developer developer;
+    private final Project project;
+    private final ToolWindow toolWindow;
+    private final Developer developer;
     private Task task;
     private Product product;
 
@@ -82,9 +82,7 @@ public class PopupMenuBuilder {
 
     private void buildMarkAsDoneMenuItem() {
         markAsDone = new JMenuItem("Mark As Done");
-        markAsDone.addActionListener(actionEvent -> {
-            task.markAsDone();
-        });
+        markAsDone.addActionListener(actionEvent -> task.markAsDone());
     }
 
     private void switchToolWindowContentToSessionToolWindow(SessionToolWindow sessionToolWindow) {

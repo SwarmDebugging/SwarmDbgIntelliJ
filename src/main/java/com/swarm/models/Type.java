@@ -61,16 +61,8 @@ public class Type {
         this.name = name;
     }
 
-    public String getFullPath() {
-        return fullPath;
-    }
-
     public void setFullPath(String fullPath) {
         this.fullPath = fullPath;
-    }
-
-    public String getSourceCode() {
-        return sourceCode;
     }
 
     public void setSourceCode(String sourceCode) {

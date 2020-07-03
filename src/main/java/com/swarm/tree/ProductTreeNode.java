@@ -10,14 +10,12 @@ public class ProductTreeNode extends DefaultMutableTreeNode {
     protected DefaultTreeModel model;
 
     private int id;
-    private String title;
-    private String toolTip;
+    private final String toolTip;
 
     public ProductTreeNode(String nodeTitle, int id) {
         super(nodeTitle);
         this.model = null;
         this.id = id;
-        this.title = nodeTitle;
         this.toolTip = nodeTitle;
     }
 

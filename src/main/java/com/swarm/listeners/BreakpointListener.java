@@ -19,13 +19,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, DumbAware {
 
-    private Project project;
+    private final Project project;
 
     public BreakpointListener(Project project) {
         this.project = project;
     }
-
-    public BreakpointListener(){};
 
     @Override
     public void breakpointAdded(@NotNull XBreakpoint xBreakpoint) {
