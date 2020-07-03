@@ -9,15 +9,14 @@ public class HTTPRequest {
 
     private String url;
     private String query;
-    private JSONObject variables; //TODO:this should have an add variable function so that higher call don't manipulate low-level json objexts
+    private final JSONObject variables = new JSONObject(); //TODO:this should have an add variable function so that higher call don't manipulate low-level json objexts
 
     public JSONObject post() {
         JSONObject body = new JSONObject();
         body.put("query",query);
-        if(variables != null) {
+        if(!variables.isEmpty()) {
             body.put("variables", variables);
         }
-        String bodyString = body.toString(); //TODO: remove after debugging
         HttpResponse<String> response = Unirest.post(url)
                 .header("content-type", "application/json")
                 .body(body.toString())
@@ -34,7 +33,15 @@ public class HTTPRequest {
         this.query = query;
     }
 
-    public void setVariables(JSONObject variables) {
-        this.variables = variables;
+    public void addVariable(String name, String value) {
+        variables.put(name, value);
+    }
+
+    public void addVariable(String name, Boolean value) {
+        variables.put(name, value);
+    }
+
+    public void addVariable(String name, int value) {
+        variables.put(name, value);
     }
 }

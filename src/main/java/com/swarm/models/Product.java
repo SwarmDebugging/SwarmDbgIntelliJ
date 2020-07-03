@@ -11,14 +11,11 @@ public class Product {
     private String name;
     private final ArrayList<Task> tasks = new ArrayList<>();
 
-    //TODO: this needs to create a task too for association with developer
     public void create() {
         HTTPRequest createProductRequest = new HTTPRequest();
         createProductRequest.setUrl(States.URL);
         createProductRequest.setQuery("mutation productCreate($name: String!){productCreate(product:{name:$name}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("name", name);
-        createProductRequest.setVariables(variables);
+        createProductRequest.addVariable("name", name);
         JSONObject response = new JSONObject(createProductRequest.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("productCreate").getInt("id");

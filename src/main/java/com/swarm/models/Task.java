@@ -15,11 +15,9 @@ public class Task {
         createTaskRequest.setUrl(States.URL);
         createTaskRequest.setQuery("mutation taskCreate($title:String!,$done:Boolean!,$productId:Long!)" +
                 "{taskCreate(task:{title:$title,done:$done,product:{id:$productId}}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("title", title);
-        variables.put("done", done);
-        variables.put("productId", product.getId());
-        createTaskRequest.setVariables(variables);
+        createTaskRequest.addVariable("title", title);
+        createTaskRequest.addVariable("done", done);
+        createTaskRequest.addVariable("productId", product.getId());
         JSONObject response = new JSONObject(createTaskRequest.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("taskCreate").getInt("id");
@@ -29,9 +27,7 @@ public class Task {
         HTTPRequest markAsDoneRequest = new HTTPRequest();
         markAsDoneRequest.setUrl(States.URL);
         markAsDoneRequest.setQuery("mutation taskDone($taskId:Long!){taskDone(taskId:$taskId){done}}");
-        JSONObject variables = new JSONObject();
-        variables.put("taskId", this.id);
-        markAsDoneRequest.setVariables(variables);
+        markAsDoneRequest.addVariable("taskId", this.id);
         JSONObject response = new JSONObject(markAsDoneRequest.post().getString("body"));
 
         this.done = response.getJSONObject("data").getJSONObject("taskDone").getBoolean("done");

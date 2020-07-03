@@ -14,10 +14,8 @@ public class Breakpoint {
         createBreakpointRequest.setUrl(States.URL);
         createBreakpointRequest.setQuery("mutation breakpointCreate($typeId:Long!,$lineNumber:Int!)" +
                 "{breakpointCreate(breakpoint:{type:{id:$typeId},lineNumber:$lineNumber}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("typeId", type.getId());
-        variables.put("lineNumber", lineNumber);
-        createBreakpointRequest.setVariables(variables);
+        createBreakpointRequest.addVariable("typeId", type.getId());
+        createBreakpointRequest.addVariable("lineNumber", lineNumber);
         JSONObject response = new JSONObject(createBreakpointRequest.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("breakpointCreate").getInt("id");

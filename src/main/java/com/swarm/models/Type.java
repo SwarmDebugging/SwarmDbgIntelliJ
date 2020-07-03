@@ -10,7 +10,7 @@ public class Type {
     private String fullName;
     private String name;
     private String fullPath;
-    String sourceCode;
+    private String sourceCode;
 
     public Type(){}
 
@@ -19,13 +19,11 @@ public class Type {
         createTypeRequest.setUrl(States.URL);
         createTypeRequest.setQuery("mutation typeCreate($sessionId:Long!,$name:String!,$fullPath:String!,$fullName:String!,$source:String){" +
                 "typeCreate(typeWrapper:{type:{session:{id:$sessionId},name:$name,fullPath:$fullPath,fullName:$fullName},source:$source}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("sessionId", session.getId());
-        variables.put("name", name);
-        variables.put("fullPath", fullPath);
-        variables.put("fullName", fullName);
-        variables.put("source", sourceCode);
-        createTypeRequest.setVariables(variables);
+        createTypeRequest.addVariable("sessionId", session.getId());
+        createTypeRequest.addVariable("name", name);
+        createTypeRequest.addVariable("fullPath", fullPath);
+        createTypeRequest.addVariable("fullName", fullName);
+        createTypeRequest.addVariable("source", sourceCode);
         JSONObject response = new JSONObject(createTypeRequest.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("typeCreate").getInt("id");

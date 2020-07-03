@@ -15,11 +15,9 @@ public class Method {
         createMethodRequest.setUrl(States.URL);
         createMethodRequest.setQuery("mutation methodCreate($typeId:Long!,$signature:String!,$name:String!)" +
                 "{methodCreate(method:{type:{id:$typeId},signature:$signature,name:$name}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("typeId", type.getId());
-        variables.put("name", name);
-        variables.put("signature", signature);
-        createMethodRequest.setVariables(variables);
+        createMethodRequest.addVariable("typeId", type.getId());
+        createMethodRequest.addVariable("name", name);
+        createMethodRequest.addVariable("signature", signature);
         JSONObject response = new JSONObject(createMethodRequest.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("methodCreate").getInt("id");

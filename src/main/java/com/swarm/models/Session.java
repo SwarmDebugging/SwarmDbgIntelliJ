@@ -15,9 +15,7 @@ public class Session {
         stopSession.setUrl(States.URL);
         stopSession.setQuery("mutation sessionStop($sessionId:Long!)" +
                 "{sessionStop(id:$sessionId){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("sessionId", id);
-        stopSession.setVariables(variables);
+        stopSession.addVariable("sessionId", id);
         JSONObject response = new JSONObject(stopSession.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("sessionStop").getInt("id");
@@ -29,10 +27,8 @@ public class Session {
         startSession.setUrl(States.URL);
         startSession.setQuery("mutation sessionStart($developerId:Long!,$taskId:Long!)" +
         "{sessionStart(session:{developer:{id:$developerId},task:{id:$taskId,done:false}}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("developerId", developer.getId());
-        variables.put("taskId", task.getId());
-        startSession.setVariables(variables);
+        startSession.addVariable("developerId", developer.getId());
+        startSession.addVariable("taskId", task.getId());
         JSONObject response = new JSONObject(startSession.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("sessionStart").getInt("id");

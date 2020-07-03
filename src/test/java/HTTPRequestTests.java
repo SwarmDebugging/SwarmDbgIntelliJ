@@ -18,7 +18,12 @@ public class HTTPRequestTests {
 
     public HTTPRequestTests(ClientAndServer client) {
         this.client = client;
-        this.client.when(HttpRequest.request()
+        setupSimplePostRequest();
+        setupPostRequestWithVariables();
+    }
+
+    private void setupSimplePostRequest() {
+        client.when(HttpRequest.request()
                 .withMethod("POST")
                 .withPath("/test")
                 .withBody("{\"query\":\"test\"}"))
@@ -28,9 +33,19 @@ public class HTTPRequestTests {
                 );
     }
 
+    private void setupPostRequestWithVariables() {
+        client.when(HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/test")
+                .withBody("{\"variables\":{\"test\":123},\"query\":\"test\"}"))
+                .respond(
+                        HttpResponse.response()
+                                .withBody("test successful")
+                );
+    }
+
     @Test
     void simpleUnirestPostTest() {
-
         sendPostRequest();
 
         assertEquals("test successful", getResponseBody());
@@ -40,6 +55,21 @@ public class HTTPRequestTests {
         HTTPRequest httpRequest = new HTTPRequest();
         httpRequest.setUrl("http://localhost:" + client.getLocalPort() + "/test");
         httpRequest.setQuery("test");
+        response = httpRequest.post();
+    }
+
+    @Test
+    void simpleVariablesRequestTest() {
+        sendPostRequestWithVariables();
+
+        assertEquals("test successful", getResponseBody());
+    }
+
+    private void sendPostRequestWithVariables() {
+        HTTPRequest httpRequest = new HTTPRequest();
+        httpRequest.setUrl("http://localhost:" + client.getLocalPort() + "/test");
+        httpRequest.setQuery("test");
+        httpRequest.addVariable("test", 123);
         response = httpRequest.post();
     }
 

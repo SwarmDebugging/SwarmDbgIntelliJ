@@ -20,13 +20,12 @@ public class Developer {
         this.id = response.getJSONObject("data").getJSONObject("developer").getInt("id");
     }
 
+    //handle develpoer already exist exception
    public void registerNewDeveloper() {
         HTTPRequest registerRequest = new HTTPRequest();
         registerRequest.setUrl(URL);
         registerRequest.setQuery("mutation developerCreate($username: String!){developerCreate(developer:{username:$username}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("username", username);
-        registerRequest.setVariables(variables);
+        registerRequest.addVariable("username", username);
         JSONObject response = new JSONObject(registerRequest.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("developerCreate").getInt("id");

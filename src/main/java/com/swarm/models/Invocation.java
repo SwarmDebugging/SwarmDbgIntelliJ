@@ -15,11 +15,9 @@ public class Invocation {
         createInvocationRequest.setUrl(States.URL);
         createInvocationRequest.setQuery("mutation invocationCreate($sessionId:Long!,$invokingId:Long!,$invokedId:Long!)" +
                 "{invocationCreate(invocation:{session:{id:$sessionId},invoking:{id:$invokingId},invoked:{id:$invokedId},virtual:false}){id}}");
-        JSONObject variables = new JSONObject();
-        variables.put("sessionId", session.getId());
-        variables.put("invokingId", invoking.getId());
-        variables.put("invokedId", invoked.getId());
-        createInvocationRequest.setVariables(variables);
+        createInvocationRequest.addVariable("sessionId", session.getId());
+        createInvocationRequest.addVariable("invokingId", invoking.getId());
+        createInvocationRequest.addVariable("invokedId", invoked.getId());
         JSONObject response = new JSONObject(createInvocationRequest.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("invocationCreate").getInt("id");
