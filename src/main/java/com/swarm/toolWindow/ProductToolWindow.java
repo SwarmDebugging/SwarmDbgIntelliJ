@@ -19,6 +19,7 @@ import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Session;
 import com.swarm.models.Task;
+import com.swarm.mouseAdapters.rightClickPopupMenuMouseAdapter;
 import com.swarm.popupMenu.CreateProductDialog;
 import com.swarm.popupMenu.CreateTaskDialog;
 import com.swarm.popupMenu.PopupMenuBuilder;
@@ -34,13 +35,9 @@ import org.json.JSONObject;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAware {
-
-    private final int RIGHT_CLICK = MouseEvent.BUTTON3;
 
     private final ToolWindow toolWindow;
     private final Project project;
@@ -143,14 +140,14 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void addRemainingProducts() {
-        JSONObject data = fetchProducts();
+        JSONObject data = fetchAllProducts();
         if (!data.isNull("allProducts")) {
             JSONArray products = data.getJSONArray("allProducts");
             buildRemainingProducts(products);
         }
     }
 
-    private JSONObject fetchProducts() {
+    private JSONObject fetchAllProducts() {
         HTTPRequest fetchAllProducts = new HTTPRequest();
         fetchAllProducts.setUrl(States.URL);
         fetchAllProducts.setQuery("{allProducts{id,name}}");
@@ -188,38 +185,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         allProductsTree = new ProductTree(allProductsTreeModel);
         allProductsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         allProductsTree.setCellRenderer(new ProductTreeRenderer());
-        //TODO create new mouseAdapter and mousemotionadpater classes
-        allProductsTree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-
-                if (e.getButton() == RIGHT_CLICK) {
-                    JTree tree = (JTree) e.getSource();
-                    int selRow = tree.getRowForLocation(e.getX(), e.getY());
-                    tree.setSelectionRow(selRow);
-                    tree.requestFocusInWindow();
-
-                    ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
-                    if (node == null || node.isRoot()) {
-                        return;
-                    }
-                    //TODO: refresh after
-                    if (node.isTask()) {
-                        Task task = new Task();
-                        task.setId(node.getId());
-                        JPopupMenu popupMenu = popupMenuBuilder.buildTaskNodePopupMenu(task);
-                        popupMenu.show(e.getComponent(), e.getX(), e.getY());
-                    } else if (node.isProduct()) {
-                        Product product = new Product();
-                        product.setId(node.getId());
-                        JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(product);
-                        popupMenu.show(e.getComponent(), e.getX(), e.getY());
-                    }
-                }
-            }
-        });
-
+        allProductsTree.addMouseListener(new rightClickPopupMenuMouseAdapter(project, developer, toolWindow));
     }
 
     private void addProductToAllProductsNode(Product product) {
