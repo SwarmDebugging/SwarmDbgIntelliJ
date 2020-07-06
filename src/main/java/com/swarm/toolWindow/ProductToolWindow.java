@@ -1,5 +1,8 @@
 package com.swarm.toolWindow;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbAwareAction;
@@ -81,7 +84,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private void buildProductTreeView() {
         productList.clear();
-        fetchProducts();
+        addProductsToProductList();
         if (!productList.isEmpty()) {
             buildProductTree();
         } else {
@@ -89,56 +92,43 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         }
     }
 
-    //not very efficient todo:refractor so it's more readable
-    private void fetchProducts() {
+    private void addProductsToProductList() {
+        addProductsLinkedToTasks();
+        addRemainingProducts();
+    }
+
+    private void addProductsLinkedToTasks() {
+        JSONObject data = fetchTasks();
+        if (!data.isNull("tasks")) {
+            JSONArray tasks = data.getJSONArray("tasks");
+            buildProductsFromTasks(tasks);
+        }
+    }
+
+    private JSONObject fetchTasks() {
         HTTPRequest fetchTasks = new HTTPRequest();
         fetchTasks.setUrl(States.URL);
         fetchTasks.setQuery("{tasks{product{id,name},id,title,done}}");
         JSONObject response = new JSONObject(fetchTasks.post().getString("body"));
-        JSONObject data = response.getJSONObject("data");
+        return response.getJSONObject("data");
+    }
 
-        if (!data.isNull("tasks")) {
-            JSONArray tasks = data.getJSONArray("tasks");
-            for (int i = 0; i < tasks.length(); i++) {
-                JSONObject jsonTask = tasks.getJSONObject(i);
-                Task newTask = new Task();
-                newTask.setId(jsonTask.getInt("id"));
-                newTask.setTitle(jsonTask.getString("title"));
-                newTask.setDone(jsonTask.getBoolean("done"));
-                int index = productIsInArray(jsonTask.getJSONObject("product").getInt("id"));
-                if (index != -1) {
-                    productList.get(index).addTask(newTask);
-                } else {
-                    Product newProduct = new Product();
-                    newProduct.setId(jsonTask.getJSONObject("product").getInt("id"));
-                    newProduct.setName(jsonTask.getJSONObject("product").getString("name"));
-                    newProduct.addTask(newTask);
-                    productList.add(newProduct);
-                }
-            }
-        }
-
-        HTTPRequest fetchAllProducts = new HTTPRequest();
-        fetchAllProducts.setUrl(States.URL);
-        fetchAllProducts.setQuery("{allProducts{id,name}}");
-        response = new JSONObject(fetchAllProducts.post().getString("body"));
-        data = response.getJSONObject("data");
-        if (!data.isNull("allProducts")) {
-            JSONArray products = data.getJSONArray("allProducts");
-            for (int i = 0; i < products.length(); i++) {
-                JSONObject jsonProduct = products.getJSONObject(i);
-                boolean found = false;
-                for (Product value : productList) {
-                    if (value.getId() == jsonProduct.getInt("id")) {
-                        found = true;
-                    }
-                }
-                if(!found) {
-                    Product product = new Product();
-                    product.setId(jsonProduct.getInt("id"));
-                    product.setName(jsonProduct.getString("name"));
-                    productList.add(product);
-                }
+    private void buildProductsFromTasks(JSONArray tasks) {
+        for (int i = 0; i < tasks.length(); i++) {
+            JSONObject jsonTask = tasks.getJSONObject(i);
+            Task newTask = new Task();
+            newTask.setId(jsonTask.getInt("id"));
+            newTask.setTitle(jsonTask.getString("title"));
+            newTask.setDone(jsonTask.getBoolean("done"));
+            int index = productIsInArray(jsonTask.getJSONObject("product").getInt("id"));
+            if (index != -1) {
+                productList.get(index).addTask(newTask);
+            } else {
+                Product newProduct = new Product();
+                newProduct.setId(jsonTask.getJSONObject("product").getInt("id"));
+                newProduct.setName(jsonTask.getJSONObject("product").getString("name"));
+                newProduct.addTask(newTask);
+                productList.add(newProduct);
             }
         }
     }
@@ -150,6 +140,34 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             }
         }
         return -1;
+    }
+
+    private void addRemainingProducts() {
+        JSONObject data = fetchProducts();
+        if (!data.isNull("allProducts")) {
+            JSONArray products = data.getJSONArray("allProducts");
+            buildRemainingProducts(products);
+        }
+    }
+
+    private JSONObject fetchProducts() {
+        HTTPRequest fetchAllProducts = new HTTPRequest();
+        fetchAllProducts.setUrl(States.URL);
+        fetchAllProducts.setQuery("{allProducts{id,name}}");
+        JSONObject response = new JSONObject(fetchAllProducts.post().getString("body"));
+        return response.getJSONObject("data");
+    }
+
+    private void buildRemainingProducts(JSONArray products) {
+        for (int i = 0; i < products.length(); i++) {
+            JSONObject jsonProduct = products.getJSONObject(i);
+            if(productIsInArray(jsonProduct.getInt("id")) == -1) {
+                Product product = new Product();
+                product.setId(jsonProduct.getInt("id"));
+                product.setName(jsonProduct.getString("name"));
+                productList.add(product);
+            }
+        }
     }
 
     private void buildProductTree() {
@@ -229,9 +247,11 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         }
     }
 
-    //TODO: make this function
     private void displayNoProductsMessage() {
-        String todo = "todo";
+        Notification notification = new Notification("SwarmDebugging", IconLoader.getIcon("/icons/ant.svg"), NotificationType.INFORMATION);
+        notification.setTitle("No products");
+        notification.setContent("Create a new product to get started");
+        Notifications.Bus.notify(notification);
     }
 
     private final class AddProductAction extends DumbAwareAction {

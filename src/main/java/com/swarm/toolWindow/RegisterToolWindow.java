@@ -37,9 +37,7 @@ public class RegisterToolWindow implements DumbAware {
             Developer developer = new Developer();
             developer.setUsername(usernameTextField.getText());
             developer.registerNewDeveloper();
-            if(developer.getId() == -1) {
-                //TODO: show wrong username notification
-            } else {
+            if(developer.getId() != 0) {
                 switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer));
             }
         });

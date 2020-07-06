@@ -9,7 +9,7 @@ public class HTTPRequest {
 
     private String url;
     private String query;
-    private final JSONObject variables = new JSONObject(); //TODO:this should have an add variable function so that higher call don't manipulate low-level json objexts
+    private final JSONObject variables = new JSONObject();
 
     public JSONObject post() {
         JSONObject body = new JSONObject();

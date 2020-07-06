@@ -30,7 +30,9 @@ public class LoginToolWindow implements DumbAware {
             Developer developer = new Developer();
             developer.setUsername(usernameTextField.getText());
             developer.login();
-            switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer));
+            if(developer.getId() != 0) {
+                switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer));
+            }
         });
     }
 
