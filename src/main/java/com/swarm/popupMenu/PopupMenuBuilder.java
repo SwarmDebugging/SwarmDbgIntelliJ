@@ -71,12 +71,15 @@ public class PopupMenuBuilder {
     private void buildNewSwarmSessionMenuItem() {
         newSwarmSession = new JMenuItem("Start a New Swarm Debugging Session");
         newSwarmSession.addActionListener(actionEvent -> {
-            Session session = new Session();
-            session.setTask(task);
-            session.setDeveloper(developer);
-            session.start();
-            States.currentSession = session;
-            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(session, toolWindow, project, developer));
+            CreateSessionDialog createSessionDialog = new CreateSessionDialog(project);
+            if(createSessionDialog.showAndGet()) {
+                Session session = new Session();
+                session.setTask(task);
+                session.setDeveloper(developer);
+                session.setDescription(createSessionDialog.getDescription());
+                session.start();
+                switchToolWindowContentToSessionToolWindow(new SessionToolWindow(session, toolWindow, project, developer));
+            }
         });
     }
 

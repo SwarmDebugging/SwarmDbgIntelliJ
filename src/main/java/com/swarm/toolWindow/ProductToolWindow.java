@@ -21,8 +21,8 @@ import com.swarm.models.Session;
 import com.swarm.models.Task;
 import com.swarm.mouseAdapters.rightClickPopupMenuMouseAdapter;
 import com.swarm.popupMenu.CreateProductDialog;
+import com.swarm.popupMenu.CreateSessionDialog;
 import com.swarm.popupMenu.CreateTaskDialog;
-import com.swarm.popupMenu.PopupMenuBuilder;
 import com.swarm.utils.HTTPRequest;
 import com.swarm.tree.ProductTree;
 import com.swarm.tree.ProductTreeNode;
@@ -43,8 +43,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     private final Project project;
     private final Developer developer;
 
-    private final PopupMenuBuilder popupMenuBuilder;
-
     private final ArrayList<Product> productList = new ArrayList<>();
     private ProductTreeNode allProductsNode;
     private ProductTree allProductsTree;
@@ -56,7 +54,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         this.toolWindow = toolWindow;
         this.project = project;
         this.developer = developer;
-        popupMenuBuilder = new PopupMenuBuilder(toolWindow, project, developer);
 
         setToolbar(createToolBarPanel());
         buildToolWindowContent();
@@ -338,7 +335,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            States.currentSession.setId(createSwarmSession());
+            createSwarmSession();
             switchToolWindowContentToSessionToolWindow(new SessionToolWindow(States.currentSession, toolWindow, project, developer));
         }
 
@@ -349,18 +346,21 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         }
     }
 
-    private int createSwarmSession() {
+    private void createSwarmSession() {
         ProductTreeNode taskNode = getSelectedTaskFromTree();
         if (taskNode == null) {
-            return -1;
+            return;
         }
         Task task = new Task();
         task.setId(taskNode.getId());
-        Session session = new Session();
-        session.setDeveloper(developer);
-        session.setTask(task);
-        session.start();
-        return session.getId();
+        CreateSessionDialog createSessionDialog = new CreateSessionDialog(project);
+        if(createSessionDialog.showAndGet()) {
+            Session session = new Session();
+            session.setTask(task);
+            session.setDeveloper(developer);
+            session.setDescription(createSessionDialog.getDescription());
+            session.start();
+        }
     }
 
     private void switchToolWindowContentToSessionToolWindow(SessionToolWindow sessionToolWindow) {

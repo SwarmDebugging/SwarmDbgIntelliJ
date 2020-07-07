@@ -1,5 +1,6 @@
 package modelsTests;
 
+import com.intellij.testFramework.LightIdeaTestCase;
 import com.swarm.models.Developer;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -9,12 +10,12 @@ import org.mockserver.junit.jupiter.MockServerExtension;
 import org.mockserver.junit.jupiter.MockServerSettings;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @ExtendWith(MockServerExtension.class)
 @MockServerSettings(ports = {8080})
-public class DeveloperTests {
+public class DeveloperTests extends LightIdeaTestCase {
 
     private final ClientAndServer client;
     private final Developer developer = new Developer();
@@ -23,6 +24,7 @@ public class DeveloperTests {
         this.client = client;
         setupLoginRequest();
         setupRegisterRequest();
+        setupBadLoginRequest();
     }
 
     private void setupLoginRequest() {
@@ -54,6 +56,19 @@ public class DeveloperTests {
                 );
     }
 
+    private void setupBadLoginRequest() {
+        JSONObject body = new JSONObject();
+        body.put("query","{developer(username:\"nonexistent\"){id}}");
+        client.when(HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/graphql")
+                .withBody(body.toString()))
+                .respond(
+                        HttpResponse.response()
+                                .withBody("{\"data\":{\"developer\":null}}")
+                );
+    }
+
     @Test
     void registerDeveloperTest() {
         sendRegisterRequest();
@@ -75,6 +90,19 @@ public class DeveloperTests {
 
     private void sendLoginRequest() {
         developer.setUsername("test");
+        developer.login();
+    }
+
+    //TODO:fix this
+    @Test
+    void badLoginTest() {
+        assertDoesNotThrow(this::sendBadLogin);
+
+        assertEquals(0, developer.getId());
+    }
+
+    private void sendBadLogin() {
+        developer.setUsername("nonexistent");
         developer.login();
     }
 

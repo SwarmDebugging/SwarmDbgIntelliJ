@@ -8,6 +8,7 @@ public class Session {
     private int id;
     private Developer developer;
     private Task task;
+    private String description;
 
 
     public void stop() {
@@ -25,8 +26,9 @@ public class Session {
     public void start() {
         HTTPRequest startSession = new HTTPRequest();
         startSession.setUrl(States.URL);
-        startSession.setQuery("mutation sessionStart($developerId:Long!,$taskId:Long!)" +
-        "{sessionStart(session:{developer:{id:$developerId},task:{id:$taskId,done:false}}){id}}");
+        startSession.setQuery("mutation sessionStart($description:String!,$developerId:Long!,$taskId:Long!)" +
+        "{sessionStart(session:{description:$description,developer:{id:$developerId},task:{id:$taskId,done:false}}){id}}");
+        startSession.addVariable("description", description);
         startSession.addVariable("developerId", developer.getId());
         startSession.addVariable("taskId", task.getId());
         JSONObject response = new JSONObject(startSession.post().getString("body"));
@@ -45,6 +47,10 @@ public class Session {
 
     public void setDeveloper(Developer developer) {
         this.developer = developer;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public void setTask(Task task) {

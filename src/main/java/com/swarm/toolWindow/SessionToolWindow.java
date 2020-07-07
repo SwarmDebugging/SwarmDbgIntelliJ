@@ -23,7 +23,6 @@ public class SessionToolWindow implements DumbAware {
 
         stopSessionButton.addActionListener(actionEvent -> {
             currentSession.stop();
-            States.currentSession.setId(-1);
             switchToolWindowContentToProductToolWindow(new ProductToolWindow(toolWindow, project, developer));
         });
     }
