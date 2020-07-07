@@ -1,6 +1,8 @@
 package modelsTests;
 
 import com.intellij.testFramework.LightIdeaTestCase;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
+import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
 import com.swarm.models.Developer;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -15,16 +17,22 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockServerExtension.class)
 @MockServerSettings(ports = {8080})
-public class DeveloperTests extends LightIdeaTestCase {
+public class DeveloperTests extends BasePlatformTestCase {
 
     private final ClientAndServer client;
     private final Developer developer = new Developer();
 
     public DeveloperTests(ClientAndServer client) {
+        try {
+            setUp();
+        } catch (Exception e) {
+            e.toString();
+        }
         this.client = client;
         setupLoginRequest();
         setupRegisterRequest();
         setupBadLoginRequest();
+        setupDeveloperAlreadyExistsRequest();
     }
 
     private void setupLoginRequest() {
@@ -69,6 +77,22 @@ public class DeveloperTests extends LightIdeaTestCase {
                 );
     }
 
+    private void setupDeveloperAlreadyExistsRequest() {
+        JSONObject body = new JSONObject();
+        body.put("query","mutation developerCreate($username: String!){developerCreate(developer:{username:$username}){id}}");
+        JSONObject variables = new JSONObject();
+        variables.put("username", "exists");
+        body.put("variables", variables);
+        client.when(HttpRequest.request()
+                .withMethod("POST")
+                .withPath("/graphql")
+                .withBody(body.toString()))
+                .respond(
+                        HttpResponse.response()
+                                .withBody("{\"data\":{\"developerCreate\":null}}")
+                );
+    }
+
     @Test
     void registerDeveloperTest() {
         sendRegisterRequest();
@@ -93,7 +117,6 @@ public class DeveloperTests extends LightIdeaTestCase {
         developer.login();
     }
 
-    //TODO:fix this
     @Test
     void badLoginTest() {
         assertDoesNotThrow(this::sendBadLogin);
@@ -106,5 +129,16 @@ public class DeveloperTests extends LightIdeaTestCase {
         developer.login();
     }
 
+    @Test
+    void developerAlreadyExistsTest() {
+        assertDoesNotThrow(this::sendExistingDeveloper);
+
+        assertEquals(0, developer.getId());
+    }
+
+    private void sendExistingDeveloper() {
+        developer.setUsername("exists");
+        developer.registerNewDeveloper();
+    }
 
 }
