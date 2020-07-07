@@ -1,8 +1,8 @@
 package com.swarm.toolWindow;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -25,7 +25,7 @@ public class RegisterToolWindow implements DumbAware {
 
         this.toolWindow = toolWindow;
 
-       back.setIcon(IconLoader.getIcon("/icons/back.svg"));
+       back.setIcon(AllIcons.Actions.Back);
        back.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

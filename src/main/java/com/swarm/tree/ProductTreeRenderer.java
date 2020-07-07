@@ -1,16 +1,13 @@
 package com.swarm.tree;
 
-import com.intellij.openapi.util.IconLoader;
+import com.intellij.icons.AllIcons;
+import icons.SwarmIcons;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 
 public class ProductTreeRenderer extends DefaultTreeCellRenderer {
-
-    Icon taskIcon = IconLoader.getIcon("/icons/task.svg");
-    Icon productIcon = IconLoader.getIcon("/icons/product.svg");
-    Icon productsIcon = IconLoader.getIcon("/icons/ant.svg");
 
     ProductTreeNode node;
 
@@ -30,13 +27,13 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
         buildTreeNodesAppearance();
 
         if (node.getParent() == null) {
-            setIcon(productsIcon);
+            setIcon(SwarmIcons.Ant);
             return this;
         }
         if (node.isTask()) {
-            setIcon(taskIcon);
+            setIcon(AllIcons.Actions.Selectall);
         } else if (node.isProduct()) {
-            setIcon(productIcon);
+            setIcon(AllIcons.Nodes.Package);
         }
         return this;
     }

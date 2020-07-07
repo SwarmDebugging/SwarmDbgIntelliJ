@@ -1,5 +1,6 @@
 package com.swarm.toolWindow;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -8,7 +9,6 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.content.Content;
@@ -27,6 +27,7 @@ import com.swarm.utils.HTTPRequest;
 import com.swarm.tree.ProductTree;
 import com.swarm.tree.ProductTreeNode;
 import com.swarm.tree.ProductTreeRenderer;
+import icons.SwarmIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
@@ -211,7 +212,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void displayNoProductsMessage() {
-        Notification notification = new Notification("SwarmDebugging", IconLoader.getIcon("/icons/ant.svg"), NotificationType.INFORMATION);
+        Notification notification = new Notification("SwarmDebugging", SwarmIcons.Ant, NotificationType.INFORMATION);
         notification.setTitle("No products");
         notification.setContent("Create a new product to get started");
         Notifications.Bus.notify(notification);
@@ -219,7 +220,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private final class AddProductAction extends DumbAwareAction {
         AddProductAction() {
-            super("Add a New Product", "Add a new product to the developer's products", IconLoader.getIcon("/icons/add.svg"));
+            super("Add a New Product", "Add a new product to the developer's products", AllIcons.General.Add);
         }
 
         @Override
@@ -236,7 +237,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private final class AddTaskAction extends DumbAwareAction {
         AddTaskAction() {
-            super("Add a New Task", "Add a new task to the selected product", IconLoader.getIcon("/icons/task.svg"));
+            super("Add a New Task", "Add a new task to the selected product", AllIcons.Actions.Selectall);
         }
 
         @Override
@@ -278,7 +279,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private final class RefreshAction extends DumbAwareAction {
         RefreshAction() {
-            super("Refresh Products", "Refresh the developer's products", IconLoader.getIcon("/icons/refresh.svg"));
+            super("Refresh Products", "Refresh the developer's products", AllIcons.Actions.Refresh);
         }
 
         @Override
@@ -289,7 +290,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private final class MarkTaskAsDoneAction extends DumbAwareAction {
         MarkTaskAsDoneAction() {
-            super("Mark Task as Done", "Mark the selected task as done", IconLoader.getIcon("/icons/markAsDone.svg"));
+            super("Mark Task as Done", "Mark the selected task as done", AllIcons.Actions.Commit);
         }
 
         @Override
@@ -328,9 +329,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private class StartRecordingEventsAction extends DumbAwareAction {
         StartRecordingEventsAction() {
-            super("Start Recording Events",
-                    "Start recording breakpoint and debugging events in the selected task",
-                    IconLoader.getIcon("/icons/startRecordingEvents.svg"));
+            super("Start Recording Events", "Start recording breakpoint and debugging events in the selected task", AllIcons.Debugger.Db_set_breakpoint);
         }
 
         @Override
@@ -372,7 +371,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private class LogoutAction extends DumbAwareAction {
         LogoutAction() {
-            super("Logout", "Logs out developer and takes him back to login screen", IconLoader.getIcon("/icons/logout.svg"));
+            super("Logout", "Logs out developer and takes him back to login screen", SwarmIcons.Logout);
         }
 
         @Override

@@ -3,8 +3,8 @@ package com.swarm.models;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.util.IconLoader;
 import com.swarm.utils.HTTPRequest;
+import icons.SwarmIcons;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,7 +32,7 @@ public class Developer {
     }
 
     private void showWrongLoginNotification() {
-        Notification notification = new Notification("SwarmDebugging", IconLoader.getIcon("/icons/ant.svg"), NotificationType.INFORMATION);
+        Notification notification = new Notification("SwarmDebugging", SwarmIcons.Ant, NotificationType.INFORMATION);
         notification.setTitle("Wrong Username");
         notification.setContent("Try again or create a new account");
         Notifications.Bus.notify(notification);
@@ -56,7 +56,7 @@ public class Developer {
     }
 
     private void showDeveloperAlreadyExistsNotification() {
-        Notification notification = new Notification("SwarmDebugging", IconLoader.getIcon("/icons/ant.svg"), NotificationType.INFORMATION);
+        Notification notification = new Notification("SwarmDebugging", SwarmIcons.Ant, NotificationType.INFORMATION);
         notification.setTitle("Developer Already Exists");
         notification.setContent("Choose another username");
         Notifications.Bus.notify(notification);
