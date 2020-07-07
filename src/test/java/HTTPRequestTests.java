@@ -10,7 +10,7 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 
 @ExtendWith(MockServerExtension.class)
-@MockServerSettings(ports = {8080})
+@MockServerSettings(ports = {8080}, perTestSuite = true)
 public class HTTPRequestTests {
 
     private final ClientAndServer client;

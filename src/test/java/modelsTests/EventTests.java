@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 @ExtendWith(MockServerExtension.class)
-@MockServerSettings(ports = {8080})
+@MockServerSettings(ports = {8080}, perTestSuite = true)
 public class EventTests {
 
     private final ClientAndServer client;

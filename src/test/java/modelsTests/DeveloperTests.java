@@ -1,8 +1,6 @@
 package modelsTests;
 
-import com.intellij.testFramework.LightIdeaTestCase;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
 import com.swarm.models.Developer;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -16,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 @ExtendWith(MockServerExtension.class)
-@MockServerSettings(ports = {8080})
+@MockServerSettings(ports = {8080}, perTestSuite = true)
 public class DeveloperTests extends BasePlatformTestCase {
 
     private final ClientAndServer client;

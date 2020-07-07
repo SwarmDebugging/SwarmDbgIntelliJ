@@ -13,18 +13,18 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 
 @ExtendWith(MockServerExtension.class)
-@MockServerSettings(ports = {8080})
+@MockServerSettings(ports = {8080}, perTestSuite = true)
 public class ProductToolWindowTests extends LightIdeaTestCase {
 
     private final ClientAndServer client;
-    private final ProductToolWindow productToolWindow;
+    //private final ProductToolWindow productToolWindow;
 
     public ProductToolWindowTests(ClientAndServer client) {
         this.client = client;
         setupAllProductsRequest();
         setupAllTasksRequest();
         Developer developer = new Developer();
-        productToolWindow = new ProductToolWindow(null, getProject(), developer);
+       // productToolWindow = new ProductToolWindow(null, getProject(), developer);
     }
 
     private void setupAllProductsRequest() {
