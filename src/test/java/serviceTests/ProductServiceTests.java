@@ -1,8 +1,7 @@
-package ToolWindowTests;
+package serviceTests;
 
-import com.intellij.testFramework.LightIdeaTestCase;
-import com.swarm.models.Developer;
-import com.swarm.toolWindow.ProductToolWindow;
+import com.swarm.models.Product;
+import com.swarm.services.ProductService;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,20 +10,23 @@ import org.mockserver.junit.jupiter.MockServerExtension;
 import org.mockserver.junit.jupiter.MockServerSettings;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.util.ArrayList;
 
 @ExtendWith(MockServerExtension.class)
 @MockServerSettings(ports = {8080}, perTestSuite = true)
-public class ProductToolWindowTests extends LightIdeaTestCase {
+public class ProductServiceTests {
 
     private final ClientAndServer client;
-    //private final ProductToolWindow productToolWindow;
+    private final ProductService productService = new ProductService();
 
-    public ProductToolWindowTests(ClientAndServer client) {
+    public ProductServiceTests(ClientAndServer client) {
         this.client = client;
         setupAllProductsRequest();
         setupAllTasksRequest();
-        Developer developer = new Developer();
-       // productToolWindow = new ProductToolWindow(null, getProject(), developer);
     }
 
     private void setupAllProductsRequest() {
@@ -35,7 +37,7 @@ public class ProductToolWindowTests extends LightIdeaTestCase {
                 .withPath("/graphql")
                 .withBody(body.toString()))
                 .respond(HttpResponse.response()
-                        .withBody("{\"data\":{\"allProducts\":[{\"id\":1,\"name\":\"product1\"},{\"id\":2,\"name\":\"product2\"}]}"));
+                        .withBody("{\"data\":{\"allProducts\":[{\"id\":1,\"name\":\"product1\"},{\"id\":2,\"name\":\"product2\"}]}}"));
     }
 
     private void setupAllTasksRequest() {
@@ -50,7 +52,13 @@ public class ProductToolWindowTests extends LightIdeaTestCase {
     }
 
     @Test
-    void addProductsToProductListTest() {
-        //how to test it?
+    void getAllProductsTest() {
+        ArrayList<Product> products = productService.getAllProducts();
+
+        assertThat(products, hasSize(2));
+        assertEquals(products.get(0).getTasks().get(0).getId(), 3);
+        assertEquals(products.get(0).getId(), 2);
+        assertEquals(products.get(1).getId(), 1);
     }
+
 }
