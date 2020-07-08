@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
@@ -33,25 +34,20 @@ public class DebugActionListener implements AnActionListener, DumbAware {
 
     private int handleEvent(String eventKind) {
         DebuggerManagerEx debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
-        var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
-
-        String typeName = file.getName();
-        String typePath = file.getVirtualFile().getPath();
-        String sourceCode = file.getText();
-        String typeFullName;
-        if (!(typeFullName = file.getPackageName()).equals("")) {
-            typeFullName += ".";
-        }
-        typeFullName += typeName;
-
-        int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
 
         Type type = new Type();
+        ReadAction.run(() -> {
+            var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
+            type.setFullName(file.getPackageName());
+            type.setName(file.getName());
+            type.setSourceCode(file.getText());
+            type.setFullPath(file.getVirtualFile().getPath());
+            if(!type.getFullName().equals("")) {
+                type.setFullName(type.getFullName() + "." + file.getName());
+            }
+        });
+
         type.setSession(States.currentSession);
-        type.setFullName(typeFullName);
-        type.setName(typeName);
-        type.setFullPath(typePath);
-        type.setSourceCode(sourceCode);
         type.create();
 
         Method method = new Method();
@@ -71,6 +67,8 @@ public class DebugActionListener implements AnActionListener, DumbAware {
             }
         });
         method.create();
+
+        int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
 
         Event event = new Event();
         event.setSession(States.currentSession);

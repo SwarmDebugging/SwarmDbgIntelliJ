@@ -8,6 +8,7 @@ import com.intellij.debugger.impl.DebuggerManagerListener;
 import com.intellij.debugger.impl.DebuggerSession;
 import com.intellij.debugger.jdi.StackFrameProxyImpl;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
@@ -76,20 +77,23 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
             return currentStackFrames.size() != States.lastStackFrames.size(); //Here if it's not the same frame count, it's an invocation
     }
 
+    //TODO:test this(run read action changed)
     private void makeInvocation() throws EvaluateException {
         Type invokedType = new Type();
-        PsiJavaFile file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
-        ApplicationManager.getApplication().runReadAction(() -> {
-            String fullName = file.getPackageName();
-            invokedType.setFullName(fullName);
+
+        ReadAction.run(() -> {
+            PsiJavaFile file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
+            invokedType.setSourceCode(file.getText());
+            invokedType.setName(file.getName());
+            invokedType.setFullPath(file.getVirtualFile().getPath());
+
+            invokedType.setFullName(file.getPackageName());
+            if(!invokedType.getFullName().equals("")) {
+                invokedType.setFullName(invokedType.getFullName() + "." + file.getName());
+            }
         });
-        if(!invokedType.getFullName().equals("")) {
-            invokedType.setFullName(invokedType.getFullName() + ".");
-        }
-        invokedType.setName(file.getName());
-        invokedType.setFullPath(file.getVirtualFile().getPath());
+
         invokedType.setSession(States.currentSession);
-        invokedType.setSourceCode(file.getText());
         invokedType.create();
 
         Method invoked = currentStackFrames.get(0).location().method();

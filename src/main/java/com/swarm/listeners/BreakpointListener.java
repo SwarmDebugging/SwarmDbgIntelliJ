@@ -1,5 +1,6 @@
 package com.swarm.listeners;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
@@ -54,47 +55,41 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
     }
 
     private int handleBreakpointEvent(String eventKind, @NotNull XBreakpoint breakpoint) {
-        PsiJavaFile file = (PsiJavaFile) PsiManager.getInstance(project).findFile(breakpoint.getSourcePosition().getFile());
-
-        String typeName = file.getName();
-        String typePath = file.getVirtualFile().getPath();
-        String sourceCode = file.getText();
-        String typeFullName;
-        if (!(typeFullName = file.getPackageName()).equals("")) {
-            typeFullName += ".";
-        }
-        typeFullName += typeName;
-
         Type type = new Type();
-        type.setSession(States.currentSession);
-        type.setFullName(typeFullName);
-        type.setName(typeName);
-        type.setFullPath(typePath);
-        type.setSourceCode(sourceCode);
-        type.create();
+        Method method = new Method();
+
+        ReadAction.run(() -> {
+            PsiJavaFile file = (PsiJavaFile) PsiManager.getInstance(project).findFile(breakpoint.getSourcePosition().getFile());
+            type.setName(file.getName());
+            type.setFullPath(file.getVirtualFile().getPath());
+            type.setSourceCode(file.getText());
+
+            type.setFullName(file.getPackageName());
+            if(!type.getFullName().equals("")) {
+                type.setFullName(type.getFullName() + "." + file.getName());
+            }
+            type.setSession(States.currentSession);
+            type.create();
+            PsiMethod psiMethod = findMethodByBreakpointAndFile(breakpoint, file);
+            if(psiMethod != null){
+                method.setName(psiMethod.getName());
+                method.setType(type);
+                String methodReturnType;
+                if(psiMethod.getReturnType() == null){
+                    methodReturnType = "Constructor";
+                } else {
+                    methodReturnType = psiMethod.getReturnType().getCanonicalText();
+                }
+                PsiParameter[] parameters = psiMethod.getParameterList().getParameters();
+                String methodSignature = encodeSignature(parameters, methodReturnType);
+                method.setSignature(methodSignature);
+
+            }
+        });
+
+        method.create();
 
         int lineNumber = breakpoint.getSourcePosition().getLine();
-
-        PsiMethod psiMethod = findMethodByBreakpointAndFile(breakpoint, file);
-        if(psiMethod == null) {
-            return type.getId();
-        }
-
-        String methodName = psiMethod.getName();
-        String methodReturnType;
-        if(psiMethod.getReturnType() == null){
-            methodReturnType = "Constructor";
-        } else {
-            methodReturnType = psiMethod.getReturnType().getCanonicalText();
-        }
-        PsiParameter[] parameters = psiMethod.getParameterList().getParameters();
-        String methodSignature = encodeSignature(parameters, methodReturnType);
-
-        Method method = new Method();
-        method.setType(type);
-        method.setSignature(methodSignature);
-        method.setName(methodName);
-        method.create();
 
         Event event = new Event();
         event.setKind(eventKind);
