@@ -2,6 +2,7 @@ package com.swarm.models;
 
 import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Session {
@@ -19,8 +20,19 @@ public class Session {
         stopSession.addVariable("sessionId", id);
         JSONObject response = new JSONObject(stopSession.post().getString("body"));
 
-        this.id = response.getJSONObject("data").getJSONObject("sessionStop").getInt("id");
-        States.currentSession = new Session();
+        try {
+            response.getJSONObject("data").getJSONObject("sessionStop").getInt("id");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        clear();
+    }
+
+    private void clear() {
+        id = 0;
+        developer = null;
+        task = null;
+        description = "";
     }
 
     public void start() {
@@ -34,7 +46,6 @@ public class Session {
         JSONObject response = new JSONObject(startSession.post().getString("body"));
 
         this.id = response.getJSONObject("data").getJSONObject("sessionStart").getInt("id");
-        States.currentSession = this;
     }
 
     public int getId() {

@@ -1,8 +1,7 @@
 package modelsTests;
 
-import com.swarm.utils.States;
+import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.models.Developer;
-import com.swarm.models.Session;
 import com.swarm.models.Task;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SessionTests {
 
     private final ClientAndServer client;
-    private final Session session = new Session();
 
     public SessionTests(ClientAndServer client) {
         this.client = client;
@@ -64,8 +62,8 @@ public class SessionTests {
     void startSessionTest() {
         sendStartSession();
 
-        assertEquals(session, States.currentSession);
-        assertEquals(3, session.getId());
+        assertEquals(ProductToolWindow.getCurrentSession(), ProductToolWindow.getCurrentSession());
+        assertEquals(3, ProductToolWindow.getCurrentSession().getId());
     }
 
     private void sendStartSession() {
@@ -75,22 +73,21 @@ public class SessionTests {
         Task task = new Task();
         task.setId(2);
 
-        session.setDeveloper(developer);
-        session.setTask(task);
-        session.setDescription("description");
-        session.start();
+        ProductToolWindow.getCurrentSession().setDeveloper(developer);
+        ProductToolWindow.getCurrentSession().setTask(task);
+        ProductToolWindow.getCurrentSession().setDescription("description");
+        ProductToolWindow.getCurrentSession().start();
     }
 
     @Test
     void stopSessionTest() {
         sendStopSession();
 
-        assertEquals(0, States.currentSession.getId());
-        assertEquals(2, session.getId());
+        assertEquals(0, ProductToolWindow.getCurrentSessionId());
     }
 
     private void sendStopSession() {
-        session.setId(1);
-        session.stop();
+        ProductToolWindow.getCurrentSession().setId(1);
+        ProductToolWindow.getCurrentSession().stop();
     }
 }

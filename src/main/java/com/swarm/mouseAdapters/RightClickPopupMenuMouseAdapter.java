@@ -1,7 +1,6 @@
 package com.swarm.mouseAdapters;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
 import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
@@ -12,11 +11,11 @@ import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class rightClickPopupMenuMouseAdapter extends MouseAdapter {
+public class RightClickPopupMenuMouseAdapter extends MouseAdapter {
     PopupMenuBuilder popupMenuBuilder;
 
-    public rightClickPopupMenuMouseAdapter(Project project, Developer developer, ToolWindow toolWindow) {
-        popupMenuBuilder = new PopupMenuBuilder(toolWindow, project, developer);
+    public RightClickPopupMenuMouseAdapter(Project project, Developer developer) {
+        popupMenuBuilder = new PopupMenuBuilder(project, developer);
     }
 
     @Override

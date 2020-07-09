@@ -12,6 +12,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.sun.jdi.Method;
+import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.utils.States;
 import com.swarm.models.Invocation;
 import com.swarm.models.Type;
@@ -31,7 +32,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
     @Override
     public void sessionCreated(DebuggerSession session) {
         session.getContextManager().addListener((newContext, event) -> {
-            if(States.currentSession.getId() == 0) {
+            if(ProductToolWindow.getCurrentSessionId() == 0) {
                 return;
             }
             assert newContext.getDebugProcess() != null;
@@ -92,7 +93,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
             }
         });
 
-        invokedType.setSession(States.currentSession);
+        invokedType.setSession(ProductToolWindow.getCurrentSession());
         invokedType.create();
 
         Method invoked = currentStackFrames.get(0).location().method();
@@ -106,7 +107,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         Invocation invocation = new Invocation();
         invocation.setInvoking(DebugActionListener.invokingMethod);
         invocation.setInvoked(invokedSwarmMethod);
-        invocation.setSession(States.currentSession);
+        invocation.setSession(ProductToolWindow.getCurrentSession());
         invocation.create();
     }
 }

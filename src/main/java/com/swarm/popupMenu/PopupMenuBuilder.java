@@ -1,16 +1,12 @@
 package com.swarm.popupMenu;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
 import com.swarm.dialogs.CreateSessionDialog;
 import com.swarm.dialogs.CreateTaskDialog;
 import com.swarm.models.Developer;
 import com.swarm.models.Product;
-import com.swarm.models.Session;
 import com.swarm.models.Task;
-import com.swarm.toolWindow.SessionToolWindow;
+import com.swarm.toolWindow.ProductToolWindow;
 
 import javax.swing.*;
 
@@ -24,14 +20,12 @@ public class PopupMenuBuilder {
     JPopupMenu taskPopupMenu;
 
     private final Project project;
-    private final ToolWindow toolWindow;
     private final Developer developer;
     private Task task;
     private Product product;
 
-    public PopupMenuBuilder(ToolWindow toolWindow, Project project, Developer developer) {
+    public PopupMenuBuilder(Project project, Developer developer) {
         this.project = project;
-        this.toolWindow = toolWindow;
         this.developer = developer;
     }
 
@@ -74,12 +68,10 @@ public class PopupMenuBuilder {
         newSwarmSession.addActionListener(actionEvent -> {
             CreateSessionDialog createSessionDialog = new CreateSessionDialog(project);
             if(createSessionDialog.showAndGet()) {
-                Session session = new Session();
-                session.setTask(task);
-                session.setDeveloper(developer);
-                session.setDescription(createSessionDialog.getDescription());
-                session.start();
-                switchToolWindowContentToSessionToolWindow(new SessionToolWindow(session, toolWindow, project, developer));
+                ProductToolWindow.getCurrentSession().setTask(task);
+                ProductToolWindow.getCurrentSession().setDeveloper(developer);
+                ProductToolWindow.getCurrentSession().setDescription(createSessionDialog.getDescription());
+                ProductToolWindow.getCurrentSession().start();
             }
         });
     }
@@ -87,12 +79,5 @@ public class PopupMenuBuilder {
     private void buildMarkAsDoneMenuItem() {
         markAsDone = new JMenuItem("Mark As Done");
         markAsDone.addActionListener(actionEvent -> task.markAsDone());
-    }
-
-    private void switchToolWindowContentToSessionToolWindow(SessionToolWindow sessionToolWindow) {
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        Content content = contentFactory.createContent(sessionToolWindow.getContent(), "", false);
-        toolWindow.getContentManager().removeAllContents(true);
-        toolWindow.getContentManager().addContent(content);
     }
 }

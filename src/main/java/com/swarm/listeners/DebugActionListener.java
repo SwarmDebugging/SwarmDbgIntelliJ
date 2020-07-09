@@ -12,6 +12,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.xdebugger.impl.actions.*;
+import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.utils.States;
 import com.swarm.models.Event;
 import com.swarm.models.Method;
@@ -47,7 +48,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
             }
         });
 
-        type.setSession(States.currentSession);
+        type.setSession(ProductToolWindow.getCurrentSession());
         type.create();
 
         Method method = new Method();
@@ -71,7 +72,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
 
         Event event = new Event();
-        event.setSession(States.currentSession);
+        event.setSession(ProductToolWindow.getCurrentSession());
         event.setMethod(method);
         event.setLineNumber(lineNumber);
         event.setKind(eventKind);
@@ -82,7 +83,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
 
     @Override
     public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
-        if (States.currentSession.getId() == 0) {
+        if (ProductToolWindow.getCurrentSessionId() == 0) {
             return;
         }
         // The following is a hack to work around an issue with IDEA, where certain events arrive

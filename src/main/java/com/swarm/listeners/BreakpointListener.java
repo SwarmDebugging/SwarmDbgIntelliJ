@@ -10,11 +10,8 @@ import com.intellij.psi.PsiParameter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
-import com.swarm.utils.States;
-import com.swarm.models.Breakpoint;
-import com.swarm.models.Event;
-import com.swarm.models.Method;
-import com.swarm.models.Type;
+import com.swarm.models.*;
+import com.swarm.toolWindow.ProductToolWindow;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -28,7 +25,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
 
     @Override
     public void breakpointAdded(@NotNull XBreakpoint xBreakpoint) {
-        if(States.currentSession.getId() == 0) {
+        if(ProductToolWindow.getCurrentSessionId() == 0) {
             return;
         }
         if(xBreakpoint.getSourcePosition() == null) {
@@ -45,7 +42,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
 
     @Override
     public void breakpointRemoved(@NotNull XBreakpoint<?> breakpoint) {
-        if(States.currentSession.getId() == 0) {
+        if(ProductToolWindow.getCurrentSessionId() == 0) {
             return;
         }
         if(breakpoint.getSourcePosition() == null) {
@@ -68,7 +65,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
             if(!type.getFullName().equals("")) {
                 type.setFullName(type.getFullName() + "." + file.getName());
             }
-            type.setSession(States.currentSession);
+            type.setSession(ProductToolWindow.getCurrentSession());
             type.create();
             PsiMethod psiMethod = findMethodByBreakpointAndFile(breakpoint, file);
             if(psiMethod != null){
@@ -94,7 +91,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         Event event = new Event();
         event.setKind(eventKind);
         event.setLineNumber(lineNumber);
-        event.setSession(States.currentSession);
+        event.setSession(ProductToolWindow.getCurrentSession());
         event.setMethod(method);
         event.create();
 
