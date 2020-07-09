@@ -1,6 +1,6 @@
 package modelsTests;
 
-import com.swarm.States;
+import com.swarm.utils.States;
 import com.swarm.models.Developer;
 import com.swarm.models.Session;
 import com.swarm.models.Task;

@@ -12,7 +12,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.xdebugger.impl.actions.*;
-import com.swarm.States;
+import com.swarm.utils.States;
 import com.swarm.models.Event;
 import com.swarm.models.Method;
 import com.swarm.models.Type;

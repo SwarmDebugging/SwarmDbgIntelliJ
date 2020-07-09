@@ -14,15 +14,16 @@ import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
-import com.swarm.States;
+import com.swarm.utils.States;
+import com.swarm.dialogs.CreateProductDialog;
+import com.swarm.dialogs.CreateSessionDialog;
+import com.swarm.dialogs.CreateTaskDialog;
+import com.swarm.dialogs.LoginDialog;
 import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Session;
 import com.swarm.models.Task;
 import com.swarm.mouseAdapters.rightClickPopupMenuMouseAdapter;
-import com.swarm.popupMenu.CreateProductDialog;
-import com.swarm.popupMenu.CreateSessionDialog;
-import com.swarm.popupMenu.CreateTaskDialog;
 import com.swarm.services.ProductService;
 import com.swarm.tree.ProductTree;
 import com.swarm.tree.ProductTreeNode;
@@ -40,22 +41,23 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private final ToolWindow toolWindow;
     private final Project project;
-    private final Developer developer;
+    private static final Developer developer = new Developer();
 
     private ArrayList<Product> productList = new ArrayList<>();
     private ProductTreeNode allProductsNode;
     private ProductTree allProductsTree;
 
+    public static Developer getDeveloper() {
+        return developer;
+    }
 
-    public ProductToolWindow(ToolWindow toolWindow, Project project, Developer developer) {
+    public ProductToolWindow(ToolWindow toolWindow, Project project) {
         super(true, true);
 
         this.toolWindow = toolWindow;
         this.project = project;
-        this.developer = developer;
 
         setToolbar(createToolBarPanel());
-        buildToolWindowContent();
     }
 
     private void buildToolWindowContent() {
@@ -65,6 +67,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private JPanel createToolBarPanel() {
         final DefaultActionGroup group = new DefaultActionGroup();
+        group.add(new LoginAction());
         group.add(new RefreshAction());
         group.add(new AddProductAction());
         group.add(new AddTaskAction());
@@ -153,6 +156,12 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             addNewProduct();
             buildToolWindowContent();
         }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(developer.getId() != 0);
+        }
     }
 
     private void addNewProduct() {
@@ -185,11 +194,14 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         }
         Product product = new Product();
         product.setId(productTreeNode.getId());
-        CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product, developer);
+        CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product);
         createTaskDialog.showAndGet();
     }
 
     private ProductTreeNode getSelectedProductFromTree() {
+        if(allProductsTree == null) {
+            return null;
+        }
         ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
         if (node == null || node.isRoot()) {
             return null;
@@ -202,6 +214,24 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         return null;
     }
 
+    private final class LoginAction extends DumbAwareAction {
+        LoginAction() {super("Login", "Log into your swarm debugging account", AllIcons.Actions.TraceInto);}
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            LoginDialog loginDialog = new LoginDialog(project);
+            if(loginDialog.showAndGet()) {
+                buildToolWindowContent();
+            }
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(developer.getId() == 0);
+        }
+    }
+
     private final class RefreshAction extends DumbAwareAction {
         RefreshAction() {
             super("Refresh Products", "Refresh the developer's products", AllIcons.Actions.Refresh);
@@ -210,6 +240,12 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             buildToolWindowContent();
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(developer.getId() != 0);
         }
     }
 
@@ -242,6 +278,9 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private ProductTreeNode getSelectedTaskFromTree() {
+        if(allProductsTree == null) {
+            return null;
+        }
         ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
         if (node == null || node.isRoot()) {
             return null;
@@ -260,7 +299,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             createSwarmSession();
-            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(States.currentSession, toolWindow, project, developer));
+            switchToolWindowContentToSessionToolWindow(new SessionToolWindow(States.currentSession, toolWindow, project));
         }
 
         @Override
@@ -301,18 +340,17 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            switchToolWindowContentToLoginToolWindow(new LoginToolWindow(toolWindow, project));
+            getDeveloper().logout();
+            allProductsTree.setVisible(false);
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(developer.getId() != 0);
         }
     }
 
-    private void switchToolWindowContentToLoginToolWindow(LoginToolWindow loginToolWindow) {
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        Content content = contentFactory.createContent(loginToolWindow.getContent(), "", false);
-        toolWindow.getContentManager().removeAllContents(true);
-        toolWindow.getContentManager().addContent(content);
-    }
-
-    //May not be best practice, we may want to create a new function called getComponent instead
     @Nullable
     @Override
     public JComponent getContent() {

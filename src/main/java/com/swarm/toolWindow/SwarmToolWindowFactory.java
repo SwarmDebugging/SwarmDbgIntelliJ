@@ -11,9 +11,9 @@ import org.jetbrains.annotations.NotNull;
 public class SwarmToolWindowFactory implements ToolWindowFactory, DumbAware {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        LoginToolWindow loginToolWindow = new LoginToolWindow(toolWindow, project);
+        ProductToolWindow productToolWindow = new ProductToolWindow(toolWindow, project);
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        Content content = contentFactory.createContent(loginToolWindow.getContent(), "", false);
+        Content content = contentFactory.createContent(productToolWindow.getContent(), "", false);
         toolWindow.getContentManager().addContent(content);
     }
 }

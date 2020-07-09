@@ -10,7 +10,7 @@ import com.intellij.psi.PsiParameter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
-import com.swarm.States;
+import com.swarm.utils.States;
 import com.swarm.models.Breakpoint;
 import com.swarm.models.Event;
 import com.swarm.models.Method;

@@ -1,4 +1,4 @@
-package com.swarm;
+package com.swarm.utils;
 
 import com.intellij.debugger.jdi.StackFrameProxyImpl;
 import com.swarm.models.Session;

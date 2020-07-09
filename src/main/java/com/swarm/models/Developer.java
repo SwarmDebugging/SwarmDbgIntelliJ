@@ -8,7 +8,7 @@ import icons.SwarmIcons;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static com.swarm.States.URL;
+import static com.swarm.utils.States.URL;
 
 public class Developer {
 
@@ -60,6 +60,11 @@ public class Developer {
         notification.setTitle("Developer Already Exists");
         notification.setContent("Choose another username");
         Notifications.Bus.notify(notification);
+    }
+
+    public void logout() {
+        username = "";
+        id = 0;
     }
 
     public void setUsername(String username) {

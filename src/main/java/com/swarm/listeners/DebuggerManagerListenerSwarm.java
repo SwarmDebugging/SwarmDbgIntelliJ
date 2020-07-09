@@ -7,13 +7,12 @@ import com.intellij.debugger.impl.DebuggerContextImpl;
 import com.intellij.debugger.impl.DebuggerManagerListener;
 import com.intellij.debugger.impl.DebuggerSession;
 import com.intellij.debugger.jdi.StackFrameProxyImpl;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
 import com.sun.jdi.Method;
-import com.swarm.States;
+import com.swarm.utils.States;
 import com.swarm.models.Invocation;
 import com.swarm.models.Type;
 

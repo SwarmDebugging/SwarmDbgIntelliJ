@@ -1,6 +1,6 @@
 package com.swarm.services;
 
-import com.swarm.States;
+import com.swarm.utils.States;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import com.swarm.utils.HTTPRequest;

@@ -4,7 +4,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.swarm.States;
+import com.swarm.dialogs.CreateSessionDialog;
+import com.swarm.dialogs.CreateTaskDialog;
 import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Session;
@@ -49,7 +50,7 @@ public class PopupMenuBuilder {
     private void buildCreateNewTaskMenuItem() {
         createNewTask = new JMenuItem("Create a new Task");
         createNewTask.addActionListener(actionEvent -> {
-            CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product, developer);
+            CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product);
             createTaskDialog.showAndGet();
         });
     }
