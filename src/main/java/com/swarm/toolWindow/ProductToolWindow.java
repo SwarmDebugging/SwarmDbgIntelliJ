@@ -63,11 +63,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         setToolbar(createToolBarPanel());
     }
 
-    private void buildToolWindowContent() {
-        buildAllProductTreeView();
-        setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
-    }
-
     private JPanel createToolBarPanel() {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new LoginAction());
@@ -84,12 +79,15 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void buildAllProductTreeView() {
+        setContent(new JLabel("Fetching products...", SwingConstants.CENTER));
         productList.clear();
         addProductsToProductList();
         if (!productList.isEmpty()) {
             buildProductTree();
+            setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
         } else {
             displayNoProductsMessage();
+            setContent(new JLabel("Create a new product to get started", SwingConstants.CENTER));
         }
     }
 
@@ -145,8 +143,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void displayNoProductsMessage() {
-        setContent(new JLabel("Create a new product to get started", SwingConstants.CENTER));
-
         Notification notification = new Notification("SwarmDebugging", SwarmIcons.Ant, NotificationType.INFORMATION);
         notification.setTitle("No products");
         notification.setContent("Create a new product to get started");
@@ -161,7 +157,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             addNewProduct();
-            buildToolWindowContent();
+            buildAllProductTreeView();
         }
 
         @Override
@@ -184,7 +180,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             addNewTaskToSelectedProduct();
-            buildToolWindowContent();
+            buildAllProductTreeView();
         }
 
         @Override
@@ -228,7 +224,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         public void actionPerformed(@NotNull AnActionEvent e) {
             LoginDialog loginDialog = new LoginDialog(project);
             if(loginDialog.showAndGet()) {
-                buildToolWindowContent();
+                buildAllProductTreeView();
             }
         }
 
@@ -246,7 +242,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            buildToolWindowContent();
+            buildAllProductTreeView();
         }
 
         @Override
@@ -264,7 +260,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             markSelectedTaskAsDone();
-            buildToolWindowContent();
+            buildAllProductTreeView();
         }
 
         @Override
@@ -324,6 +320,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
         } else {
             displayNoProductsMessage();
+            setContent(new JLabel("Create a new product to get started", SwingConstants.CENTER));
         }
     }
 
