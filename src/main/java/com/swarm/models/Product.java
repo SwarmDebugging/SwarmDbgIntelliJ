@@ -1,6 +1,5 @@
 package com.swarm.models;
 
-import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
@@ -13,7 +12,6 @@ public class Product {
 
     public void create() {
         HTTPRequest createProductRequest = new HTTPRequest();
-        createProductRequest.setUrl(States.URL);
         createProductRequest.setQuery("mutation productCreate($name: String!){productCreate(product:{name:$name}){id}}");
         createProductRequest.addVariable("name", name);
         JSONObject response = new JSONObject(createProductRequest.post().getString("body"));

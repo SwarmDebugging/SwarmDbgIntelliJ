@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 public class HTTPRequest {
 
-    private String url;
+    private final String URL = "http://localhost:8080/graphql";
     private String query;
     private final JSONObject variables = new JSONObject();
 
@@ -17,16 +17,12 @@ public class HTTPRequest {
         if(!variables.isEmpty()) {
             body.put("variables", variables);
         }
-        HttpResponse<String> response = Unirest.post(url)
+        HttpResponse<String> response = Unirest.post(URL)
                 .header("content-type", "application/json")
                 .body(body.toString())
                 .asString();
 
         return new JSONObject(response);
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 
     public void setQuery(String query) {

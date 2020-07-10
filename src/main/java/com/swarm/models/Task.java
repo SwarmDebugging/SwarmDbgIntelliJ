@@ -1,6 +1,5 @@
 package com.swarm.models;
 
-import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
@@ -12,7 +11,6 @@ public class Task {
 
     public void create() {
         HTTPRequest createTaskRequest = new HTTPRequest();
-        createTaskRequest.setUrl(States.URL);
         createTaskRequest.setQuery("mutation taskCreate($title:String!,$done:Boolean!,$productId:Long!)" +
                 "{taskCreate(task:{title:$title,done:$done,product:{id:$productId}}){id}}");
         createTaskRequest.addVariable("title", title);
@@ -25,7 +23,6 @@ public class Task {
 
     public void markAsDone() {
         HTTPRequest markAsDoneRequest = new HTTPRequest();
-        markAsDoneRequest.setUrl(States.URL);
         markAsDoneRequest.setQuery("mutation taskDone($taskId:Long!){taskDone(taskId:$taskId){done}}");
         markAsDoneRequest.addVariable("taskId", this.id);
         JSONObject response = new JSONObject(markAsDoneRequest.post().getString("body"));

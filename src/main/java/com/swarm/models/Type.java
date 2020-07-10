@@ -1,6 +1,5 @@
 package com.swarm.models;
 
-import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
@@ -16,7 +15,6 @@ public class Type {
 
     public void create() {
         HTTPRequest createTypeRequest = new HTTPRequest();
-        createTypeRequest.setUrl(States.URL);
         createTypeRequest.setQuery("mutation typeCreate($sessionId:Long!,$name:String!,$fullPath:String!,$fullName:String!,$source:String){" +
                 "typeCreate(typeWrapper:{type:{session:{id:$sessionId},name:$name,fullPath:$fullPath,fullName:$fullName},source:$source}){id}}");
         createTypeRequest.addVariable("sessionId", session.getId());

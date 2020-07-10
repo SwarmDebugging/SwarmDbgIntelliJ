@@ -1,6 +1,5 @@
 package com.swarm.models;
 
-import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
@@ -11,7 +10,6 @@ public class Breakpoint {
 
     public void create() {
         HTTPRequest createBreakpointRequest = new HTTPRequest();
-        createBreakpointRequest.setUrl(States.URL);
         createBreakpointRequest.setQuery("mutation breakpointCreate($typeId:Long!,$lineNumber:Int!)" +
                 "{breakpointCreate(breakpoint:{type:{id:$typeId},lineNumber:$lineNumber}){id}}");
         createBreakpointRequest.addVariable("typeId", type.getId());

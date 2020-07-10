@@ -8,8 +8,6 @@ import icons.SwarmIcons;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static com.swarm.utils.States.URL;
-
 public class Developer {
 
     private int id;
@@ -17,7 +15,6 @@ public class Developer {
 
     public void login() {
         HTTPRequest loginRequest = new HTTPRequest();
-        loginRequest.setUrl(URL);
         loginRequest.setQuery("{developer(username:\"" + username + "\"){id}}");
         JSONObject response = new JSONObject(loginRequest.post().getString("body"));
         readIdFromLoginResponseBody(response);
@@ -40,7 +37,6 @@ public class Developer {
 
    public void registerNewDeveloper() {
         HTTPRequest registerRequest = new HTTPRequest();
-        registerRequest.setUrl(URL);
         registerRequest.setQuery("mutation developerCreate($username: String!){developerCreate(developer:{username:$username}){id}}");
         registerRequest.addVariable("username", username);
         JSONObject response = new JSONObject(registerRequest.post().getString("body"));

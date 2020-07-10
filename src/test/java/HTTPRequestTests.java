@@ -25,7 +25,7 @@ public class HTTPRequestTests {
     private void setupSimplePostRequest() {
         client.when(HttpRequest.request()
                 .withMethod("POST")
-                .withPath("/test")
+                .withPath("/graphql")
                 .withBody("{\"query\":\"test\"}"))
                 .respond(
                         HttpResponse.response()
@@ -36,7 +36,7 @@ public class HTTPRequestTests {
     private void setupPostRequestWithVariables() {
         client.when(HttpRequest.request()
                 .withMethod("POST")
-                .withPath("/test")
+                .withPath("/graphql")
                 .withBody("{\"variables\":{\"test\":123},\"query\":\"test\"}"))
                 .respond(
                         HttpResponse.response()
@@ -53,7 +53,6 @@ public class HTTPRequestTests {
 
     void sendPostRequest(){
         HTTPRequest httpRequest = new HTTPRequest();
-        httpRequest.setUrl("http://localhost:" + client.getLocalPort() + "/test");
         httpRequest.setQuery("test");
         response = httpRequest.post();
     }
@@ -67,7 +66,6 @@ public class HTTPRequestTests {
 
     private void sendPostRequestWithVariables() {
         HTTPRequest httpRequest = new HTTPRequest();
-        httpRequest.setUrl("http://localhost:" + client.getLocalPort() + "/test");
         httpRequest.setQuery("test");
         httpRequest.addVariable("test", 123);
         response = httpRequest.post();

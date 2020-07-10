@@ -1,6 +1,5 @@
 package com.swarm.models;
 
-import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
@@ -12,7 +11,6 @@ public class Invocation {
 
     public void create() {
         HTTPRequest createInvocationRequest = new HTTPRequest();
-        createInvocationRequest.setUrl(States.URL);
         createInvocationRequest.setQuery("mutation invocationCreate($sessionId:Long!,$invokingId:Long!,$invokedId:Long!)" +
                 "{invocationCreate(invocation:{session:{id:$sessionId},invoking:{id:$invokingId},invoked:{id:$invokedId},virtual:false}){id}}");
         createInvocationRequest.addVariable("sessionId", session.getId());

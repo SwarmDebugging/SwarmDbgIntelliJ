@@ -1,6 +1,5 @@
 package com.swarm.models;
 
-import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
@@ -12,7 +11,6 @@ public class Method {
 
     public void create() {
         HTTPRequest createMethodRequest = new HTTPRequest();
-        createMethodRequest.setUrl(States.URL);
         createMethodRequest.setQuery("mutation methodCreate($typeId:Long!,$signature:String!,$name:String!)" +
                 "{methodCreate(method:{type:{id:$typeId},signature:$signature,name:$name}){id}}");
         createMethodRequest.addVariable("typeId", type.getId());

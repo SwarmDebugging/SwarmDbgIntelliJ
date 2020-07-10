@@ -1,6 +1,5 @@
 package com.swarm.models;
 
-import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
@@ -13,7 +12,6 @@ public class Event {
 
     public void create() {
         HTTPRequest createEventRequest = new HTTPRequest();
-        createEventRequest.setUrl(States.URL);
         createEventRequest.setQuery("mutation eventCreate($sessionId:Long!,$lineNumber:Int!,$eventKind:String!,$methodId:Long!)" +
                 "{eventCreate(event:{session:{id:$sessionId},lineNumber:$lineNumber,kind:$eventKind,method:{id:$methodId}}){id}}");
         createEventRequest.addVariable("sessionId", session.getId());

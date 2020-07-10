@@ -1,6 +1,5 @@
 package com.swarm.services;
 
-import com.swarm.utils.States;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import com.swarm.utils.HTTPRequest;
@@ -30,7 +29,6 @@ public class ProductService {
 
     private JSONObject fetchTasks() {
         HTTPRequest fetchTasks = new HTTPRequest();
-        fetchTasks.setUrl(States.URL);
         fetchTasks.setQuery("{tasks{product{id,name},id,title,done}}");
         JSONObject response = new JSONObject(fetchTasks.post().getString("body"));
         return response.getJSONObject("data");
@@ -75,7 +73,6 @@ public class ProductService {
 
     private JSONObject fetchAllProducts() {
         HTTPRequest fetchAllProducts = new HTTPRequest();
-        fetchAllProducts.setUrl(States.URL);
         fetchAllProducts.setQuery("{allProducts{id,name}}");
         JSONObject response = new JSONObject(fetchAllProducts.post().getString("body"));
         return response.getJSONObject("data");

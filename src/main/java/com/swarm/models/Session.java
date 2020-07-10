@@ -1,6 +1,5 @@
 package com.swarm.models;
 
-import com.swarm.utils.States;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +13,6 @@ public class Session {
 
     public void stop() {
         HTTPRequest stopSession = new HTTPRequest();
-        stopSession.setUrl(States.URL);
         stopSession.setQuery("mutation sessionStop($sessionId:Long!)" +
                 "{sessionStop(id:$sessionId){id}}");
         stopSession.addVariable("sessionId", id);
@@ -37,7 +35,6 @@ public class Session {
 
     public void start() {
         HTTPRequest startSession = new HTTPRequest();
-        startSession.setUrl(States.URL);
         startSession.setQuery("mutation sessionStart($description:String!,$developerId:Long!,$taskId:Long!)" +
         "{sessionStart(session:{description:$description,developer:{id:$developerId},task:{id:$taskId,done:false}}){id}}");
         startSession.addVariable("description", description);
