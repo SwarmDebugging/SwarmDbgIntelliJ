@@ -2,6 +2,7 @@ package com.swarm.services;
 
 import com.swarm.models.Product;
 import com.swarm.models.Task;
+import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -88,5 +89,26 @@ public class ProductService {
                 productList.add(product);
             }
         }
+    }
+
+    public ArrayList<Product> getProductsByDeveloper() {
+        productList = new ArrayList<>();
+        addProductsLinkedToDevelopersTasks();
+        return productList;
+    }
+
+    private void addProductsLinkedToDevelopersTasks() {
+        JSONObject data = fetchDevelopersTasks();
+        if(!data.isNull("tasks")) {
+            JSONArray tasks = data.getJSONArray("tasks");
+            buildProductsFromTasks(tasks);
+        }
+    }
+
+    private JSONObject fetchDevelopersTasks() {
+        HTTPRequest fetchTasks = new HTTPRequest();
+        fetchTasks.setQuery("{tasks(developerId:" + ProductToolWindow.getDeveloper().getId() + "){product{id,name},id,title,done}}");
+        JSONObject response = new JSONObject(fetchTasks.post().getString("body"));
+        return response.getJSONObject("data");
     }
 }

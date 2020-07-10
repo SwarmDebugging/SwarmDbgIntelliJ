@@ -55,7 +55,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     public ProductToolWindow(Project project) {
         super(true, true);
 
-         rightClickPopupMenuMouseAdapter = new RightClickPopupMenuMouseAdapter(project, developer);
+        rightClickPopupMenuMouseAdapter = new RightClickPopupMenuMouseAdapter(project, developer);
 
         this.project = project;
 
@@ -64,16 +64,17 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void buildToolWindowContent() {
-        buildProductTreeView();
+        buildAllProductTreeView();
         setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
     }
 
     private JPanel createToolBarPanel() {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new LoginAction());
-        group.add(new RefreshAction());
+        group.add(new FetchAllProductsAction());
         group.add(new AddProductAction());
         group.add(new AddTaskAction());
+        group.add(new FilterDeveloperProductsAction());
         group.add(new StartRecordingEventsAction());
         group.add(new MarkTaskAsDoneAction());
         group.add(new StopSessionAction());
@@ -82,7 +83,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         return JBUI.Panels.simplePanel(actionToolbar.getComponent());
     }
 
-    private void buildProductTreeView() {
+    private void buildAllProductTreeView() {
         productList.clear();
         addProductsToProductList();
         if (!productList.isEmpty()) {
@@ -144,6 +145,8 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void displayNoProductsMessage() {
+        setContent(new JLabel("Create a new product to get started", SwingConstants.CENTER));
+
         Notification notification = new Notification("SwarmDebugging", SwarmIcons.Ant, NotificationType.INFORMATION);
         notification.setTitle("No products");
         notification.setContent("Create a new product to get started");
@@ -164,7 +167,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(developer.getId() != 0 && currentSession.getId() == 0);
+            e.getPresentation().setEnabled(developer.isLoggedIn() && !currentSession.isActive());
         }
     }
 
@@ -187,7 +190,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(getSelectedProductFromTree() != null && currentSession.getId() == 0);
+            e.getPresentation().setEnabled(getSelectedProductFromTree() != null && !currentSession.isActive());
         }
     }
 
@@ -232,13 +235,13 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(developer.getId() == 0 && currentSession.getId() == 0);
+            e.getPresentation().setEnabled(!developer.isLoggedIn() && !currentSession.isActive());
         }
     }
 
-    private final class RefreshAction extends DumbAwareAction {
-        RefreshAction() {
-            super("Refresh Products", "Refresh the developer's products", AllIcons.Actions.Refresh);
+    private final class FetchAllProductsAction extends DumbAwareAction {
+        FetchAllProductsAction() {
+            super("Fetch all products", "fetch all the products and tasks", AllIcons.Ide.IncomingChangesOn);
         }
 
         @Override
@@ -249,7 +252,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(developer.getId() != 0 && currentSession.getId() == 0);
+            e.getPresentation().setEnabled(developer.isLoggedIn() && !currentSession.isActive());
         }
     }
 
@@ -267,7 +270,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(getSelectedTaskFromTree() != null && currentSession.getId() == 0);
+            e.getPresentation().setEnabled(getSelectedTaskFromTree() != null && !currentSession.isActive());
         }
     }
 
@@ -295,6 +298,40 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         return null;
     }
 
+    private class FilterDeveloperProductsAction extends DumbAwareAction {
+        FilterDeveloperProductsAction() {
+            super("Filter developer's products", "Filter Products to get only the current developer's products", AllIcons.General.Filter);
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            buildFilteredProductTreeView();
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(developer.isLoggedIn() && !currentSession.isActive());
+        }
+    }
+
+    private void buildFilteredProductTreeView() {
+        setContent(new JLabel("Fetching developer's tasks...", SwingConstants.CENTER));
+        productList.clear();
+        addFilteredProductsToProductList();
+        if (!productList.isEmpty()) {
+            buildProductTree();
+            setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
+        } else {
+            displayNoProductsMessage();
+        }
+    }
+
+    private void addFilteredProductsToProductList() {
+        ProductService productService = new ProductService();
+        productList = productService.getProductsByDeveloper();
+    }
+
     private class StartRecordingEventsAction extends DumbAwareAction {
         StartRecordingEventsAction() {
             super("Start Recording Events", "Start recording breakpoint and debugging events in the selected task", AllIcons.Actions.Execute);
@@ -309,7 +346,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(getSelectedTaskFromTree() != null && currentSession.getId() == 0);
+            e.getPresentation().setEnabled(getSelectedTaskFromTree() != null && !currentSession.isActive());
         }
     }
 
@@ -341,7 +378,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(currentSession.getId() != 0);
+            e.getPresentation().setEnabled(currentSession.isActive());
         }
     }
 
@@ -359,7 +396,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(developer.getId() != 0 && currentSession.getId() == 0);
+            e.getPresentation().setEnabled(developer.isLoggedIn() && !currentSession.isActive());
         }
     }
 

@@ -74,4 +74,8 @@ public class Developer {
     public void setId(int id) {
         this.id = id;
     }
+
+    public boolean isLoggedIn() {
+        return id != 0;
+    }
 }

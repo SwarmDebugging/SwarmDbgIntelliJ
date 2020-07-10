@@ -64,4 +64,8 @@ public class Session {
     public void setTask(Task task) {
         this.task = task;
     }
+
+    public boolean isActive() {
+        return id != 0;
+    }
 }
