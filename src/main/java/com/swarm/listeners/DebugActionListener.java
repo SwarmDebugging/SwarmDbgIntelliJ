@@ -39,16 +39,29 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         Type type = new Type();
         ReadAction.run(() -> {
             var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
-            type.setFullName(file.getPackageName());
-            type.setName(file.getName());
             type.setSourceCode(file.getText());
             type.setFullPath(file.getVirtualFile().getPath());
-            if(!type.getFullName().equals("")) {
-                type.setFullName(type.getFullName() + "." + file.getName());
-            }
         });
 
         type.setSession(ProductToolWindow.getCurrentSession());
+
+        debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
+            @Override
+            protected void action() throws Exception {
+                try {
+                    var frame = DebuggerManagerEx.getInstanceEx(project).getContext().getThreadProxy().frames().get(0);
+                    var declaringType = frame.location().declaringType();
+
+                    String typeName = declaringType.sourceName();
+                    typeName = typeName.substring(0, typeName.lastIndexOf('.'));
+
+                    type.setName(typeName);
+                    type.setFullName(declaringType.name());
+                } catch (EvaluateException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         type.create();
 
         Method method = new Method();

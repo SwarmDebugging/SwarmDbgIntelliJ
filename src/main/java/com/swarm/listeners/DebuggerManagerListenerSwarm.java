@@ -77,26 +77,38 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
             return currentStackFrames.size() != States.lastStackFrames.size(); //Here if it's not the same frame count, it's an invocation
     }
 
-    //TODO:test this(run read action changed)
     private void makeInvocation() throws EvaluateException {
         Type invokedType = new Type();
 
         ReadAction.run(() -> {
             PsiJavaFile file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
             invokedType.setSourceCode(file.getText());
-            invokedType.setName(file.getName());
             invokedType.setFullPath(file.getVirtualFile().getPath());
-
-            invokedType.setFullName(file.getPackageName());
-            if(!invokedType.getFullName().equals("")) {
-                invokedType.setFullName(invokedType.getFullName() + "." + file.getName());
-            }
         });
 
         invokedType.setSession(ProductToolWindow.getCurrentSession());
+
+        DebuggerManagerEx.getInstanceEx(project).getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
+            @Override
+            protected void action() throws Exception {
+                try{
+                    var frame = DebuggerManagerEx.getInstanceEx(project).getContext().getThreadProxy().frames().get(0);
+                    var declaringType = frame.location().declaringType();
+
+                    String typeName = declaringType.sourceName();
+                    typeName = typeName.substring(0, typeName.lastIndexOf('.'));
+
+                    invokedType.setName(typeName);
+                    invokedType.setFullName(declaringType.name());
+                } catch (EvaluateException e){
+                    e.printStackTrace();
+                }
+            }
+        });
         invokedType.create();
 
         Method invoked = currentStackFrames.get(0).location().method();
+        //TODO:invoked.declaringType();
         com.swarm.models.Method invokedSwarmMethod = new com.swarm.models.Method();
         invokedSwarmMethod.setSignature(invoked.signature());
         invokedSwarmMethod.setName(invoked.name());

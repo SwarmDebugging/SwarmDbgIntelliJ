@@ -3,10 +3,7 @@ package com.swarm.listeners;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiParameter;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
 import com.intellij.xdebugger.breakpoints.XBreakpointListener;
@@ -57,17 +54,18 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
 
         ReadAction.run(() -> {
             PsiJavaFile file = (PsiJavaFile) PsiManager.getInstance(project).findFile(breakpoint.getSourcePosition().getFile());
-            type.setName(file.getName());
             type.setFullPath(file.getVirtualFile().getPath());
             type.setSourceCode(file.getText());
-
-            type.setFullName(file.getPackageName());
-            if(!type.getFullName().equals("")) {
-                type.setFullName(type.getFullName() + "." + file.getName());
-            }
             type.setSession(ProductToolWindow.getCurrentSession());
-            type.create();
+
             PsiMethod psiMethod = findMethodByBreakpointAndFile(breakpoint, file);
+            PsiClass psiClass = PsiTreeUtil.getParentOfType(psiMethod, PsiClass.class);
+
+            type.setName(psiClass.getName());
+            type.setFullName(psiClass.getQualifiedName());
+
+            type.create();
+
             if(psiMethod != null){
                 method.setName(psiMethod.getName());
                 method.setType(type);

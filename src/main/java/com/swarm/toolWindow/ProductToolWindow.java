@@ -60,10 +60,10 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         this.project = project;
 
         setContent(new JLabel("Login to view available products", SwingConstants.CENTER));
-        setToolbar(createToolBarPanel());
+        createToolBarPanel();
     }
 
-    private JPanel createToolBarPanel() {
+    private void createToolBarPanel() {
         final DefaultActionGroup group = new DefaultActionGroup();
         group.add(new LoginAction());
         group.add(new FetchAllProductsAction());
@@ -75,7 +75,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         group.add(new StopSessionAction());
         group.add(new LogoutAction());
         final ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("swarm", group, true);
-        return JBUI.Panels.simplePanel(actionToolbar.getComponent());
+        setToolbar(JBUI.Panels.simplePanel(actionToolbar.getComponent()));
     }
 
     private void buildAllProductTreeView() {
@@ -86,7 +86,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             buildProductTree();
             setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
         } else {
-            displayNoProductsMessage();
             setContent(new JLabel("Create a new product to get started", SwingConstants.CENTER));
         }
     }
@@ -140,13 +139,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
                 productTreeNode.add(taskNode);
             }
         }
-    }
-
-    private void displayNoProductsMessage() {
-        Notification notification = new Notification("SwarmDebugging", SwarmIcons.Ant, NotificationType.INFORMATION);
-        notification.setTitle("No products");
-        notification.setContent("Create a new product to get started");
-        Notifications.Bus.notify(notification);
     }
 
     private final class AddProductAction extends DumbAwareAction {
@@ -319,8 +311,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             buildProductTree();
             setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
         } else {
-            displayNoProductsMessage();
-            setContent(new JLabel("Create a new product to get started", SwingConstants.CENTER));
+            setContent(new JLabel("start a session with a task to associate a product with your account", SwingConstants.CENTER));
         }
     }
 
