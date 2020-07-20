@@ -11,7 +11,8 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Swarm Debugging" anchor="right" factoryClass="com.swarm.toolWindow.SwarmToolWindowFactory" icon="/icons/ant.svg"/>
+        <toolWindow id="Swarm Debugging Manager" anchor="right" factoryClass="com.swarm.toolWindow.ProductToolWindowFactory" icon="/icons/ant.svg"/>
+        <toolWindow id="Swarm Debugging Recommendations" anchor="bottom" factoryClass="com.swarm.toolWindow.RecommendationToolWindowFactory" icon="/icons/ant.svg"/>
     </extensions>
     
     <projectListeners>

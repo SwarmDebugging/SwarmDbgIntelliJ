@@ -66,4 +66,8 @@ public class Type {
     public void setSourceCode(String sourceCode) {
         this.sourceCode = sourceCode;
     }
+
+    public String getFullPath() {
+        return fullPath;
+    }
 }
