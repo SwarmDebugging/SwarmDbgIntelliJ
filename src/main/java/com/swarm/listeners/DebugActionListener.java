@@ -3,14 +3,18 @@ package com.swarm.listeners;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.engine.evaluation.EvaluateException;
 import com.intellij.debugger.engine.events.DebuggerCommandImpl;
+import com.intellij.debugger.impl.DebuggerUtilsEx;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiParameter;
 import com.intellij.xdebugger.impl.actions.*;
 import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.utils.States;
@@ -72,9 +76,20 @@ public class DebugActionListener implements AnActionListener, DumbAware {
                 try {
                     var frame = DebuggerManagerEx.getInstanceEx(project).getContext().getThreadProxy().frames().get(0);
                     String methodName = frame.location().method().name();
-                    String methodSignature = frame.location().method().signature();
                     method.setName(methodName);
-                    method.setSignature(methodSignature);
+
+                    ApplicationManager.getApplication().runReadAction(() -> {
+                        PsiMethod psiMethod = (PsiMethod) DebuggerUtilsEx.getContainingMethod(DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition());
+                        String methodReturnType;
+                        if(psiMethod.getReturnType() == null){
+                            methodReturnType = "Constructor";
+                        } else {
+                            methodReturnType = psiMethod.getReturnType().getCanonicalText();
+                        }
+                        PsiParameter[] parameters = psiMethod.getParameterList().getParameters();
+                        String methodSignature = encodeSignature(parameters, methodReturnType);
+                        method.setSignature(methodSignature);
+                    });
                 } catch (EvaluateException e) {
                     e.printStackTrace();
                 }
@@ -92,6 +107,18 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         event.create();
 
         return method.getId();
+    }
+
+    private String encodeSignature(PsiParameter[] parameters, String returnType) {
+        String result = "(";
+        for (int i = 0; i < parameters.length; i++) {
+            result += parameters[i].getType().getCanonicalText();
+            if(i != parameters.length-1){
+                result += ",";
+            }
+        }
+        result += ")" + returnType;
+        return result;
     }
 
     @Override
