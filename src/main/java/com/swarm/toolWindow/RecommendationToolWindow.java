@@ -1,8 +1,14 @@
 package com.swarm.toolWindow;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -10,80 +16,45 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtilBase;
-import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBList;
 import com.intellij.util.OpenSourceUtil;
+import com.intellij.util.ui.JBUI;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpointManager;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
 import com.swarm.models.Method;
-import com.swarm.services.RecommendationService;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 
 public class RecommendationToolWindow extends SimpleToolWindowPanel implements DumbAware {
     private final Project project;
-    private final RecommendationService recommendationService;
-    private final JPanel panel = new JPanel();
+    private JBList<Method> recommendationList;
 
     public RecommendationToolWindow(Project project) {
         super(false, true);
         this.project = project;
-        recommendationService = new RecommendationService();
 
-        panel.setLayout(new GridLayout(2, 3));
+        recommendationList = new RecommendationList();
+        setContent(recommendationList);
+        createToolBar();
+    }
 
-        /*we get the 2 most used methods but we need to check if they still exist, maybe we need the server to send all the methods*/
-        ArrayList<Method> recommendedMethods = recommendationService.getRecommendedMethods(3);
+    private void createToolBar() {
+        final DefaultActionGroup group = new DefaultActionGroup();
+        group.add(new JumpToSourceAction());
+        group.add(new SetBreakpointAction());
+        final ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("swarm", group, false);
+        setToolbar(JBUI.Panels.simplePanel(actionToolbar.getComponent()));
+    }
 
-        for (Method method : recommendedMethods) {
-            JLabel classNameLabel = new JLabel();
-            classNameLabel.setText(method.getName() + " in class " + method.getType().getName());
-
-            JLabel goToMethodLabel = new JLabel();
-            goToMethodLabel.setText("Go To Method");
-            goToMethodLabel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    super.mouseClicked(e);
-
-                    PsiMethod psiMethod = getPsiMethod(method);
-                    OpenSourceUtil.navigate(psiMethod);
-
-                    /* OpenFileDescriptor descriptor = new OpenFileDescriptor(project, file, offset);
-                    descriptor.navigate(true);*/
-                }
-            });
-
-            JLabel setBreakpointLabel = new JBLabel();
-            setBreakpointLabel.setText("set a breakpoint on the first line of the method");
-            setBreakpointLabel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    super.mouseClicked(e);
-
-                    PsiMethod psiMethod = getPsiMethod(method);
-                    var document = PsiDocumentManager.getInstance(project).getDocument(psiMethod.getContainingFile());
-                    int lineNumber = document.getLineNumber(psiMethod.getTextOffset());
-                    WriteCommandAction.runWriteCommandAction(project, () -> {
-                        addLineBreakpoint(project, method.getType().getFullPath(), lineNumber + 1);
-                    });
-                }
-            });
-
-            panel.add(classNameLabel);
-            panel.add(goToMethodLabel);
-            panel.add(setBreakpointLabel);
-        }
-
-        setContent(panel);
+    @Override
+    public JComponent getContent() {
+        return this.getComponent();
     }
 
     private PsiMethod getPsiMethod(Method method) {
@@ -171,5 +142,45 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         XDebuggerUtil.getInstance().toggleLineBreakpoint(project, virtualFile, line);
     }
 
+    private final class JumpToSourceAction extends DumbAwareAction {
+        JumpToSourceAction() {
+            super("Jump to the method's source code","Jump to the selected method's source code", AllIcons.FileTypes.Any_type);
+        }
 
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            Method method = recommendationList.getSelectedValue();
+            PsiMethod psiMethod = getPsiMethod(method);
+            OpenSourceUtil.navigate(psiMethod);
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
+        }
+    }
+
+    private final class SetBreakpointAction extends DumbAwareAction {
+        SetBreakpointAction() {
+            super("Set a breakpoint in the method", "Set a line breakpoint in the selected method's first line", AllIcons.Debugger.Db_set_breakpoint);
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            Method method = recommendationList.getSelectedValue();
+            PsiMethod psiMethod = getPsiMethod(method);
+            var document = PsiDocumentManager.getInstance(project).getDocument(psiMethod.getContainingFile());
+            int lineNumber = document.getLineNumber(psiMethod.getTextOffset());
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                addLineBreakpoint(project, method.getType().getFullPath(), lineNumber + 1);
+            });
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            super.update(e);
+            e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
+        }
+    }
 }
