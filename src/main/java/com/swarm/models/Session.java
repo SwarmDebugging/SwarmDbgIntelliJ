@@ -29,7 +29,7 @@ public class Session {
     private void clear() {
         id = 0;
         developer = null;
-        task = null;
+        task = new Task();
         description = "";
     }
 
@@ -67,5 +67,9 @@ public class Session {
 
     public boolean isActive() {
         return id != 0;
+    }
+
+    public Task getTask() {
+        return task;
     }
 }

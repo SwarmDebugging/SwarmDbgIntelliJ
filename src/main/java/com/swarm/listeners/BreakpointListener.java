@@ -53,13 +53,18 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         Method method = new Method();
 
         ReadAction.run(() -> {
-            PsiJavaFile file = (PsiJavaFile) PsiManager.getInstance(project).findFile(breakpoint.getSourcePosition().getFile());
+            PsiFile file = PsiManager.getInstance(project).findFile(breakpoint.getSourcePosition().getFile());
             type.setFullPath(file.getVirtualFile().getPath());
             type.setSourceCode(file.getText());
             type.setSession(ProductToolWindow.getCurrentSession());
 
             PsiMethod psiMethod = findMethodByBreakpointAndFile(breakpoint, file);
             PsiClass psiClass = PsiTreeUtil.getParentOfType(psiMethod, PsiClass.class);
+
+            PsiClass newClass;
+            while((newClass = PsiTreeUtil.getParentOfType(psiClass, PsiClass.class)) != null) {
+                psiClass = newClass;
+            }
 
             type.setName(psiClass.getName());
             type.setFullName(psiClass.getQualifiedName());
@@ -78,7 +83,6 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
                 PsiParameter[] parameters = psiMethod.getParameterList().getParameters();
                 String methodSignature = encodeSignature(parameters, methodReturnType);
                 method.setSignature(methodSignature);
-
             }
         });
 
@@ -96,7 +100,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         return type.getId();
     }
 
-    private PsiMethod findMethodByBreakpointAndFile(XBreakpoint breakpoint, PsiJavaFile file) {
+    private PsiMethod findMethodByBreakpointAndFile(XBreakpoint breakpoint, PsiFile file) {
         int offset = breakpoint.getSourcePosition().getOffset();
         var element = file.findElementAt(offset);
 
@@ -107,6 +111,11 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         PsiMethod method = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
         if(method == null && element.getNextSibling() instanceof PsiMethod) {
             method = PsiTreeUtil.getNextSiblingOfType(element, PsiMethod.class);
+        }
+
+        PsiMethod newMethod;
+        while((newMethod = PsiTreeUtil.getParentOfType(method, PsiMethod.class)) != null) {
+            method = newMethod;
         }
 
         return method;

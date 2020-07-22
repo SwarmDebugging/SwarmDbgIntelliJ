@@ -12,10 +12,15 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.messages.Topic;
 import com.sun.jdi.Method;
+import com.swarm.models.Task;
+import com.swarm.toolWindow.CurrentTaskProvider;
 import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.utils.States;
 import com.swarm.models.Invocation;
@@ -85,7 +90,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         Type invokedType = new Type();
 
         ReadAction.run(() -> {
-            PsiJavaFile file = (PsiJavaFile) DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
+            PsiFile file = DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
             invokedType.setSourceCode(file.getText());
             invokedType.setFullPath(file.getVirtualFile().getPath());
         });
@@ -93,14 +98,18 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         invokedType.setSession(ProductToolWindow.getCurrentSession());
 
         try {
-            var frame = DebuggerManagerEx.getInstanceEx(project).getContext().getThreadProxy().frames().get(0);
-            var declaringType = frame.location().declaringType();
+            ApplicationManager.getApplication().runReadAction(() -> {
+                PsiMethod psiMethod = (PsiMethod) DebuggerUtilsEx.getContainingMethod(DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition());
+                PsiClass psiClass = PsiTreeUtil.getParentOfType(psiMethod, PsiClass.class);
 
-            String typeName = declaringType.sourceName();
-            typeName = typeName.substring(0, typeName.lastIndexOf('.'));
+                PsiClass newClass;
+                while ((newClass = PsiTreeUtil.getParentOfType(psiClass, PsiClass.class)) != null) {
+                    psiClass = newClass;
+                }
 
-            invokedType.setName(typeName);
-            invokedType.setFullName(declaringType.name());
+                invokedType.setName(psiClass.getName());
+                invokedType.setFullName(psiClass.getQualifiedName());
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -111,8 +120,14 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         com.swarm.models.Method invokedSwarmMethod = new com.swarm.models.Method();
         ApplicationManager.getApplication().runReadAction(() -> {
             PsiMethod psiMethod = (PsiMethod) DebuggerUtilsEx.getContainingMethod(DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition());
+            PsiMethod newMethod;
+
+            while ((newMethod = PsiTreeUtil.getParentOfType(psiMethod, PsiMethod.class)) != null) {
+                psiMethod = newMethod;
+            }
+
             String methodReturnType;
-            if(psiMethod.getReturnType() == null){
+            if (psiMethod.getReturnType() == null) {
                 methodReturnType = "Constructor";
             } else {
                 methodReturnType = psiMethod.getReturnType().getCanonicalText();
@@ -137,7 +152,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         String result = "(";
         for (int i = 0; i < parameters.length; i++) {
             result += parameters[i].getType().getCanonicalText();
-            if(i != parameters.length-1){
+            if (i != parameters.length - 1) {
                 result += ",";
             }
         }

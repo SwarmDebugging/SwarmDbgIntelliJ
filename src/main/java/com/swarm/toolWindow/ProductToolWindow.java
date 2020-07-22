@@ -329,6 +329,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         public void actionPerformed(@NotNull AnActionEvent e) {
             createSwarmSession();
             allProductsTree.removeMouseListener(rightClickPopupMenuMouseAdapter);
+            CurrentTaskProvider.setTask(currentSession.getTask());
         }
 
         @Override
@@ -361,6 +362,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         public void actionPerformed(@NotNull AnActionEvent e) {
             currentSession.stop();
             allProductsTree.addMouseListener(rightClickPopupMenuMouseAdapter);
+            CurrentTaskProvider.setTask(currentSession.getTask());
         }
 
         @Override

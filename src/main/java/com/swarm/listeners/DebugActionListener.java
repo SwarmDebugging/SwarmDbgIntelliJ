@@ -12,9 +12,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiParameter;
+import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.impl.actions.*;
 import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.utils.States;
@@ -42,7 +41,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
 
         Type type = new Type();
         ReadAction.run(() -> {
-            var file = (PsiJavaFile) debuggerManagerEx.getContext().getSourcePosition().getFile();
+            PsiFile file = debuggerManagerEx.getContext().getSourcePosition().getFile();
             type.setSourceCode(file.getText());
             type.setFullPath(file.getVirtualFile().getPath());
         });
@@ -51,19 +50,19 @@ public class DebugActionListener implements AnActionListener, DumbAware {
 
         debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
             @Override
-            protected void action() throws Exception {
-                try {
-                    var frame = DebuggerManagerEx.getInstanceEx(project).getContext().getThreadProxy().frames().get(0);
-                    var declaringType = frame.location().declaringType();
+            protected void action() {
+                ApplicationManager.getApplication().runReadAction(() -> {
+                    PsiMethod psiMethod = (PsiMethod) DebuggerUtilsEx.getContainingMethod(debuggerManagerEx.getContext().getSourcePosition());
+                    PsiClass psiClass = PsiTreeUtil.getParentOfType(psiMethod, PsiClass.class);
 
-                    String typeName = declaringType.sourceName();
-                    typeName = typeName.substring(0, typeName.lastIndexOf('.'));
+                    PsiClass newClass;
+                    while ((newClass = PsiTreeUtil.getParentOfType(psiClass, PsiClass.class)) != null) {
+                        psiClass = newClass;
+                    }
 
-                    type.setName(typeName);
-                    type.setFullName(declaringType.name());
-                } catch (EvaluateException e) {
-                    e.printStackTrace();
-                }
+                    type.setName(psiClass.getName());
+                    type.setFullName(psiClass.getQualifiedName());
+                });
             }
         });
         type.create();
@@ -72,7 +71,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         method.setType(type);
         debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
             @Override
-            protected void action() throws Exception {
+            protected void action() {
                 try {
                     var frame = DebuggerManagerEx.getInstanceEx(project).getContext().getThreadProxy().frames().get(0);
                     String methodName = frame.location().method().name();
@@ -80,8 +79,12 @@ public class DebugActionListener implements AnActionListener, DumbAware {
 
                     ApplicationManager.getApplication().runReadAction(() -> {
                         PsiMethod psiMethod = (PsiMethod) DebuggerUtilsEx.getContainingMethod(DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition());
+                        PsiMethod newMethod;
+                        while ((newMethod = PsiTreeUtil.getParentOfType(psiMethod, PsiMethod.class)) != null) {
+                            psiMethod = newMethod;
+                        }
                         String methodReturnType;
-                        if(psiMethod.getReturnType() == null){
+                        if (psiMethod.getReturnType() == null) {
                             methodReturnType = "Constructor";
                         } else {
                             methodReturnType = psiMethod.getReturnType().getCanonicalText();
@@ -113,7 +116,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         String result = "(";
         for (int i = 0; i < parameters.length; i++) {
             result += parameters[i].getType().getCanonicalText();
-            if(i != parameters.length-1){
+            if (i != parameters.length - 1) {
                 result += ",";
             }
         }

@@ -10,8 +10,10 @@ import java.util.ArrayList;
 public class RecommendationList extends JBList<Method> {
     private final DefaultListModel<Method> myModel;
     private final RecommendationService recommendationService = new RecommendationService();
+    private final int taskId;
 
-    public RecommendationList() {
+    public RecommendationList(int taskId) {
+        this.taskId = taskId;
         myModel = new DefaultListModel<>();
         setModel(myModel);
         setCellRenderer(new RecommendationItemCellRenderer());
@@ -25,7 +27,7 @@ public class RecommendationList extends JBList<Method> {
 
     private void getRecommendations() {
         myModel.removeAllElements();
-        ArrayList<Method> recommendedMethods = recommendationService.getRecommendedMethods(3);
+        ArrayList<Method> recommendedMethods = recommendationService.getRecommendedMethods(taskId);
         for (Method method: recommendedMethods) {
             myModel.addElement(method);
         }

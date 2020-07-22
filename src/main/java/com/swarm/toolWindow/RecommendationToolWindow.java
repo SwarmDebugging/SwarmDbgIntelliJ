@@ -1,6 +1,8 @@
 package com.swarm.toolWindow;
 
+import com.intellij.application.Topics;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -15,6 +17,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilBase;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.OpenSourceUtil;
@@ -25,13 +28,14 @@ import com.intellij.xdebugger.breakpoints.XBreakpointManager;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
 import com.swarm.models.Method;
+import com.swarm.models.Task;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.io.File;
 import java.nio.file.Path;
 
-public class RecommendationToolWindow extends SimpleToolWindowPanel implements DumbAware {
+public class RecommendationToolWindow extends SimpleToolWindowPanel implements DumbAware, CurrentTaskProvider.Handler, Disposable {
     private final Project project;
     private JBList<Method> recommendationList;
 
@@ -39,7 +43,9 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         super(false, true);
         this.project = project;
 
-        recommendationList = new RecommendationList();
+        Topics.subscribe(CurrentTaskProvider.Handler.CURRENT_TASK_TOPIC, this, this);
+
+        recommendationList = new RecommendationList(0);
         setContent(recommendationList);
         createToolBar();
     }
@@ -64,8 +70,9 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(method.getType().getFullPath()));
             //FileEditorManager.getInstance(project).openFile(file,true);
 
-            PsiJavaFile psiFile = (PsiJavaFile) PsiUtilBase.getPsiFile(project, file);
-            PsiClass[] classes = psiFile.getClasses();
+            PsiFile psiFile = PsiUtilBase.getPsiFile(project, file);
+            PsiClass psiClass = PsiTreeUtil.getChildOfType(psiFile, PsiClass.class);
+            /*PsiClass[] classes = psiFile.getClasses();
             PsiClass psiClass = null;
             if (classes.length == 1) {
                 psiClass = classes[0];
@@ -75,7 +82,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
                         psiClass = psiclass;
                     }
                 }
-            }
+            }*/
             String methodName = method.getName();
             PsiMethod[] psiMethods = psiClass.findMethodsByName(methodName, false);
             if (psiMethods.length == 0) {
@@ -142,6 +149,11 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         XDebuggerUtil.getInstance().toggleLineBreakpoint(project, virtualFile, line);
     }
 
+    @Override
+    public void dispose() {
+
+    }
+
     private final class JumpToSourceAction extends DumbAwareAction {
         JumpToSourceAction() {
             super("Jump to the method's source code","Jump to the selected method's source code", AllIcons.FileTypes.Any_type);
@@ -182,5 +194,11 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             super.update(e);
             e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
         }
+    }
+
+    @Override
+    public void currentTaskAction(Task task) {
+        recommendationList = new RecommendationList(task.getId());
+        setContent(recommendationList);
     }
 }
