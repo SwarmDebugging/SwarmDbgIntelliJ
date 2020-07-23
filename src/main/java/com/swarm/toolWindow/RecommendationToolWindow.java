@@ -45,8 +45,13 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         Topics.subscribe(CurrentTaskProvider.Handler.CURRENT_TASK_TOPIC, this, this);
 
-        recommendationList = new RecommendationList(0);
-        setContent(recommendationList);
+        Task task = CurrentTaskProvider.getTask();
+        if(task != null) {
+            recommendationList = new RecommendationList(task.getId());
+            setContent(recommendationList);
+        } else {
+            setContent(new JLabel("Start a session to see breakpoint location recommendations"));
+        }
         createToolBar();
     }
 
@@ -169,7 +174,11 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
+            if(recommendationList != null) {
+                e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
+            } else {
+                e.getPresentation().setEnabled(false);
+            }
         }
     }
 
@@ -192,12 +201,21 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
+            if(recommendationList != null) {
+                e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
+            } else {
+                e.getPresentation().setEnabled(false);
+            }
         }
     }
 
     @Override
     public void currentTaskAction(Task task) {
+        if(task.getId() == 0) {
+            setContent(new JLabel("Start a session to see breakpoint location recommendations"));
+            recommendationList = null;
+            return;
+        }
         recommendationList = new RecommendationList(task.getId());
         setContent(recommendationList);
     }
