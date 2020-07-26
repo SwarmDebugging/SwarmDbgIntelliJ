@@ -1,15 +1,19 @@
 package com.swarm.toolWindow;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.popup.JBPopup;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.ui.popup.ListPopup;
+import com.intellij.openapi.ui.popup.PopupChooserBuilder;
 import com.intellij.ui.ScrollPaneFactory;
+import com.intellij.ui.awt.RelativePoint;
+import com.intellij.util.Consumer;
 import com.intellij.util.ui.JBUI;
 import com.swarm.dialogs.CreateProductDialog;
 import com.swarm.dialogs.CreateSessionDialog;
@@ -21,6 +25,7 @@ import com.swarm.models.Session;
 import com.swarm.models.Task;
 import com.swarm.mouseAdapters.RightClickPopupMenuMouseAdapter;
 import com.swarm.services.ProductService;
+import com.swarm.services.SessionService;
 import com.swarm.tree.ProductTree;
 import com.swarm.tree.ProductTreeNode;
 import com.swarm.tree.ProductTreeRenderer;
@@ -31,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAware {
@@ -214,9 +220,33 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
+            /*Developer developer = new Developer();
+            developer.setId(1);
+            SessionService sessionService = new SessionService();
+            ArrayList<Session> sessions = sessionService.sessionsByDeveloper(developer);
+            var builder = JBPopupFactory.getInstance().createPopupChooserBuilder(sessions);
+            builder.setItemChosenCallback(session -> {
+                int i = 0;
+            });
+            builder.setRequestFocus(true).setTitle("Resume Session?").createPopup().showInBestPositionFor(e.getDataContext());*/
             LoginDialog loginDialog = new LoginDialog(project);
-            if(loginDialog.showAndGet()) {
+            boolean loggedIn = loginDialog.showAndGet();
+            if(loggedIn) {
                 buildAllProductTreeView();
+
+                SessionService sessionService = new SessionService();
+                ArrayList<Session> sessions = sessionService.sessionsByDeveloper(developer);
+                ArrayList<Session> openedSessions = new ArrayList<>();
+                for (Session session : sessions) {
+                    if(!session.isFinished()) {
+                        openedSessions.add(session);
+                    }
+                }
+                var builder = JBPopupFactory.getInstance().createPopupChooserBuilder(openedSessions);
+                builder.setItemChosenCallback(session -> {
+                    int i = 0;
+                });
+                builder.setRequestFocus(true).createPopup().showInBestPositionFor(e.getDataContext());
             }
         }
 

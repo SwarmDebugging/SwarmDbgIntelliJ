@@ -22,7 +22,7 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
             boolean leaf,
             int row,
             boolean hasFocus) {
-        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, true);
+        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         this.node = (ProductTreeNode) value;
         buildTreeNodesAppearance();
 

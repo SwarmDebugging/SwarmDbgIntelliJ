@@ -12,6 +12,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.impl.actions.*;
@@ -29,11 +30,51 @@ public class DebugActionListener implements AnActionListener, DumbAware {
 
     Project project;
     private long lastEventTime = -1;
+    private boolean noSessionReminderShown = false;
 
     public static Method invokingMethod = new Method();
 
     public DebugActionListener(Project project) {
         this.project = project;
+    }
+
+    @Override
+    public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
+        if (ProductToolWindow.getCurrentSessionId() == 0) {
+            if((action instanceof ToggleLineBreakpointAction || action instanceof StepOverAction || action instanceof StepIntoAction) && !noSessionReminderShown) {
+                showNoActiveSessionMessage();
+                noSessionReminderShown = true;
+            }
+            return;
+        }
+        // The following is a hack to work around an issue with IDEA, where certain events arrive
+        // twice. See https://youtrack.jetbrains.com/issue/IDEA-219133
+        final InputEvent input = event.getInputEvent();
+        if (input instanceof MouseEvent) {
+            if (input.getWhen() != 0 && lastEventTime == input.getWhen()) {
+                return;
+            }
+            lastEventTime = input.getWhen();
+        }
+        if (action instanceof StepIntoAction || action instanceof ForceStepIntoAction) {
+            invokingMethod.setId(handleEvent("StepInto"));
+            States.isSteppedInto = true;
+        } else if (action instanceof StepOverAction || action instanceof ForceStepOverAction) {
+            handleEvent("StepOver");
+        } else if (action instanceof StepOutAction) {
+            handleEvent("StepOut");
+        } else if (action instanceof ResumeAction) {
+            handleEvent("Resume");
+        }
+    }
+
+    private void showNoActiveSessionMessage() {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Messages.showInfoMessage(project,"Reminder: No debugging data is collected, start a session to start data collection","No Active Session");
+            }
+        });
     }
 
     private int handleEvent(String eventKind) {
@@ -122,31 +163,5 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         }
         result += ")" + returnType;
         return result;
-    }
-
-    @Override
-    public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
-        if (ProductToolWindow.getCurrentSessionId() == 0) {
-            return;
-        }
-        // The following is a hack to work around an issue with IDEA, where certain events arrive
-        // twice. See https://youtrack.jetbrains.com/issue/IDEA-219133
-        final InputEvent input = event.getInputEvent();
-        if (input instanceof MouseEvent) {
-            if (input.getWhen() != 0 && lastEventTime == input.getWhen()) {
-                return;
-            }
-            lastEventTime = input.getWhen();
-        }
-        if (action instanceof StepIntoAction || action instanceof ForceStepIntoAction) {
-            invokingMethod.setId(handleEvent("StepInto"));
-            States.isSteppedInto = true;
-        } else if (action instanceof StepOverAction || action instanceof ForceStepOverAction) {
-            handleEvent("StepOver");
-        } else if (action instanceof StepOutAction) {
-            handleEvent("StepOut");
-        } else if (action instanceof ResumeAction) {
-            handleEvent("Resume");
-        }
     }
 }

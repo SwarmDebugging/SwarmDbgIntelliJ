@@ -12,7 +12,9 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -192,9 +194,16 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             Method method = recommendationList.getSelectedValue();
             PsiMethod psiMethod = getPsiMethod(method);
             var document = PsiDocumentManager.getInstance(project).getDocument(psiMethod.getContainingFile());
-            int lineNumber = document.getLineNumber(psiMethod.getTextOffset());
+            int methodFirstLine = document.getLineNumber(psiMethod.getTextOffset());
+            String line = "";
+             do{
+                methodFirstLine++;
+                TextRange range = new TextRange(document.getLineStartOffset(methodFirstLine), document.getLineEndOffset(methodFirstLine));
+                line = document.getText(range);
+            }while(line.matches("\\A\\s*\\z"));
+            int finalMethodFirstLine = methodFirstLine;
             WriteCommandAction.runWriteCommandAction(project, () -> {
-                addLineBreakpoint(project, method.getType().getFullPath(), lineNumber + 1);
+                addLineBreakpoint(project, method.getType().getFullPath(), finalMethodFirstLine);
             });
         }
 

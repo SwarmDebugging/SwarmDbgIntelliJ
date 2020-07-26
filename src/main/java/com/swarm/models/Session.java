@@ -9,6 +9,7 @@ public class Session {
     private Developer developer;
     private Task task;
     private String description;
+    private boolean finished;
 
 
     public void stop() {
@@ -71,5 +72,13 @@ public class Session {
 
     public Task getTask() {
         return task;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
     }
 }
