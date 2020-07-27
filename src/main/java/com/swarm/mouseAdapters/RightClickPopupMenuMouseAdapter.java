@@ -44,7 +44,7 @@ public class RightClickPopupMenuMouseAdapter extends MouseAdapter {
                 JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(product);
                 popupMenu.show(e.getComponent(), e.getX(), e.getY());
             }
-        } else {
+        } /*else {
             JTree tree = (JTree) e.getSource();
             int selRow = tree.getRowForLocation(e.getX(), e.getY());
             if(selRow == -1) {
@@ -61,6 +61,6 @@ public class RightClickPopupMenuMouseAdapter extends MouseAdapter {
             } else {
                 CurrentTaskProvider.setTask(new Task());
             }
-        }
+        }*/
     }
 }

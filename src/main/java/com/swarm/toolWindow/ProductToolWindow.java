@@ -34,7 +34,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.util.ArrayList;
@@ -54,9 +57,13 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         return developer;
     }
 
-    public static int getCurrentSessionId() {return currentSession.getId();}
+    public static int getCurrentSessionId() {
+        return currentSession.getId();
+    }
 
-    public static Session getCurrentSession() {return currentSession;}
+    public static Session getCurrentSession() {
+        return currentSession;
+    }
 
     public ProductToolWindow(Project project) {
         super(true, true);
@@ -120,6 +127,19 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         allProductsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         allProductsTree.setCellRenderer(new ProductTreeRenderer());
         allProductsTree.addMouseListener(rightClickPopupMenuMouseAdapter);
+        allProductsTree.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent treeSelectionEvent) {
+                var tree = (ProductTree) treeSelectionEvent.getSource();
+                ProductTreeNode node = (ProductTreeNode) tree.getLastSelectedPathComponent();
+                Task task = new Task();
+                if (node.isTask()) {
+                    task.setId(node.getId());
+                }
+                CurrentTaskProvider.setTask(task);
+
+            }
+        });
     }
 
     private void addProductToAllProductsNode(Product product) {
@@ -200,7 +220,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private ProductTreeNode getSelectedProductFromTree() {
-        if(allProductsTree == null) {
+        if (allProductsTree == null) {
             return null;
         }
         ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
@@ -216,7 +236,9 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private final class LoginAction extends DumbAwareAction {
-        LoginAction() {super("Login", "Log into your swarm debugging account", AllIcons.Actions.TraceInto);}
+        LoginAction() {
+            super("Login", "Log into your swarm debugging account", AllIcons.Actions.TraceInto);
+        }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
@@ -231,14 +253,14 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             builder.setRequestFocus(true).setTitle("Resume Session?").createPopup().showInBestPositionFor(e.getDataContext());*/
             LoginDialog loginDialog = new LoginDialog(project);
             boolean loggedIn = loginDialog.showAndGet();
-            if(loggedIn) {
+            if (loggedIn) {
                 buildAllProductTreeView();
 
                 SessionService sessionService = new SessionService();
                 ArrayList<Session> sessions = sessionService.sessionsByDeveloper(developer);
                 ArrayList<Session> openedSessions = new ArrayList<>();
                 for (Session session : sessions) {
-                    if(!session.isFinished()) {
+                    if (!session.isFinished()) {
                         openedSessions.add(session);
                     }
                 }
@@ -303,7 +325,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private ProductTreeNode getSelectedTaskFromTree() {
-        if(allProductsTree == null) {
+        if (allProductsTree == null) {
             return null;
         }
         ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
@@ -376,7 +398,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         Task task = new Task();
         task.setId(taskNode.getId());
         CreateSessionDialog createSessionDialog = new CreateSessionDialog(project);
-        if(createSessionDialog.showAndGet()) {
+        if (createSessionDialog.showAndGet()) {
             currentSession.setTask(task);
             currentSession.setDeveloper(developer);
             currentSession.setDescription(createSessionDialog.getDescription());
@@ -385,7 +407,9 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private class StopSessionAction extends DumbAwareAction {
-        StopSessionAction() {super("Stop Current Swarm Session", "Stop the currently active swarm session", AllIcons.Actions.Suspend);}
+        StopSessionAction() {
+            super("Stop Current Swarm Session", "Stop the currently active swarm session", AllIcons.Actions.Suspend);
+        }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {

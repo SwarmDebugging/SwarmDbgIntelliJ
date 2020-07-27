@@ -75,9 +75,13 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         ApplicationManager.getApplication().runReadAction(() -> {
             VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(method.getType().getFullPath()));
+            if(file == null){
+                return;
+            }
             //FileEditorManager.getInstance(project).openFile(file,true);
 
-            PsiFile psiFile = PsiUtilBase.getPsiFile(project, file);
+            //PsiFile psiFile = PsiUtilBase.getPsiFile(project, file);
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
             PsiClass psiClass = PsiTreeUtil.getChildOfType(psiFile, PsiClass.class);
             /*PsiClass[] classes = psiFile.getClasses();
             PsiClass psiClass = null;
@@ -92,14 +96,12 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             }*/
             String methodName = method.getName();
             PsiMethod[] psiMethods = psiClass.findMethodsByName(methodName, false);
-            if (psiMethods.length == 0) {
+            /*if (psiMethods.length == 0) {
                 psiMethods = psiClass.getMethods();
-                for (PsiMethod forMethod : psiMethods) {
-                    //PsiMethod[] PsiMethodsMethods = method.g
-                }
             } else if (psiMethods.length == 1) {
                 psiMethod[0] = psiMethods[0];
-            }
+            }*/
+            psiMethod[0] = psiMethods[0];
 
         });
         return psiMethod[0];

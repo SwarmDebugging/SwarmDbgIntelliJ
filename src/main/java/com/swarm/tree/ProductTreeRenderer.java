@@ -34,11 +34,6 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
         }
         if (node.isTask()) {
             setIcon(AllIcons.Actions.Selectall);
-            if(sel){
-                Task task = new Task();
-                task.setId(node.getId());
-                CurrentTaskProvider.setTask(task);
-            }
         } else if (node.isProduct()) {
             setIcon(AllIcons.Nodes.Package);
         }
