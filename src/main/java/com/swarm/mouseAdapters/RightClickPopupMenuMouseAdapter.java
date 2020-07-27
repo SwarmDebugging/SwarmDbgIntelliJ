@@ -5,6 +5,7 @@ import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Task;
 import com.swarm.popupMenu.PopupMenuBuilder;
+import com.swarm.toolWindow.CurrentTaskProvider;
 import com.swarm.tree.ProductTreeNode;
 
 import javax.swing.*;
@@ -42,6 +43,23 @@ public class RightClickPopupMenuMouseAdapter extends MouseAdapter {
                 product.setId(node.getId());
                 JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(product);
                 popupMenu.show(e.getComponent(), e.getX(), e.getY());
+            }
+        } else {
+            JTree tree = (JTree) e.getSource();
+            int selRow = tree.getRowForLocation(e.getX(), e.getY());
+            if(selRow == -1) {
+                return;
+            }
+            tree.setSelectionRow(selRow);
+            tree.requestFocusInWindow();
+
+            ProductTreeNode node = (ProductTreeNode) ((JTree) e.getSource()).getLastSelectedPathComponent();
+            if(node.isTask()) {
+                Task task = new Task();
+                task.setId(node.getId());
+                CurrentTaskProvider.setTask(task);
+            } else {
+                CurrentTaskProvider.setTask(new Task());
             }
         }
     }

@@ -11,7 +11,7 @@ public class CurrentTaskProvider {
 
     static Task getTask() {return task;}
 
-    static void setTask(Task newTask){
+    public static void setTask(Task newTask){
         task = newTask;
         final Handler currentTaskProvider = messageBus.syncPublisher(Handler.CURRENT_TASK_TOPIC);
         currentTaskProvider.currentTaskAction(task);

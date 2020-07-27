@@ -1,6 +1,8 @@
 package com.swarm.tree;
 
 import com.intellij.icons.AllIcons;
+import com.swarm.models.Task;
+import com.swarm.toolWindow.CurrentTaskProvider;
 import icons.SwarmIcons;
 
 import javax.swing.*;
@@ -32,6 +34,11 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
         }
         if (node.isTask()) {
             setIcon(AllIcons.Actions.Selectall);
+            if(sel){
+                Task task = new Task();
+                task.setId(node.getId());
+                CurrentTaskProvider.setTask(task);
+            }
         } else if (node.isProduct()) {
             setIcon(AllIcons.Nodes.Package);
         }

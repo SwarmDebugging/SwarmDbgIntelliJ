@@ -52,7 +52,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             recommendationList = new RecommendationList(task.getId());
             setContent(recommendationList);
         } else {
-            setContent(new JLabel("Start a session to see breakpoint location recommendations"));
+            setContent(new JLabel("Select a task to see breakpoint location recommendations"));
         }
         createToolBar();
     }
@@ -221,7 +221,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
     @Override
     public void currentTaskAction(Task task) {
         if(task.getId() == 0) {
-            setContent(new JLabel("Start a session to see breakpoint location recommendations"));
+            setContent(new JLabel("Select a task to get breakpoint recommendations"));
             recommendationList = null;
             return;
         }
