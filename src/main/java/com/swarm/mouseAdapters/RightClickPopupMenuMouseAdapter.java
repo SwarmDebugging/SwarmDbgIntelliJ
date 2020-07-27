@@ -7,8 +7,10 @@ import com.swarm.models.Task;
 import com.swarm.popupMenu.PopupMenuBuilder;
 import com.swarm.toolWindow.CurrentTaskProvider;
 import com.swarm.tree.ProductTreeNode;
+import com.swarm.tree.TaskTreeNode;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -29,38 +31,23 @@ public class RightClickPopupMenuMouseAdapter extends MouseAdapter {
             tree.setSelectionRow(selRow);
             tree.requestFocusInWindow();
 
-            ProductTreeNode node = (ProductTreeNode) ((JTree) e.getSource()).getLastSelectedPathComponent();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) ((JTree) e.getSource()).getLastSelectedPathComponent();
             if (node == null || node.isRoot()) {
                 return;
             }
-            if (node.isTask()) {
+            if (node instanceof TaskTreeNode) {
                 Task task = new Task();
-                task.setId(node.getId());
+                TaskTreeNode taskNode = (TaskTreeNode) node;
+                task.setId(taskNode.getId());
                 JPopupMenu popupMenu = popupMenuBuilder.buildTaskNodePopupMenu(task);
                 popupMenu.show(e.getComponent(), e.getX(), e.getY());
-            } else if (node.isProduct()) {
+            } else if (node instanceof ProductTreeNode) {
                 Product product = new Product();
-                product.setId(node.getId());
+                ProductTreeNode productNode = (ProductTreeNode) node;
+                product.setId(productNode.getId());
                 JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(product);
                 popupMenu.show(e.getComponent(), e.getX(), e.getY());
             }
-        } /*else {
-            JTree tree = (JTree) e.getSource();
-            int selRow = tree.getRowForLocation(e.getX(), e.getY());
-            if(selRow == -1) {
-                return;
-            }
-            tree.setSelectionRow(selRow);
-            tree.requestFocusInWindow();
-
-            ProductTreeNode node = (ProductTreeNode) ((JTree) e.getSource()).getLastSelectedPathComponent();
-            if(node.isTask()) {
-                Task task = new Task();
-                task.setId(node.getId());
-                CurrentTaskProvider.setTask(task);
-            } else {
-                CurrentTaskProvider.setTask(new Task());
-            }
-        }*/
+        }
     }
 }

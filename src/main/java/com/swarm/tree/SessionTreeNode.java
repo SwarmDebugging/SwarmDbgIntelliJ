@@ -5,14 +5,14 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-public class ProductTreeNode extends DefaultMutableTreeNode {
+public class SessionTreeNode extends DefaultMutableTreeNode {
 
     protected DefaultTreeModel model;
 
     private int id;
     private final String toolTip;
 
-    public ProductTreeNode(String nodeTitle, int id) {
+    public SessionTreeNode(String nodeTitle, int id) {
         super(nodeTitle);
         this.model = null;
         this.id = id;
@@ -50,13 +50,4 @@ public class ProductTreeNode extends DefaultMutableTreeNode {
             model.nodesWereInserted(node, childIndices);
         }
     }
-
-    /*public boolean isTask() {
-        return this.isLeaf() && this.getParent().getParent() != null;
-    }
-
-    public boolean isProduct() {
-        return !this.isRoot();
-    }*/
-
 }

@@ -26,9 +26,7 @@ import com.swarm.models.Task;
 import com.swarm.mouseAdapters.RightClickPopupMenuMouseAdapter;
 import com.swarm.services.ProductService;
 import com.swarm.services.SessionService;
-import com.swarm.tree.ProductTree;
-import com.swarm.tree.ProductTreeNode;
-import com.swarm.tree.ProductTreeRenderer;
+import com.swarm.tree.*;
 import icons.SwarmIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
@@ -49,7 +48,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     private static final Session currentSession = new Session();
 
     private ArrayList<Product> productList = new ArrayList<>();
-    private ProductTreeNode allProductsNode;
+    private AllProductsTreeNode allProductsNode;
     private ProductTree allProductsTree;
     private final RightClickPopupMenuMouseAdapter rightClickPopupMenuMouseAdapter;
 
@@ -116,7 +115,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void createAllProductsNode() {
-        allProductsNode = new ProductTreeNode("Products", 0);
+        allProductsNode = new AllProductsTreeNode();
         DefaultTreeModel allProductsTreeModel = new DefaultTreeModel(allProductsNode);
         allProductsNode.setModel(allProductsTreeModel);
         buildAllProductsTree(allProductsTreeModel);
@@ -131,10 +130,11 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             @Override
             public void valueChanged(TreeSelectionEvent treeSelectionEvent) {
                 var tree = (ProductTree) treeSelectionEvent.getSource();
-                ProductTreeNode node = (ProductTreeNode) tree.getLastSelectedPathComponent();
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
                 Task task = new Task();
-                if (node.isTask()) {
-                    task.setId(node.getId());
+                if (node instanceof TaskTreeNode) {
+                    TaskTreeNode taskNode = (TaskTreeNode) node;
+                    task.setId(taskNode.getId());
                 }
                 CurrentTaskProvider.setTask(task);
 
@@ -161,7 +161,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     private void addTasksToProductNode(ArrayList<Task> tasks, ProductTreeNode productTreeNode) {
         for (Task task : tasks) {
             if (!(task.isDone())) {
-                ProductTreeNode taskNode = new ProductTreeNode(task.getTitle(), task.getId());
+                TaskTreeNode taskNode = new TaskTreeNode(task.getTitle(), task.getId());
                 productTreeNode.add(taskNode);
             }
         }
@@ -223,14 +223,14 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         if (allProductsTree == null) {
             return null;
         }
-        ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) allProductsTree.getLastSelectedPathComponent();
         if (node == null || node.isRoot()) {
             return null;
         }
-        if (node.isTask()) {
+        if (node instanceof TaskTreeNode) {
             return null;
-        } else if (node.isProduct()) {
-            return node;
+        } else if (node instanceof ProductTreeNode) {
+            return (ProductTreeNode) node;
         }
         return null;
     }
@@ -315,7 +315,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void markSelectedTaskAsDone() {
-        ProductTreeNode taskNode = getSelectedTaskFromTree();
+        TaskTreeNode taskNode = getSelectedTaskFromTree();
         if (taskNode == null) {
             return;
         }
@@ -324,16 +324,16 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         task.markAsDone();
     }
 
-    private ProductTreeNode getSelectedTaskFromTree() {
+    private TaskTreeNode getSelectedTaskFromTree() {
         if (allProductsTree == null) {
             return null;
         }
-        ProductTreeNode node = (ProductTreeNode) allProductsTree.getLastSelectedPathComponent();
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) allProductsTree.getLastSelectedPathComponent();
         if (node == null || node.isRoot()) {
             return null;
         }
-        if (node.isTask()) {
-            return node;
+        if (node instanceof TaskTreeNode) {
+            return (TaskTreeNode) node;
         }
         return null;
     }
@@ -391,7 +391,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void createSwarmSession() {
-        ProductTreeNode taskNode = getSelectedTaskFromTree();
+        TaskTreeNode taskNode = getSelectedTaskFromTree();
         if (taskNode == null) {
             return;
         }

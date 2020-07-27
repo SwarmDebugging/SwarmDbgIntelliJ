@@ -1,17 +1,14 @@
 package com.swarm.tree;
 
 import com.intellij.icons.AllIcons;
-import com.swarm.models.Task;
-import com.swarm.toolWindow.CurrentTaskProvider;
 import icons.SwarmIcons;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 
 public class ProductTreeRenderer extends DefaultTreeCellRenderer {
-
-    ProductTreeNode node;
 
     public ProductTreeRenderer() {
     }
@@ -25,23 +22,21 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
             int row,
             boolean hasFocus) {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-        this.node = (ProductTreeNode) value;
         buildTreeNodesAppearance();
 
-        if (node.getParent() == null) {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+        if (node instanceof AllProductsTreeNode) {
             setIcon(SwarmIcons.Ant);
-            return this;
-        }
-        if (node.isTask()) {
+        } else if (node instanceof TaskTreeNode) {
             setIcon(AllIcons.Actions.Selectall);
-        } else if (node.isProduct()) {
+        } else if (node instanceof ProductTreeNode) {
             setIcon(AllIcons.Nodes.Package);
         }
         return this;
     }
 
     private void buildTreeNodesAppearance() {
-        setToolTipText(node.getToolTip() + " (Right click for more options)");
+        setToolTipText("(Right click for more options)");
         setBorderSelectionColor(null);
         setBackgroundNonSelectionColor(null);
         setBackground(null);

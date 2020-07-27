@@ -5,14 +5,14 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-public class ProductTreeNode extends DefaultMutableTreeNode {
+public class TaskTreeNode extends DefaultMutableTreeNode {
 
     protected DefaultTreeModel model;
 
     private int id;
     private final String toolTip;
 
-    public ProductTreeNode(String nodeTitle, int id) {
+    public TaskTreeNode(String nodeTitle, int id) {
         super(nodeTitle);
         this.model = null;
         this.id = id;
