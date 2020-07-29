@@ -18,16 +18,21 @@ public class SessionService {
         getSessionsByDeveloperId.setQuery("query sessions($developerId:Long!){sessions(developerId:$developerId){id,finished}}");
         getSessionsByDeveloperId.addVariable("developerId", developer.getId());
         JSONObject response = new JSONObject(getSessionsByDeveloperId.post().getString("body"));
+
         if((!response.getJSONObject("data").isNull("sessions"))) {
             JSONArray sessions = response.getJSONObject("data").getJSONArray("sessions");
-            for (int i = 0; i < sessions.length(); i++) {
-                JSONObject jsonSession = sessions.getJSONObject(i);
-                Session newSession = new Session();
-                newSession.setFinished(jsonSession.isNull("finished"));
-                newSession.setId(jsonSession.getInt("id"));
-                sessionList.add(newSession);
-            }
+            addJSONSessionsToSessionList(sessions);
         }
         return sessionList;
+    }
+
+    private void addJSONSessionsToSessionList(JSONArray sessions) {
+        for (int i = 0; i < sessions.length(); i++) {
+            JSONObject jsonSession = sessions.getJSONObject(i);
+            Session newSession = new Session();
+            newSession.setFinished(jsonSession.isNull("finished"));
+            newSession.setId(jsonSession.getInt("id"));
+            sessionList.add(newSession);
+        }
     }
 }

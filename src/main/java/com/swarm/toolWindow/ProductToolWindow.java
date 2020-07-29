@@ -118,19 +118,16 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         allProductsTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         allProductsTree.setCellRenderer(new ProductTreeRenderer());
         allProductsTree.addMouseListener(rightClickPopupMenuMouseAdapter);
-        allProductsTree.addTreeSelectionListener(new TreeSelectionListener() {
-            @Override
-            public void valueChanged(TreeSelectionEvent treeSelectionEvent) {
-                var tree = (ProductTree) treeSelectionEvent.getSource();
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-                Task task = new Task();
-                if (node instanceof TaskTreeNode) {
-                    TaskTreeNode taskNode = (TaskTreeNode) node;
-                    task.setId(taskNode.getId());
-                }
-                CurrentTaskProvider.setTask(task);
-
+        allProductsTree.addTreeSelectionListener(treeSelectionEvent -> {
+            var tree = (ProductTree) treeSelectionEvent.getSource();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+            Task task = new Task();
+            if (node instanceof TaskTreeNode) {
+                TaskTreeNode taskNode = (TaskTreeNode) node;
+                task.setId(taskNode.getId());
             }
+            CurrentTaskProvider.setTask(task);
+
         });
     }
 

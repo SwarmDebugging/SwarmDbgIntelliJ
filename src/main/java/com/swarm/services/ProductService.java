@@ -17,9 +17,8 @@ public class ProductService {
     public ArrayList<Product> getAllProducts() {
         productList = new ArrayList<>();
         addProductsLinkedToSessions();
-        //TODO:test with these and also add sessions to the tree
-        /*addRemainingProducts();
-        addRemainingTasks();*/
+        addRemainingProducts();
+        addRemainingTasks();
         return productList;
     }
 
@@ -38,6 +37,7 @@ public class ProductService {
         return response.getJSONObject("data");
     }
 
+    //TODO: This method is very long (40 lines)
     private void buildProductsFromSessions(JSONArray sessions) {
         for (int i = 0; i < sessions.length(); i++) {
             JSONObject jsonSession = sessions.getJSONObject(i);

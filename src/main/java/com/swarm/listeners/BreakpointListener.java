@@ -3,6 +3,7 @@ package com.swarm.listeners;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
@@ -54,6 +55,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
 
         ReadAction.run(() -> {
             PsiFile file = PsiManager.getInstance(project).findFile(breakpoint.getSourcePosition().getFile());
+          // String path = VfsUtilCore.getRelativePath(file.getVirtualFile(), file.getVirtualFile());
             type.setFullPath(file.getVirtualFile().getPath());
             type.setSourceCode(file.getText());
             type.setSession(ProductToolWindow.getCurrentSession());

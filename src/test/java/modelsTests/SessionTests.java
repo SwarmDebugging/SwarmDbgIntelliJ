@@ -1,8 +1,8 @@
 package modelsTests;
 
-import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.models.Developer;
 import com.swarm.models.Task;
+import com.swarm.toolWindow.ProductToolWindow;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
