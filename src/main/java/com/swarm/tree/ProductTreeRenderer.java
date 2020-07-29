@@ -31,6 +31,8 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
             setIcon(AllIcons.Actions.Selectall);
         } else if (node instanceof ProductTreeNode) {
             setIcon(AllIcons.Nodes.Package);
+        } else if(node instanceof SessionTreeNode) {
+            setIcon(AllIcons.Nodes.Services);
         }
         return this;
     }

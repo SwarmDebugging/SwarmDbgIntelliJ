@@ -37,12 +37,12 @@ public class SessionTreeNode extends DefaultMutableTreeNode {
 
     public void add(MutableTreeNode node) {
         super.add(node);
-        nodeWasAdded(this, getChildCount() - 1);
+       // nodeWasAdded(this, getChildCount() - 1);
     }
 
     protected void nodeWasAdded(TreeNode node, int index) {
         if(model == null) {
-            ((ProductTreeNode)node.getParent()).nodeWasAdded(node, index);
+            ((TaskTreeNode)node.getParent()).nodeWasAdded(node, index);
         }
         else {
             int[] childIndices = new int[1];

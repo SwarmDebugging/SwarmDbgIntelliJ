@@ -5,15 +5,9 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.openapi.ui.popup.ListPopup;
-import com.intellij.openapi.ui.popup.PopupChooserBuilder;
 import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.awt.RelativePoint;
-import com.intellij.util.Consumer;
 import com.intellij.util.ui.JBUI;
 import com.swarm.dialogs.CreateProductDialog;
 import com.swarm.dialogs.CreateSessionDialog;
@@ -36,9 +30,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
-import java.awt.*;
 import java.util.ArrayList;
 
 public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAware {
@@ -162,8 +154,16 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         for (Task task : tasks) {
             if (!(task.isDone())) {
                 TaskTreeNode taskNode = new TaskTreeNode(task.getTitle(), task.getId());
+                addSessionsToTaskNode(task.getSessions(), taskNode);
                 productTreeNode.add(taskNode);
             }
+        }
+    }
+
+    private void addSessionsToTaskNode(ArrayList<Session> sessions, TaskTreeNode taskTreeNode) {
+        for (Session session: sessions) {
+            SessionTreeNode sessionTreeNode = new SessionTreeNode(session.getDescription(), session.getId());
+            taskTreeNode.add(sessionTreeNode);
         }
     }
 

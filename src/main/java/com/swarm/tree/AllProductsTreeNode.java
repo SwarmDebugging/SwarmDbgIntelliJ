@@ -27,7 +27,7 @@ public class AllProductsTreeNode extends DefaultMutableTreeNode {
 
     public void add(MutableTreeNode node) {
         super.add(node);
-        nodeWasAdded(this, getChildCount() - 1);
+        //nodeWasAdded(this, getChildCount() - 1);
     }
 
     protected void nodeWasAdded(TreeNode node, int index) {

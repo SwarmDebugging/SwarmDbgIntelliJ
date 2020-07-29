@@ -74,6 +74,10 @@ public class Session {
         return task;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public boolean isFinished() {
         return finished;
     }

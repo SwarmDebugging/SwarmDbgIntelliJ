@@ -3,11 +3,14 @@ package com.swarm.models;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 public class Task {
     private int id;
     private String title;
     private boolean done;
     private Product product;
+    private final ArrayList<Session> sessions = new ArrayList<>();
 
     public void create() {
         HTTPRequest createTaskRequest = new HTTPRequest();
@@ -59,4 +62,11 @@ public class Task {
         return done;
     }
 
+    public ArrayList<Session> getSessions() {
+        return sessions;
+    }
+
+    public void addSession(Session session) {
+        this.sessions.add(session);
+    }
 }
