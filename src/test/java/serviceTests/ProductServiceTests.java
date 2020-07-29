@@ -10,7 +10,6 @@ import org.mockserver.junit.jupiter.MockServerExtension;
 import org.mockserver.junit.jupiter.MockServerSettings;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -27,6 +26,7 @@ public class ProductServiceTests {
         this.client = client;
         setupAllProductsRequest();
         setupAllTasksRequest();
+        setupAllSessionsRequest();
     }
 
     private void setupAllProductsRequest() {
@@ -42,13 +42,24 @@ public class ProductServiceTests {
 
     private void setupAllTasksRequest() {
         JSONObject body = new JSONObject();
-        body.put("query", "{tasks{product{id,name},id,title,done}}");
+        body.put("query", "{tasks{id,title,done,product{id}}}");
         client.when(HttpRequest.request()
                 .withMethod("POST")
                 .withPath("/graphql")
                 .withBody(body.toString()))
                 .respond(HttpResponse.response()
-                        .withBody("{\"data\":{\"tasks\":[{\"product\":{\"id\":2,\"name\":\"product2\"},\"id\":3,\"title\":\"title3\",\"done\":false}]}}"));
+                        .withBody("{\"data\":{\"tasks\":[{\"product\":{\"id\":2},\"id\":3,\"title\":\"title3\",\"done\":false},{\"product\":{\"id\":2},\"id\":5,\"title\":\"title5\",\"done\":false}]}}"));
+    }
+
+    private void setupAllSessionsRequest() {
+        JSONObject body = new JSONObject();
+        body.put("query", "{sessions{id,description,task{id,title,done,product{id,name}}}}");
+        client.when(HttpRequest.request()
+        .withMethod("POST")
+        .withPath("/graphql")
+        .withBody(body.toString()))
+                .respond(HttpResponse.response()
+                .withBody("{\"data\":{\"sessions\":[{\"id\":4,\"description\":\"test sessions\",\"task\":{\"id\":3,\"title\":\"title3\",\"done\":false,\"product\":{\"id\":2,\"name\":\"product2\"}}}]}}"));
     }
 
     @Test
@@ -56,9 +67,7 @@ public class ProductServiceTests {
         ArrayList<Product> products = productService.getAllProducts();
 
         assertThat(products, hasSize(2));
-        assertEquals(products.get(0).getTasks().get(0).getId(), 3);
-        assertEquals(products.get(0).getId(), 2);
-        assertEquals(products.get(1).getId(), 1);
+        assertThat(products.get(0).getTasks(), hasSize(2));
+        assertThat(products.get(0).getTasks().get(0).getSessions(), hasSize(1));
     }
-
 }

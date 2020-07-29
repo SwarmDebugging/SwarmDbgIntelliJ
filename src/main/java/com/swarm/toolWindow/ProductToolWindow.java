@@ -127,7 +127,6 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
                 task.setId(taskNode.getId());
             }
             CurrentTaskProvider.setTask(task);
-
         });
     }
 
