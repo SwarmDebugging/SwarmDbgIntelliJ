@@ -69,12 +69,8 @@ public class DebugActionListener implements AnActionListener, DumbAware {
     }
 
     private void showNoActiveSessionMessage() {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Messages.showInfoMessage(project,"Reminder: No debugging data is collected, start a session to start data collection","No Active Session");
-            }
-        });
+        ApplicationManager.getApplication().invokeLater(() ->
+                Messages.showInfoMessage(project,"Reminder: No debugging data is collected, start a session to start data collection","No Active Session"));
     }
 
     private int handleEvent(String eventKind) {

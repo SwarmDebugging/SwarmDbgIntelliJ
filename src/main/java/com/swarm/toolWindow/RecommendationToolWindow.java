@@ -19,7 +19,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.ui.components.JBList;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.table.JBTable;
 import com.intellij.util.OpenSourceUtil;
 import com.intellij.util.ui.JBUI;
 import com.intellij.xdebugger.XDebuggerManager;
@@ -29,15 +30,20 @@ import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
 import com.swarm.models.Method;
 import com.swarm.models.Task;
+import com.swarm.services.RecommendationService;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 public class RecommendationToolWindow extends SimpleToolWindowPanel implements DumbAware, CurrentTaskProvider.Handler, Disposable {
     private final Project project;
-    private JBList<Method> recommendationList;
+    private JBTable methodTable;
+    private RecommendationService recommendationService = new RecommendationService();
 
     public RecommendationToolWindow(Project project) {
         super(false, true);
@@ -47,8 +53,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         Task task = CurrentTaskProvider.getTask();
         if(task != null) {
-            recommendationList = new RecommendationList(task.getId());
-            setContent(recommendationList);
+            //show list
         } else {
             setContent(new JLabel("Select a task to see breakpoint location recommendations"));
         }
@@ -168,7 +173,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            Method method = recommendationList.getSelectedValue();
+            Method method = (Method) methodTable.getValueAt(methodTable.getSelectedRow(), 0);
             PsiMethod psiMethod = getPsiMethod(method);
             OpenSourceUtil.navigate(psiMethod);
         }
@@ -176,8 +181,8 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            if(recommendationList != null) {
-                e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
+            if(methodTable != null) {
+                e.getPresentation().setEnabled(methodTable.getSelectedRow() != -1);
             } else {
                 e.getPresentation().setEnabled(false);
             }
@@ -191,7 +196,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            Method method = recommendationList.getSelectedValue();
+            Method method = (Method) methodTable.getValueAt(methodTable.getSelectedRow(), 0);
             PsiMethod psiMethod = getPsiMethod(method);
             var document = PsiDocumentManager.getInstance(project).getDocument(psiMethod.getContainingFile());
             int methodFirstLine = document.getLineNumber(psiMethod.getTextOffset());
@@ -210,8 +215,8 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            if(recommendationList != null) {
-                e.getPresentation().setEnabled(recommendationList.getSelectedValue() != null);
+            if(methodTable != null) {
+                e.getPresentation().setEnabled(methodTable.getSelectedRow() != -1);
             } else {
                 e.getPresentation().setEnabled(false);
             }
@@ -222,10 +227,63 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
     public void currentTaskAction(Task task) {
         if(task.getId() == 0) {
             setContent(new JLabel("Select a task to get breakpoint recommendations"));
-            recommendationList = null;
+            methodTable = null;
             return;
         }
-        recommendationList = new RecommendationList(task.getId());
-        setContent(recommendationList);
+        //recommendationList = new RecommendationList(task.getId());
+        ArrayList<Method> recommendedMethods = recommendationService.getRecommendedMethods(task.getId());
+
+        TableModel dataModel = new AbstractTableModel() {
+            @Override
+            public int getRowCount() {
+                return recommendedMethods.size();
+            }
+
+            @Override
+            public int getColumnCount() {
+                return 3;
+            }
+
+            @Override
+            public String getColumnName(int column) {
+                if(column == 0) {
+                    return "Method";
+                } else if(column == 1){
+                    return "Type";
+                } else {
+                    return "Number of debugging events";
+                }
+            }
+
+            @Override
+            public Object getValueAt(int row, int col) {
+                if(col == 0) {
+                    return recommendedMethods.get(row);
+                } else if(col == 1) {
+                    return recommendedMethods.get(row).getType();
+                } else {
+                    return recommendedMethods.get(row).getId();
+                }
+            }
+        };
+
+        methodTable = new JBTable(dataModel);
+        methodTable.setSelectionModel(new ForcedListSelectionModel());
+        JBScrollPane scrollPane = new JBScrollPane(methodTable);
+        setContent(scrollPane);
+    }
+
+    private class ForcedListSelectionModel extends DefaultListSelectionModel {
+        private ForcedListSelectionModel() {
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        }
+
+        @Override
+        public void clearSelection() {
+        }
+
+        @Override
+        public void removeSelectionInterval(int index0, int index1) {
+        }
     }
 }
