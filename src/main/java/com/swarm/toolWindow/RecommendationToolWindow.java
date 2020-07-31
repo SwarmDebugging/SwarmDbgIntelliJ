@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.OpenSourceUtil;
@@ -28,7 +29,9 @@ import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpointManager;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
+import com.swarm.models.Breakpoint;
 import com.swarm.models.Method;
+import com.swarm.models.Session;
 import com.swarm.models.Task;
 import com.swarm.services.RecommendationService;
 import org.jetbrains.annotations.NotNull;
@@ -38,9 +41,9 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.*;
 
-public class RecommendationToolWindow extends SimpleToolWindowPanel implements DumbAware, CurrentTaskProvider.Handler, Disposable {
+public class RecommendationToolWindow extends SimpleToolWindowPanel implements DumbAware, treeSelectionProvider.Handler, Disposable {
     private final Project project;
     private JBTable methodTable;
     private RecommendationService recommendationService = new RecommendationService();
@@ -49,14 +52,9 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         super(false, true);
         this.project = project;
 
-        Topics.subscribe(CurrentTaskProvider.Handler.CURRENT_TASK_TOPIC, this, this);
+        Topics.subscribe(treeSelectionProvider.Handler.TREE_SELECTION_TOPIC, this, this);
 
-        Task task = CurrentTaskProvider.getTask();
-        if(task != null) {
-            //show list
-        } else {
-            setContent(new JLabel("Select a task to see breakpoint location recommendations"));
-        }
+        setContent(new JLabel("Select a task to see breakpoint location recommendations"));
         createToolBar();
     }
 
@@ -147,7 +145,6 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         final MyLineBreakpointType MY_LINE_BREAKPOINT_TYPE = new MyLineBreakpointType();
         final MyBreakpointProperties MY_LINE_BREAKPOINT_PROPERTIES = new MyBreakpointProperties();
 
-        // add new line break point
         Runnable runnable = () -> breakpointManager.addLineBreakpoint(
                 MY_LINE_BREAKPOINT_TYPE,
                 fileUrl,
@@ -156,7 +153,6 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         );
         WriteCommandAction.runWriteCommandAction(project, runnable);
 
-        // toggle breakpoint to activate
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(new File(fileUrl));
         XDebuggerUtil.getInstance().toggleLineBreakpoint(project, virtualFile, line);
     }
@@ -224,56 +220,72 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
     }
 
     @Override
-    public void currentTaskAction(Task task) {
-        if(task.getId() == 0) {
+    public void treeSelectionAction(Object node) {
+        if (node == null) {
             setContent(new JLabel("Select a task to get breakpoint recommendations"));
             methodTable = null;
-            return;
+        } else if(node instanceof Task) {
+            Task task = (Task) node;
+            ArrayList<Method> recommendedMethods = recommendationService.getRecommendedMethods(task.getId());
+
+            LinkedHashMap<Method, Integer> hm = new LinkedHashMap<>();
+            for (Method method : recommendedMethods) {
+                Integer j = hm.get(method);
+                hm.put(method, (j == null) ? 1 : j + 1);
+            }
+
+            Set<Method> methodsAlreadySeen = new HashSet<>();
+            recommendedMethods.removeIf(method -> !methodsAlreadySeen.add(method));
+
+            recommendedMethods.sort((method, method2) -> hm.get(method2).compareTo(hm.get(method)));
+
+            TableModel dataModel = new AbstractTableModel() {
+                @Override
+                public int getRowCount() {
+                    return recommendedMethods.size();
+                }
+
+                @Override
+                public int getColumnCount() {
+                    return 3;
+                }
+
+                @Override
+                public String getColumnName(int column) {
+                    if (column == 0) {
+                        return "Method";
+                    } else if (column == 1) {
+                        return "Type";
+                    } else {
+                        return "Number of debugging events";
+                    }
+                }
+
+                @Override
+                public Object getValueAt(int row, int col) {
+                    if (col == 0) {
+                        return recommendedMethods.get(row).getName();
+                    } else if (col == 1) {
+                        return recommendedMethods.get(row).getType().getFullName();
+                    } else {
+                        Method method = recommendedMethods.get(row);
+                        return hm.get(method);
+                    }
+                }
+            };
+
+            methodTable = new JBTable(dataModel);
+            methodTable.setSelectionModel(new ForcedListSelectionModel());
+            JBScrollPane scrollPane = new JBScrollPane(methodTable);
+            setContent(scrollPane);
+        } else if(node instanceof Session) {
+            Session session = (Session) node;
+            ArrayList<Breakpoint> breakpoints = recommendationService.getBreakpointsBySessionId(session.getId());
+            setContent(new JBLabel("" + breakpoints.get(0).getId()));
         }
-        //recommendationList = new RecommendationList(task.getId());
-        ArrayList<Method> recommendedMethods = recommendationService.getRecommendedMethods(task.getId());
-
-        TableModel dataModel = new AbstractTableModel() {
-            @Override
-            public int getRowCount() {
-                return recommendedMethods.size();
-            }
-
-            @Override
-            public int getColumnCount() {
-                return 3;
-            }
-
-            @Override
-            public String getColumnName(int column) {
-                if(column == 0) {
-                    return "Method";
-                } else if(column == 1){
-                    return "Type";
-                } else {
-                    return "Number of debugging events";
-                }
-            }
-
-            @Override
-            public Object getValueAt(int row, int col) {
-                if(col == 0) {
-                    return recommendedMethods.get(row);
-                } else if(col == 1) {
-                    return recommendedMethods.get(row).getType();
-                } else {
-                    return recommendedMethods.get(row).getId();
-                }
-            }
-        };
-
-        methodTable = new JBTable(dataModel);
-        methodTable.setSelectionModel(new ForcedListSelectionModel());
-        JBScrollPane scrollPane = new JBScrollPane(methodTable);
-        setContent(scrollPane);
     }
 
-    private class ForcedListSelectionModel extends DefaultListSelectionModel {
+    private static class ForcedListSelectionModel extends DefaultListSelectionModel {
         private ForcedListSelectionModel() {
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }

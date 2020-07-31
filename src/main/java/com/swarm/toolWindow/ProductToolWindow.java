@@ -26,8 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
@@ -121,12 +119,19 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         allProductsTree.addTreeSelectionListener(treeSelectionEvent -> {
             var tree = (ProductTree) treeSelectionEvent.getSource();
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-            Task task = new Task();
             if (node instanceof TaskTreeNode) {
+                Task task = new Task();
                 TaskTreeNode taskNode = (TaskTreeNode) node;
                 task.setId(taskNode.getId());
+                treeSelectionProvider.setTreeNode(task);
+            } else if(node instanceof SessionTreeNode) {
+                Session session = new Session();
+                SessionTreeNode sessionNode = (SessionTreeNode) node;
+                session.setId(sessionNode.getId());
+                treeSelectionProvider.setTreeNode(session);
+            } else {
+                treeSelectionProvider.setTreeNode(null);
             }
-            CurrentTaskProvider.setTask(task);
         });
     }
 

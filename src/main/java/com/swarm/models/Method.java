@@ -3,6 +3,8 @@ package com.swarm.models;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
+import java.util.Objects;
+
 public class Method {
     private int id;
     private Type type;
@@ -52,5 +54,22 @@ public class Method {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) {
+            return false;
+        }
+        final Method other = (Method) obj;
+        return this.hashCode() == other.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + Objects.hashCode(this.name);
+        hash = 67 * hash + Objects.hashCode(this.type.getFullName());
+        return hash;
     }
 }

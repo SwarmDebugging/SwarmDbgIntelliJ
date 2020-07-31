@@ -30,4 +30,8 @@ public class Breakpoint {
     public void setLineNumber(int lineNumber) {
         this.lineNumber = lineNumber;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }
