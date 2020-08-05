@@ -26,4 +26,25 @@ public class ProductTree extends JTree {
     public TreeCellRenderer getCellRenderer() {
         return super.getCellRenderer();
     }
+
+    public String getExpansionState() {
+        StringBuffer stringState = new StringBuffer();
+        for (int i = 0; i < this.getRowCount(); i++) {
+            if(this.isExpanded(i)){
+                stringState.append(i).append(",");
+            }
+        }
+        return stringState.toString();
+    }
+
+    public void setExpansionState(String stringState) {
+        if(stringState == null) {
+            return;
+        }
+        String[] indexes = stringState.split(",");
+        for (String index: indexes) {
+            int row = Integer.parseInt(index);
+            this.expandRow(row);
+        }
+    }
 }

@@ -41,6 +41,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     private AllProductsTreeNode allProductsNode;
     private ProductTree allProductsTree;
     private final RightClickPopupMenuMouseAdapter rightClickPopupMenuMouseAdapter;
+    private String treeExpansionState;
 
     public static Developer getDeveloper() {
         return developer;
@@ -81,11 +82,15 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void buildAllProductTreeView() {
+        if(allProductsTree!= null) {
+            treeExpansionState = allProductsTree.getExpansionState();
+        }
         setContent(new JLabel("Fetching products...", SwingConstants.CENTER));
         productList.clear();
         addProductsToProductList();
         if (!productList.isEmpty()) {
             buildProductTree();
+            allProductsTree.setExpansionState(treeExpansionState);
             setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
         } else {
             setContent(new JLabel("Create a new product to get started", SwingConstants.CENTER));
