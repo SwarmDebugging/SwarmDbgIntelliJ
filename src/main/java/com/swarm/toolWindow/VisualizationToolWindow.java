@@ -2,7 +2,6 @@ package com.swarm.toolWindow;
 
 import com.intellij.application.Topics;
 import com.intellij.ide.BrowserUtil;
-import com.intellij.ide.browsers.WebBrowser;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
@@ -11,21 +10,15 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.jcef.JBCefApp;
 import com.intellij.ui.jcef.JBCefBrowser;
-import com.intellij.ui.jcef.JBCefClient;
 import com.intellij.util.ui.JBUI;
 import com.swarm.models.Task;
-import com.swarm.services.VisualizationService;
-import org.jdesktop.swingx.action.OpenBrowserAction;
 
 import javax.swing.*;
-import java.io.File;
 
 public class VisualizationToolWindow extends SimpleToolWindowPanel implements DumbAware, treeSelectionProvider.Handler, Disposable {
     private final Project project;
-    private VisualizationService visualizationService = new VisualizationService();
 
     @Override
     public JComponent getContent() {

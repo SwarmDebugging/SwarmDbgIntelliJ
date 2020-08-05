@@ -10,15 +10,13 @@ public class GraphUtils {
 
     public static JFrame buildGraphVisualisationFromInvocationList(ArrayList<Invocation> invocations) {
 
-        for (Invocation invocation: invocations) {
+        for (Invocation invocation : invocations) {
             Type invokedType = invocation.getInvoked().getType();
             Type invokingType = invocation.getInvoking().getType();
             /*graph.addVertex(invokedType);
             graph.addVertex(invokingType);
             graph.addEdge(invokedType, invokingType);*/
         }
-
-
 
 
         return null;
