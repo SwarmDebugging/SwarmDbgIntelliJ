@@ -36,4 +36,16 @@ public class Invocation {
     public void setInvoked(Method invoked) {
         this.invoked = invoked;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Method getInvoking() {
+        return invoking;
+    }
+
+    public Method getInvoked() {
+        return invoked;
+    }
 }

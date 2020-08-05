@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>org.test.SwarmDbgIntelliJ</id>
     <name>Swarm Debugging</name>
-    <vendor email="supporte@yourcompany.com" url="https://www.yourcompany.com">Yourscompany</vendor>
+    <vendor url="https://github.com/SwarmDebugging">Swarm Debugging</vendor>
 
     <description>Swarm Debugging for IntelliJ Idea, collects debugging information</description>
 
@@ -13,6 +13,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Swarm Debugging Manager" anchor="right" factoryClass="com.swarm.toolWindow.ProductToolWindowFactory" icon="/icons/ant.svg"/>
         <toolWindow id="Swarm Debugging Recommendations" anchor="bottom" factoryClass="com.swarm.toolWindow.RecommendationToolWindowFactory" icon="/icons/ant.svg"/>
+        <toolWindow id="Swarm Debugging Visualisations" anchor="bottom" factoryClass="com.swarm.toolWindow.VisualizationToolWindowFactory" icon="/icons/ant.svg"/>
     </extensions>
     
     <projectListeners>

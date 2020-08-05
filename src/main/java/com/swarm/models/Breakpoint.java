@@ -34,4 +34,17 @@ public class Breakpoint {
     public void setId(int id) {
         this.id = id;
     }
+
+    public Type getType() {
+        return type;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "line " + lineNumber + " in class " + type.getFullName();
+    }
 }

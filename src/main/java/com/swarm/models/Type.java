@@ -3,6 +3,8 @@ package com.swarm.models;
 import com.swarm.utils.HTTPRequest;
 import org.json.JSONObject;
 
+import java.util.Objects;
+
 public class Type {
     private int id;
     private Session session;
@@ -69,5 +71,26 @@ public class Type {
 
     public String getFullPath() {
         return fullPath;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) {
+            return false;
+        }
+        final Type other = (Type) obj;
+        return this.hashCode() == other.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + Objects.hashCode(this.fullName);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return fullName;
     }
 }
