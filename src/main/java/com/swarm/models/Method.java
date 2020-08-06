@@ -58,7 +58,7 @@ public class Method {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null) {
+        if(!(obj instanceof Method)) {
             return false;
         }
         final Method other = (Method) obj;

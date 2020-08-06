@@ -233,16 +233,16 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             Task task = (Task) treeNode;
             ArrayList<Method> recommendedMethods = recommendationService.getRecommendedMethods(task.getId());
 
-            LinkedHashMap<Method, Integer> hm = new LinkedHashMap<>();
+            LinkedHashMap<Type, Integer> typeHashMap = new LinkedHashMap<>();
             for (Method method : recommendedMethods) {
-                Integer j = hm.get(method);
-                hm.put(method, (j == null) ? 1 : j + 1);
+                Integer j = typeHashMap.get(method.getType());
+                typeHashMap.put(method.getType(), (j == null) ? 1 : j + 1);
             }
 
-            Set<Method> methodsAlreadySeen = new HashSet<>();
-            recommendedMethods.removeIf(method -> !methodsAlreadySeen.add(method));
+            Set<Type> typesAlreadySeen = new HashSet<>();
+            recommendedMethods.removeIf(method -> !typesAlreadySeen.add(method.getType()));
 
-            recommendedMethods.sort((method, method2) -> hm.get(method2).compareTo(hm.get(method)));
+            recommendedMethods.sort((method, method2) -> typeHashMap.get(method2.getType()).compareTo(typeHashMap.get(method.getType())));
 
             TableModel dataModel = new AbstractTableModel() {
                 @Override
@@ -252,14 +252,12 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
                 @Override
                 public int getColumnCount() {
-                    return 3;
+                    return 2;
                 }
 
                 @Override
                 public String getColumnName(int column) {
                     if (column == 0) {
-                        return "Method";
-                    } else if (column == 1) {
                         return "Type";
                     } else {
                         return "Number of debugging events";
@@ -269,12 +267,10 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
                 @Override
                 public Object getValueAt(int row, int col) {
                     if (col == 0) {
-                        return recommendedMethods.get(row).getName();
-                    } else if (col == 1) {
                         return recommendedMethods.get(row).getType().getFullName();
                     } else {
                         Method method = recommendedMethods.get(row);
-                        return hm.get(method);
+                        return typeHashMap.get(method.getType());
                     }
                 }
             };

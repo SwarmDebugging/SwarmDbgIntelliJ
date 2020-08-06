@@ -177,15 +177,15 @@ public class ProductService {
 
     private void addProductsLinkedToDevelopersTasks() {
         JSONObject data = fetchDevelopersTasks();
-        if(!data.isNull("tasks")) {
-            JSONArray tasks = data.getJSONArray("tasks");
-            buildProductsFromSessions(tasks);
+        if(!data.isNull("sessions")) {
+            JSONArray sessions = data.getJSONArray("sessions");
+            buildProductsFromSessions(sessions);
         }
     }
 
     private JSONObject fetchDevelopersTasks() {
         HTTPRequest fetchTasks = new HTTPRequest();
-        fetchTasks.setQuery("{tasks(developerId:" + ProductToolWindow.getDeveloper().getId() + "){product{id,name},id,title,done}}");
+        fetchTasks.setQuery("{sessions(developerId:" + ProductToolWindow.getDeveloper().getId() + "){id,description,finished,task{id,title,done,product{id,name}}}}");
         JSONObject response = new JSONObject(fetchTasks.post().getString("body"));
         return response.getJSONObject("data");
     }

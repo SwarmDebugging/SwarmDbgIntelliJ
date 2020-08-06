@@ -75,7 +75,7 @@ public class Type {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null) {
+        if(!(obj instanceof Type)) {
             return false;
         }
         final Type other = (Type) obj;

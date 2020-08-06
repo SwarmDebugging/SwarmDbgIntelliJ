@@ -323,10 +323,14 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private void buildFilteredProductTreeView() {
         setContent(new JLabel("Fetching developer's tasks...", SwingConstants.CENTER));
+        if(allProductsTree != null) {
+            treeExpansionState = allProductsTree.getExpansionState();
+        }
         productList.clear();
         addFilteredProductsToProductList();
         if (!productList.isEmpty()) {
             buildProductTree();
+            allProductsTree.setExpansionState(treeExpansionState);
             setContent(ScrollPaneFactory.createScrollPane(allProductsTree));
         } else {
             setContent(new JLabel("start a session with a task to associate a product with your account", SwingConstants.CENTER));
