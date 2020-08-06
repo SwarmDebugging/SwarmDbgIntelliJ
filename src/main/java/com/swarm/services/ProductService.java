@@ -32,7 +32,7 @@ public class ProductService {
 
     private JSONObject fetchSessions() {
         HTTPRequest fetchSessions = new HTTPRequest();
-        fetchSessions.setQuery("{sessions{id,description,task{id,title,done,product{id,name}}}}");
+        fetchSessions.setQuery("{sessions{id,description,finished,task{id,title,done,product{id,name}}}}");
         JSONObject response = new JSONObject(fetchSessions.post().getString("body"));
         return response.getJSONObject("data");
     }
@@ -53,6 +53,7 @@ public class ProductService {
                         Session session = new Session();
                         session.setId(jsonSession.getInt("id"));
                         session.setDescription(jsonSession.getString("description"));
+                        session.setFinished(!jsonSession.isNull("finished"));
                         task.addSession(session);
                         break;
                     }

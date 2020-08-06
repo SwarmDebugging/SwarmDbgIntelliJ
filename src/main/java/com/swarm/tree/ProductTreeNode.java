@@ -1,5 +1,7 @@
 package com.swarm.tree;
 
+import com.swarm.models.Product;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -7,25 +9,25 @@ public class ProductTreeNode extends DefaultMutableTreeNode {
 
     protected DefaultTreeModel model;
 
-    private int id;
+    private Product product;
     private final String toolTip;
 
-    public ProductTreeNode(String nodeTitle, int id) {
-        super(nodeTitle);
+    public ProductTreeNode(Product product) {
+        super(product.getName());
         this.model = null;
-        this.id = id;
-        this.toolTip = nodeTitle;
+        this.product = product;
+        this.toolTip = product.getName();
     }
 
     public void setModel(DefaultTreeModel model) {
         this.model = model;
     }
 
-    public int getId() {
-        return id;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 }

@@ -55,18 +55,14 @@ public class RightClickPopupMenuMouseAdapter extends MouseAdapter {
     }
 
     private void showTaskMenu() {
-        Task task = new Task();
         TaskTreeNode taskNode = (TaskTreeNode) node;
-        task.setId(taskNode.getId());
-        JPopupMenu popupMenu = popupMenuBuilder.buildTaskNodePopupMenu(task);
+        JPopupMenu popupMenu = popupMenuBuilder.buildTaskNodePopupMenu(taskNode.getTask());
         popupMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
     }
 
     private void showProductMenu() {
-        Product product = new Product();
         ProductTreeNode productNode = (ProductTreeNode) node;
-        product.setId(productNode.getId());
-        JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(product);
+        JPopupMenu popupMenu = popupMenuBuilder.buildProductNodePopupMenu(productNode.getProduct());
         popupMenu.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
     }
 }

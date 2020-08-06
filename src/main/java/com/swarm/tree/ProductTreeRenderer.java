@@ -32,7 +32,12 @@ public class ProductTreeRenderer extends DefaultTreeCellRenderer {
         } else if (node instanceof ProductTreeNode) {
             setIcon(AllIcons.Nodes.Package);
         } else if (node instanceof SessionTreeNode) {
-            setIcon(AllIcons.Nodes.Services);
+            SessionTreeNode sessionTreeNode = (SessionTreeNode) node;
+            if(sessionTreeNode.getSession().isFinished()) {
+                setIcon(AllIcons.Actions.Commit);
+            } else {
+                setIcon(AllIcons.Nodes.Services);
+            }
         }
         return this;
     }

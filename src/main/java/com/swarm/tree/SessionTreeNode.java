@@ -1,5 +1,7 @@
 package com.swarm.tree;
 
+import com.swarm.models.Session;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -7,25 +9,25 @@ public class SessionTreeNode extends DefaultMutableTreeNode {
 
     protected DefaultTreeModel model;
 
-    private int id;
+    private Session session;
     private final String toolTip;
 
-    public SessionTreeNode(String nodeTitle, int id) {
-        super(nodeTitle);
+    public SessionTreeNode(Session session) {
+        super(session.getDescription());
         this.model = null;
-        this.id = id;
-        this.toolTip = nodeTitle;
+        this.session = session;
+        this.toolTip = session.getDescription();
     }
 
     public void setModel(DefaultTreeModel model) {
         this.model = model;
     }
 
-    public int getId() {
-        return id;
+    public Session getSession() {
+        return session;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setSession(Session session) {
+        this.session = session;
     }
 }

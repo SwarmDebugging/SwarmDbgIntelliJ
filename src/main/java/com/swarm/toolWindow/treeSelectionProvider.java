@@ -6,7 +6,7 @@ import com.intellij.util.messages.Topic;
 
 public class treeSelectionProvider {
     private static Object treeNode;
-    private static MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
+    private static final MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
 
     static Object getTreeNode() {return treeNode;}
 

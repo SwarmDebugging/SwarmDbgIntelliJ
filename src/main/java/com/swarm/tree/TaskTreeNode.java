@@ -1,5 +1,7 @@
 package com.swarm.tree;
 
+import com.swarm.models.Task;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -7,25 +9,25 @@ public class TaskTreeNode extends DefaultMutableTreeNode {
 
     protected DefaultTreeModel model;
 
-    private int id;
+    private Task task;
     private final String toolTip;
 
-    public TaskTreeNode(String nodeTitle, int id) {
-        super(nodeTitle);
+    public TaskTreeNode(Task task) {
+        super(task.getTitle());
         this.model = null;
-        this.id = id;
-        this.toolTip = nodeTitle;
+        this.task = task;
+        this.toolTip = task.getTitle();
     }
 
     public void setModel(DefaultTreeModel model) {
         this.model = model;
     }
 
-    public int getId() {
-        return id;
+    public Task getTask() {
+        return task;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setTask(Task task) {
+        this.task = task;
     }
 }
