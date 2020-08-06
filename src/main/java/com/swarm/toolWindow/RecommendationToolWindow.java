@@ -42,16 +42,16 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 
-public class RecommendationToolWindow extends SimpleToolWindowPanel implements DumbAware, treeSelectionProvider.Handler, Disposable {
+public class RecommendationToolWindow extends SimpleToolWindowPanel implements DumbAware, TreeSelectionProvider.Handler, Disposable {
     private final Project project;
     private JBTable contentTable;
-    private RecommendationService recommendationService = new RecommendationService();
+    private final RecommendationService recommendationService = new RecommendationService();
 
     public RecommendationToolWindow(Project project) {
         super(false, true);
         this.project = project;
 
-        Topics.subscribe(treeSelectionProvider.Handler.TREE_SELECTION_TOPIC, this, this);
+        Topics.subscribe(TreeSelectionProvider.Handler.TREE_SELECTION_TOPIC, this, this);
 
         setContent(new JBLabel("Select a task to see breakpoint location recommendations"));
         createToolBar();
@@ -93,7 +93,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             }
 
             @Override
-            public MyBreakpointProperties createBreakpointProperties(VirtualFile file, final int line) {
+            public MyBreakpointProperties createBreakpointProperties(@NotNull VirtualFile file, final int line) {
                 return null;
             }
 
@@ -126,16 +126,16 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
     private final class JumpToSourceAction extends DumbAwareAction {
         JumpToSourceAction() {
-            super("Jump to the method's source code","Jump to the selected method's source code", AllIcons.FileTypes.Any_type);
+            super("Jump to the Method's Source Code","Jump to the selected method's source code", AllIcons.FileTypes.Any_type);
         }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            if(treeSelectionProvider.getTreeNode() instanceof Task) {
+            if(TreeSelectionProvider.getTreeNode() instanceof Task) {
                 Method method = (Method) contentTable.getValueAt(contentTable.getSelectedRow(), 0);
                 PsiMethod psiMethod = getPsiMethod(method);
                 OpenSourceUtil.navigate(psiMethod);
-            } else if(treeSelectionProvider.getTreeNode() instanceof Session) {
+            } else if(TreeSelectionProvider.getTreeNode() instanceof Session) {
                 try {
                     Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
 
@@ -184,12 +184,12 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
     private final class SetBreakpointAction extends DumbAwareAction {
         SetBreakpointAction() {
-            super("Set a breakpoint in the method", "Set a line breakpoint in the selected method's first line", AllIcons.Debugger.Db_set_breakpoint);
+            super("Set a Breakpoint in the Method", "Set a line breakpoint in the selected method's first line", AllIcons.Debugger.Db_set_breakpoint);
         }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            if(treeSelectionProvider.getTreeNode() instanceof Task) {
+            if(TreeSelectionProvider.getTreeNode() instanceof Task) {
                 Method method = (Method) contentTable.getValueAt(contentTable.getSelectedRow(), 0);
                 PsiMethod psiMethod = getPsiMethod(method);
                 var document = PsiDocumentManager.getInstance(project).getDocument(psiMethod.getContainingFile());
@@ -201,10 +201,8 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
                     line = document.getText(range);
                 } while (line.matches("\\A\\s*\\z"));
                 int finalMethodFirstLine = methodFirstLine;
-                WriteCommandAction.runWriteCommandAction(project, () -> {
-                    addLineBreakpoint(project, method.getType().getFullPath(), finalMethodFirstLine);
-                });
-            } else if (treeSelectionProvider.getTreeNode() instanceof Session) {
+                WriteCommandAction.runWriteCommandAction(project, () -> addLineBreakpoint(project, method.getType().getFullPath(), finalMethodFirstLine));
+            } else if (TreeSelectionProvider.getTreeNode() instanceof Session) {
                 try {
                     Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
 

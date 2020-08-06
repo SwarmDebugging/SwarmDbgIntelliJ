@@ -126,16 +126,16 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
             if (node instanceof TaskTreeNode) {
                 Task task = ((TaskTreeNode) node).getTask();
-                treeSelectionProvider.setTreeNode(task);
+                TreeSelectionProvider.setTreeNode(task);
             } else if(node instanceof SessionTreeNode) {
                 Session session = ((SessionTreeNode) node).getSession();
-                treeSelectionProvider.setTreeNode(session);
+                TreeSelectionProvider.setTreeNode(session);
             } else if(node instanceof ProductTreeNode) {
                 Product product = ((ProductTreeNode) node).getProduct();
-                treeSelectionProvider.setTreeNode(product);
+                TreeSelectionProvider.setTreeNode(product);
             }
             else {
-                treeSelectionProvider.setTreeNode(null);
+                TreeSelectionProvider.setTreeNode(null);
             }
         });
     }
@@ -210,12 +210,12 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(treeSelectionProvider.getTreeNode() instanceof Product && !currentSession.isActive());
+            e.getPresentation().setEnabled(TreeSelectionProvider.getTreeNode() instanceof Product && !currentSession.isActive());
         }
     }
 
     private void addNewTaskToSelectedProduct() {
-        Product product = (Product) treeSelectionProvider.getTreeNode();
+        Product product = (Product) TreeSelectionProvider.getTreeNode();
         CreateTaskDialog createTaskDialog = new CreateTaskDialog(project, product);
         createTaskDialog.showAndGet();
     }
@@ -266,7 +266,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private final class FetchAllProductsAction extends DumbAwareAction {
         FetchAllProductsAction() {
-            super("Fetch all products", "fetch all the products and tasks", AllIcons.Ide.IncomingChangesOn);
+            super("Fetch All Products", "Fetch all the products and tasks", AllIcons.Ide.IncomingChangesOn);
         }
 
         @Override
@@ -295,18 +295,18 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(treeSelectionProvider.getTreeNode() instanceof Task && !currentSession.isActive());
+            e.getPresentation().setEnabled(TreeSelectionProvider.getTreeNode() instanceof Task && !currentSession.isActive());
         }
     }
 
     private void markSelectedTaskAsDone() {
-        Task task = (Task) treeSelectionProvider.getTreeNode();
+        Task task = (Task) TreeSelectionProvider.getTreeNode();
         task.markAsDone();
     }
 
     private class FilterDeveloperProductsAction extends DumbAwareAction {
         FilterDeveloperProductsAction() {
-            super("Filter developer's products", "Filter Products to get only the current developer's products", AllIcons.General.Filter);
+            super("Filter Developer's Products", "Filter Products to get only the current developer's products", AllIcons.General.Filter);
         }
 
         @Override
@@ -340,17 +340,15 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private class StartRecordingEventsAction extends DumbAwareAction {
         StartRecordingEventsAction() {
-            super("Start Recording Events", "Start recording breakpoint and debugging events in the selected task", AllIcons.Actions.Execute);
+            super("Start/Resume Swarm Debugging Session", "Start recording breakpoint and debugging events in the selected task", AllIcons.Actions.Execute);
         }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            if(treeSelectionProvider.getTreeNode() instanceof Task) {
-                setToolTipText("Start Recording Events");
+            if(TreeSelectionProvider.getTreeNode() instanceof Task) {
                 createSwarmSession();
             } else {
-                setToolTipText("Resume Session");
-                currentSession = (Session) treeSelectionProvider.getTreeNode();
+                currentSession = (Session) TreeSelectionProvider.getTreeNode();
             }
             allProductsTree.removeMouseListener(rightClickPopupMenuMouseAdapter);
             buildAllProductTreeView();
@@ -361,10 +359,10 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
             super.update(e);
             e.getPresentation().setEnabled(false);
             if(!currentSession.isActive()) {
-                if(treeSelectionProvider.getTreeNode() instanceof Task) {
+                if(TreeSelectionProvider.getTreeNode() instanceof Task) {
                     e.getPresentation().setEnabled(true);
-                } else if(treeSelectionProvider.getTreeNode() instanceof Session) {
-                    Session session = (Session) treeSelectionProvider.getTreeNode();
+                } else if(TreeSelectionProvider.getTreeNode() instanceof Session) {
+                    Session session = (Session) TreeSelectionProvider.getTreeNode();
                     if(!session.isFinished()) {
                         e.getPresentation().setEnabled(true);
                     }
@@ -374,7 +372,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void createSwarmSession() {
-        Task task = (Task) treeSelectionProvider.getTreeNode();
+        Task task = (Task) TreeSelectionProvider.getTreeNode();
         CreateSessionDialog createSessionDialog = new CreateSessionDialog(project);
         if (createSessionDialog.showAndGet()) {
             currentSession.setTask(task);

@@ -4,7 +4,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
 
-public class treeSelectionProvider {
+public class TreeSelectionProvider {
     private static Object treeNode;
     private static final MessageBus messageBus = ApplicationManager.getApplication().getMessageBus();
 
@@ -17,7 +17,7 @@ public class treeSelectionProvider {
     }
 
     public interface Handler {
-        Topic<treeSelectionProvider.Handler> TREE_SELECTION_TOPIC = Topic.create("Swarm Selected Tree Node", treeSelectionProvider.Handler.class);
+        Topic<TreeSelectionProvider.Handler> TREE_SELECTION_TOPIC = Topic.create("Swarm Selected Tree Node", TreeSelectionProvider.Handler.class);
 
         void treeSelectionAction(Object treeNode);
     }

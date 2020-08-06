@@ -17,7 +17,7 @@ import com.swarm.models.Task;
 
 import javax.swing.*;
 
-public class VisualizationToolWindow extends SimpleToolWindowPanel implements DumbAware, treeSelectionProvider.Handler, Disposable {
+public class VisualizationToolWindow extends SimpleToolWindowPanel implements DumbAware, TreeSelectionProvider.Handler, Disposable {
     private final Project project;
 
     @Override
@@ -29,7 +29,7 @@ public class VisualizationToolWindow extends SimpleToolWindowPanel implements Du
         super(false, true);
         this.project = project;
 
-        Topics.subscribe(treeSelectionProvider.Handler.TREE_SELECTION_TOPIC, this, this);
+        Topics.subscribe(TreeSelectionProvider.Handler.TREE_SELECTION_TOPIC, this, this);
 
         createToolBar();
         setContent(new JBLabel("Fetching visualisation..."));
