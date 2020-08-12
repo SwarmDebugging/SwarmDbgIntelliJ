@@ -69,6 +69,7 @@ public class ProductService {
                      Session session = new Session();
                      session.setId(jsonSession.getInt("id"));
                      session.setDescription(jsonSession.getString("description"));
+                     session.setFinished(!jsonSession.isNull("finished"));
                      task.addSession(session);
                 }
             } else {
@@ -84,6 +85,7 @@ public class ProductService {
                 Session session = new Session();
                 session.setId(jsonSession.getInt("id"));
                 session.setDescription(jsonSession.getString("description"));
+                session.setFinished(!jsonSession.isNull("finished"));
                 task.addSession(session);
 
                 product.addTask(task);

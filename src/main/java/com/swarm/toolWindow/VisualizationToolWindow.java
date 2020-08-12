@@ -45,7 +45,7 @@ public class VisualizationToolWindow extends SimpleToolWindowPanel implements Du
     @Override
     public void treeSelectionAction(Object treeNode) {
         if (treeNode == null) {
-            setContent(new JBLabel("Fetching visualisation..."));
+            setContent(new JBLabel("Select a task to view the visualisation"));
 
         } else if(treeNode instanceof Task) {
             Task task = (Task) treeNode;
@@ -55,6 +55,8 @@ public class VisualizationToolWindow extends SimpleToolWindowPanel implements Du
             } else {
                 BrowserUtil.browse("http://localhost:8080/getInvocationGraph/" + task.getId());
             }
+        } else {
+            setContent(new JBLabel("Select a task to view the visualisation"));
         }
     }
 

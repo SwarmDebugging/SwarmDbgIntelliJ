@@ -36,6 +36,11 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
     }
 
     @Override
+    public void sessionRemoved(DebuggerSession session) {
+        int i = 0;
+    }
+
+    @Override
     public void sessionCreated(DebuggerSession session) {
         session.getContextManager().addListener((newContext, event) -> {
             if (ProductToolWindow.getCurrentSessionId() == 0) {
