@@ -74,7 +74,8 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         class MyBreakpointProperties extends XBreakpointProperties<MyBreakpointProperties> {
             public String myOption;
 
-            public MyBreakpointProperties() {}
+            public MyBreakpointProperties() {
+            }
 
             @Override
             public MyBreakpointProperties getState() {
@@ -126,16 +127,16 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
     private final class JumpToSourceAction extends DumbAwareAction {
         JumpToSourceAction() {
-            super("Jump to the Method's Source Code","Jump to the selected method's source code", AllIcons.FileTypes.Any_type);
+            super("Jump to the Method's Source Code", "Jump to the selected method's source code", AllIcons.FileTypes.Any_type);
         }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            if(TreeSelectionProvider.getTreeNode() instanceof Task) {
+            if (TreeSelectionProvider.getTreeNode() instanceof Task) {
                 Method method = (Method) contentTable.getValueAt(contentTable.getSelectedRow(), 0);
                 PsiMethod psiMethod = getPsiMethod(method);
                 OpenSourceUtil.navigate(psiMethod);
-            } else if(TreeSelectionProvider.getTreeNode() instanceof Session) {
+            } else if (TreeSelectionProvider.getTreeNode() instanceof Session) {
                 try {
                     Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
 
@@ -145,7 +146,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
                     }
                     OpenFileDescriptor descriptor = new OpenFileDescriptor(project, file, breakpoint.getLineNumber(), 0);
                     OpenSourceUtil.navigate(descriptor);
-                } catch (ClassCastException classCastException){
+                } catch (ClassCastException classCastException) {
                     Messages.showInfoMessage("Cannot Jump to source", "No Breakpoint");
                 }
             }
@@ -154,7 +155,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            if(contentTable != null) {
+            if (contentTable != null) {
                 e.getPresentation().setEnabled(contentTable.getSelectedRow() != -1);
             } else {
                 e.getPresentation().setEnabled(false);
@@ -167,7 +168,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         ApplicationManager.getApplication().runReadAction(() -> {
             VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(method.getType().getFullPath()));
-            if(file == null){
+            if (file == null) {
                 return;
             }
             PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
@@ -189,7 +190,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            if(TreeSelectionProvider.getTreeNode() instanceof Task) {
+            if (TreeSelectionProvider.getTreeNode() instanceof Task) {
                 Method method = (Method) contentTable.getValueAt(contentTable.getSelectedRow(), 0);
                 PsiMethod psiMethod = getPsiMethod(method);
                 var document = PsiDocumentManager.getInstance(project).getDocument(psiMethod.getContainingFile());
@@ -207,7 +208,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
                     Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
 
                     addLineBreakpoint(project, breakpoint.getType().getFullPath(), breakpoint.getLineNumber());
-                } catch (ClassCastException classCastException){
+                } catch (ClassCastException classCastException) {
                     Messages.showInfoMessage("Cannot set a breakpoint", "No Breakpoint");
                 }
             }
@@ -216,7 +217,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            if(contentTable != null) {
+            if (contentTable != null) {
                 e.getPresentation().setEnabled(contentTable.getSelectedRow() != -1);
             } else {
                 e.getPresentation().setEnabled(false);
@@ -229,7 +230,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         if (treeNode == null) {
             setContent(new JLabel("Select a task to get breakpoint recommendations"));
             contentTable = null;
-        } else if(treeNode instanceof Task) {
+        } else if (treeNode instanceof Task) {
             Task task = (Task) treeNode;
             ArrayList<Method> recommendedMethods = recommendationService.getRecommendedMethods(task.getId());
 
@@ -279,14 +280,14 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             contentTable.setSelectionModel(new ForcedListSelectionModel());
             JBScrollPane scrollPane = new JBScrollPane(contentTable);
             setContent(scrollPane);
-        } else if(treeNode instanceof Session) {
+        } else if (treeNode instanceof Session) {
             Session session = (Session) treeNode;
             ArrayList<Breakpoint> breakpoints = recommendationService.getBreakpointsBySessionId(session.getId());
 
             TableModel dataModel = new AbstractTableModel() {
                 @Override
                 public int getRowCount() {
-                    return 1;
+                    return breakpoints.size();
                 }
 
                 @Override
@@ -297,7 +298,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
                 @Override
                 public String getColumnName(int column) {
                     if (column == 0) {
-                        return "First Breakpoint in selected session";
+                        return "Breakpoints set in selected session(ordered by timestamp)";
                     } else if (column == 1) {
                         return "Type";
                     } else {
@@ -307,12 +308,11 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
                 @Override
                 public Object getValueAt(int row, int col) {
-                    if (col == 0) {
-                        if(!breakpoints.isEmpty()) {
-                            return breakpoints.get(0);
-                        }
+                    if (!breakpoints.isEmpty()) {
+                        return breakpoints.get(row);
+                    } else {
                         return "No breakpoint set in this session";
-                    } else return "abc";
+                    }
                 }
             };
 
