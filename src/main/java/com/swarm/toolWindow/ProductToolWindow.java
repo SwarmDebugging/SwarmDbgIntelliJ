@@ -82,12 +82,12 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void buildAllProductTreeView() {
-        if(allProductsTree!= null) {
-            treeExpansionState = allProductsTree.getExpansionState();
-        }
         setContent(new JLabel("Fetching products...", SwingConstants.CENTER));
         productList.clear();
         addProductsToProductList();
+        if(allProductsTree != null) {
+            treeExpansionState = allProductsTree.getExpansionState();
+        }
         if (!productList.isEmpty()) {
             buildProductTree();
             allProductsTree.setExpansionState(treeExpansionState);
@@ -210,7 +210,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(TreeSelectionProvider.getTreeNode() instanceof Product && !currentSession.isActive());
+            e.getPresentation().setEnabled(TreeSelectionProvider.getTreeNode() instanceof Product && !currentSession.isActive() && developer.isLoggedIn());
         }
     }
 
@@ -413,6 +413,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         public void actionPerformed(@NotNull AnActionEvent e) {
             getDeveloper().logout();
             setContent(new JLabel("Login to view available products", SwingConstants.CENTER));
+            allProductsTree = null;
         }
 
         @Override

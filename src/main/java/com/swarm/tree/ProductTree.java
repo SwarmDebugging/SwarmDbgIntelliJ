@@ -38,7 +38,7 @@ public class ProductTree extends JTree {
     }
 
     public void setExpansionState(String stringState) {
-        if(stringState == null) {
+        if(stringState == null || stringState.equals("")) {
             return;
         }
         String[] indexes = stringState.split(",");
