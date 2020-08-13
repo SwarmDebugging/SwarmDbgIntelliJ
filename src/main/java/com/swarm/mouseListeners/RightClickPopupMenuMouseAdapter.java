@@ -1,9 +1,6 @@
-package com.swarm.mouseAdapters;
+package com.swarm.mouseListeners;
 
 import com.intellij.openapi.project.Project;
-import com.swarm.models.Developer;
-import com.swarm.models.Product;
-import com.swarm.models.Task;
 import com.swarm.popupMenu.PopupMenuBuilder;
 import com.swarm.tree.ProductTreeNode;
 import com.swarm.tree.TaskTreeNode;
@@ -20,8 +17,8 @@ public class RightClickPopupMenuMouseAdapter extends MouseAdapter {
 
     int RIGHT_CLICK = MouseEvent.BUTTON3;
 
-    public RightClickPopupMenuMouseAdapter(Project project, Developer developer) {
-        popupMenuBuilder = new PopupMenuBuilder(project, developer);
+    public RightClickPopupMenuMouseAdapter(Project project) {
+        popupMenuBuilder = new PopupMenuBuilder(project);
     }
 
     @Override

@@ -37,6 +37,8 @@ public class VisualizationToolWindow extends SimpleToolWindowPanel implements Du
         Topics.subscribe(TreeSelectionProvider.Handler.TREE_SELECTION_TOPIC, this, this);
 
         createToolBar();
+        TreeSelectionProvider.setTreeNode(TreeSelectionProvider.getTreeNode());
+
         setContent(new JBLabel("Fetching visualisation..."));
     }
 

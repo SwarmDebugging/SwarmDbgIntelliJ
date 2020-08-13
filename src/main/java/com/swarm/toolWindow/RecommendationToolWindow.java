@@ -21,7 +21,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.TableSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.OpenSourceUtil;
@@ -32,6 +32,7 @@ import com.intellij.xdebugger.breakpoints.XBreakpointManager;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
 import com.swarm.models.*;
+import com.swarm.mouseListeners.RecommendationMouseListener;
 import com.swarm.services.RecommendationService;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,7 +54,8 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         Topics.subscribe(TreeSelectionProvider.Handler.TREE_SELECTION_TOPIC, this, this);
 
-        setContent(new JBLabel("Select a task to see breakpoint location recommendations"));
+        TreeSelectionProvider.setTreeNode(TreeSelectionProvider.getTreeNode());
+
         createToolBar();
     }
 
@@ -125,31 +127,14 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
     }
 
-    private final class JumpToSourceAction extends DumbAwareAction {
+    public final class JumpToSourceAction extends DumbAwareAction {
         JumpToSourceAction() {
             super("Jump to the Method's Source Code", "Jump to the selected method's source code", AllIcons.FileTypes.Any_type);
         }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            if (TreeSelectionProvider.getTreeNode() instanceof Task) {
-                Method method = (Method) contentTable.getValueAt(contentTable.getSelectedRow(), 0);
-                PsiMethod psiMethod = getPsiMethod(method);
-                OpenSourceUtil.navigate(psiMethod);
-            } else if (TreeSelectionProvider.getTreeNode() instanceof Session) {
-                try {
-                    Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
-
-                    VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(breakpoint.getType().getFullPath()));
-                    if (file == null) {
-                        return;
-                    }
-                    OpenFileDescriptor descriptor = new OpenFileDescriptor(project, file, breakpoint.getLineNumber(), 0);
-                    OpenSourceUtil.navigate(descriptor);
-                } catch (ClassCastException classCastException) {
-                    Messages.showInfoMessage("Cannot Jump to source", "No Breakpoint");
-                }
-            }
+            jumpToSource(); //TODO: test this
         }
 
         @Override
@@ -163,55 +148,48 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         }
     }
 
-    private PsiMethod getPsiMethod(Method method) {
-        final PsiMethod[] psiMethod = {null};
+    public void jumpToSource() {
+        if (TreeSelectionProvider.getTreeNode() instanceof Task) {
+            Type type = (Type) contentTable.getValueAt(contentTable.getSelectedRow(), 0);
+            PsiFile psiFile = getPsiFileFromType(type);
+            OpenSourceUtil.navigate(psiFile);
+        } else if (TreeSelectionProvider.getTreeNode() instanceof Session) {
+            try {
+                Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
+
+                VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(breakpoint.getType().getFullPath()));
+                if (file == null) {
+                    return;
+                }
+                OpenFileDescriptor descriptor = new OpenFileDescriptor(project, file, breakpoint.getLineNumber(), 0);
+                OpenSourceUtil.navigate(descriptor);
+            } catch (ClassCastException classCastException) {
+                Messages.showInfoMessage("Cannot Jump to source", "No Breakpoint");
+            }
+        }
+    }
+
+    private PsiFile getPsiFileFromType(Type type) {
+        final PsiFile[] psiFile = new PsiFile[1];
 
         ApplicationManager.getApplication().runReadAction(() -> {
-            VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(method.getType().getFullPath()));
+            VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(type.getFullPath()));
             if (file == null) {
                 return;
             }
-            PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
-            PsiClass psiClass = PsiTreeUtil.getChildOfType(psiFile, PsiClass.class);
-
-            String methodName = method.getName();
-            PsiMethod[] psiMethods = psiClass.findMethodsByName(methodName, false);
-
-            psiMethod[0] = psiMethods[0];
-
+            psiFile[0] = PsiManager.getInstance(project).findFile(file);
         });
-        return psiMethod[0];
+        return psiFile[0];
     }
 
-    private final class SetBreakpointAction extends DumbAwareAction {
+    public final class SetBreakpointAction extends DumbAwareAction {
         SetBreakpointAction() {
             super("Set a Breakpoint in the Method", "Set a line breakpoint in the selected method's first line", AllIcons.Debugger.Db_set_breakpoint);
         }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            if (TreeSelectionProvider.getTreeNode() instanceof Task) {
-                Method method = (Method) contentTable.getValueAt(contentTable.getSelectedRow(), 0);
-                PsiMethod psiMethod = getPsiMethod(method);
-                var document = PsiDocumentManager.getInstance(project).getDocument(psiMethod.getContainingFile());
-                int methodFirstLine = document.getLineNumber(psiMethod.getTextOffset());
-                String line = "";
-                do {
-                    methodFirstLine++;
-                    TextRange range = new TextRange(document.getLineStartOffset(methodFirstLine), document.getLineEndOffset(methodFirstLine));
-                    line = document.getText(range);
-                } while (line.matches("\\A\\s*\\z"));
-                int finalMethodFirstLine = methodFirstLine;
-                WriteCommandAction.runWriteCommandAction(project, () -> addLineBreakpoint(project, method.getType().getFullPath(), finalMethodFirstLine));
-            } else if (TreeSelectionProvider.getTreeNode() instanceof Session) {
-                try {
-                    Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
-
-                    addLineBreakpoint(project, breakpoint.getType().getFullPath(), breakpoint.getLineNumber());
-                } catch (ClassCastException classCastException) {
-                    Messages.showInfoMessage("Cannot set a breakpoint", "No Breakpoint");
-                }
-            }
+            setBreakpoint(); //TODO: test this
         }
 
         @Override
@@ -221,6 +199,30 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
                 e.getPresentation().setEnabled(contentTable.getSelectedRow() != -1);
             } else {
                 e.getPresentation().setEnabled(false);
+            }
+        }
+    }
+
+    public void setBreakpoint() {
+        if (TreeSelectionProvider.getTreeNode() instanceof Task) {
+            /*Method method = (Method) contentTable.getValueAt(contentTable.getSelectedRow(), 0);
+            PsiMethod psiMethod = getPsiMethod(method);
+            var document = PsiDocumentManager.getInstance(project).getDocument(psiMethod.getContainingFile());
+            int methodFirstLine = document.getLineNumber(psiMethod.getTextOffset());
+            String line = "";
+            do {
+                methodFirstLine++;
+                TextRange range = new TextRange(document.getLineStartOffset(methodFirstLine), document.getLineEndOffset(methodFirstLine));
+                line = document.getText(range);
+            } while (line.matches("\\A\\s*\\z"));
+            int finalMethodFirstLine = methodFirstLine;
+            WriteCommandAction.runWriteCommandAction(project, () -> addLineBreakpoint(project, method.getType().getFullPath(), finalMethodFirstLine));*/
+        } else if (TreeSelectionProvider.getTreeNode() instanceof Session) {
+            try {
+                Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
+                addLineBreakpoint(project, breakpoint.getType().getFullPath(), breakpoint.getLineNumber());
+            } catch (ClassCastException classCastException) {
+                Messages.showInfoMessage("Cannot set a breakpoint", "No Breakpoint");
             }
         }
     }
@@ -268,7 +270,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
                 @Override
                 public Object getValueAt(int row, int col) {
                     if (col == 0) {
-                        return recommendedMethods.get(row).getType().getFullName();
+                        return recommendedMethods.get(row).getType();
                     } else {
                         Method method = recommendedMethods.get(row);
                         return typeHashMap.get(method.getType());
@@ -278,6 +280,9 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
             contentTable = new JBTable(dataModel);
             contentTable.setSelectionModel(new ForcedListSelectionModel());
+            TableSpeedSearch speedSearch = new TableSpeedSearch(contentTable);
+            speedSearch.setClearSearchOnNavigateNoMatch(true);
+            contentTable.addMouseListener(new RecommendationMouseListener(project));
             JBScrollPane scrollPane = new JBScrollPane(contentTable);
             setContent(scrollPane);
         } else if (treeNode instanceof Session) {
@@ -318,6 +323,9 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
             contentTable = new JBTable(dataModel);
             contentTable.setSelectionModel(new ForcedListSelectionModel());
+            TableSpeedSearch speedSearch = new TableSpeedSearch(contentTable);
+            speedSearch.setClearSearchOnNavigateNoMatch(true);
+            contentTable.addMouseListener(new RecommendationMouseListener(project));
             JBScrollPane scrollPane = new JBScrollPane(contentTable);
             setContent(scrollPane);
         }

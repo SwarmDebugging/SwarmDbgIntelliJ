@@ -17,7 +17,7 @@ import com.swarm.models.Developer;
 import com.swarm.models.Product;
 import com.swarm.models.Session;
 import com.swarm.models.Task;
-import com.swarm.mouseAdapters.RightClickPopupMenuMouseAdapter;
+import com.swarm.mouseListeners.RightClickPopupMenuMouseAdapter;
 import com.swarm.services.ProductService;
 import com.swarm.services.SessionService;
 import com.swarm.tree.*;
@@ -58,7 +58,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     public ProductToolWindow(Project project) {
         super(true, true);
 
-        rightClickPopupMenuMouseAdapter = new RightClickPopupMenuMouseAdapter(project, developer);
+        rightClickPopupMenuMouseAdapter = new RightClickPopupMenuMouseAdapter(project);
 
         this.project = project;
 
@@ -251,7 +251,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
                 }
                 var builder = JBPopupFactory.getInstance().createPopupChooserBuilder(openedSessions);
                 builder.setItemChosenCallback(session -> {
-                    int i = 0;
+                    int i = 0; //TODO: doesn't stay focused
                 });
                 builder.setRequestFocus(true).createPopup().showInBestPositionFor(e.getDataContext());
             }
