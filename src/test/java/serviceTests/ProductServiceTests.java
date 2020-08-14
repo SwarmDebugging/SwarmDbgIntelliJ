@@ -1,5 +1,6 @@
 package serviceTests;
 
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.swarm.models.Product;
 import com.swarm.services.ProductService;
 import org.json.JSONObject;
@@ -15,18 +16,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.ArrayList;
 
-/*@ExtendWith(MockServerExtension.class)
+@ExtendWith(MockServerExtension.class)
 @MockServerSettings(ports = {8080}, perTestSuite = true)
-public class ProductServiceTests {
+public class ProductServiceTests extends BasePlatformTestCase {
 
     private final ClientAndServer client;
-    private final ProductService productService = new ProductService();
+    private final ProductService productService;
 
     public ProductServiceTests(ClientAndServer client) {
+        try {
+            setUp();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         this.client = client;
         setupAllProductsRequest();
         setupAllTasksRequest();
         setupAllSessionsRequest();
+
+        productService = new ProductService(getProject());
     }
 
     private void setupAllProductsRequest() {
@@ -53,13 +61,13 @@ public class ProductServiceTests {
 
     private void setupAllSessionsRequest() {
         JSONObject body = new JSONObject();
-        body.put("query", "{sessions{id,description,task{id,title,done,product{id,name}}}}");
+        body.put("query", "{sessions{id,description,finished,task{id,title,done,product{id,name}}}}");
         client.when(HttpRequest.request()
         .withMethod("POST")
         .withPath("/graphql")
         .withBody(body.toString()))
                 .respond(HttpResponse.response()
-                .withBody("{\"data\":{\"sessions\":[{\"id\":4,\"description\":\"test sessions\",\"task\":{\"id\":3,\"title\":\"title3\",\"done\":false,\"product\":{\"id\":2,\"name\":\"product2\"}}}]}}"));
+                .withBody("{\"data\":{\"sessions\":[{\"id\":4,\"description\":\"test sessions\",\"finished\":null,\"task\":{\"id\":3,\"title\":\"title3\",\"done\":false,\"product\":{\"id\":2,\"name\":\"product2\"}}}]}}"));
     }
 
     @Test
@@ -71,4 +79,3 @@ public class ProductServiceTests {
         assertThat(products.get(0).getTasks().get(0).getSessions(), hasSize(1));
     }
 }
-*/

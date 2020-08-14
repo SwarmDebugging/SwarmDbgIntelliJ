@@ -24,7 +24,7 @@ public class DeveloperTests extends BasePlatformTestCase {
         try {
             setUp();
         } catch (Exception e) {
-            e.toString();
+            e.printStackTrace();
         }
         this.client = client;
         setupLoginRequest();

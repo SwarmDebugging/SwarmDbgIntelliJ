@@ -29,13 +29,13 @@ public class RecommendationServiceTests {
 
     private void setupGetRecommendedMethodsRequest() {
         JSONObject body = new JSONObject();
-        body.put("query", "{breakpointRecommendation(taskId:1){id,name,type{id,name,fullName,fullPath}}}");
+        body.put("query", "{methodsUsedInTask(taskId:1){id,name,type{id,name,fullName,fullPath}}}");
         client.when(HttpRequest.request()
                 .withMethod("POST")
                 .withPath("/graphql")
                 .withBody(body.toString()))
                 .respond(HttpResponse.response()
-                        .withBody("{\"data\":{\"breakpointRecommendation\":[{\"id\":2,\"name\":\"methodName\",\"type\":{\"id\":3,\"name\":\"Type\",\"fullName\":\"full Name\",\"fullPath\":\"full path\"}}]}}"));
+                        .withBody("{\"data\":{\"methodsUsedInTask\":[{\"id\":2,\"name\":\"methodName\",\"type\":{\"id\":3,\"name\":\"Type\",\"fullName\":\"full Name\",\"fullPath\":\"full path\"}}]}}"));
     }
 
     @Test
