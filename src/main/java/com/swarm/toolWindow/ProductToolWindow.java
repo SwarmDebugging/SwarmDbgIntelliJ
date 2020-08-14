@@ -6,7 +6,6 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.util.ui.JBUI;
 import com.swarm.dialogs.CreateProductDialog;
@@ -19,7 +18,6 @@ import com.swarm.models.Session;
 import com.swarm.models.Task;
 import com.swarm.mouseListeners.RightClickPopupMenuMouseAdapter;
 import com.swarm.services.ProductService;
-import com.swarm.services.SessionService;
 import com.swarm.tree.*;
 import icons.SwarmIcons;
 import org.jetbrains.annotations.NotNull;
@@ -34,8 +32,8 @@ import java.util.ArrayList;
 public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAware {
 
     private final Project project;
-    private static final Developer developer = new Developer();
-    private static Session currentSession = new Session();
+    private final Developer developer = new Developer();
+    private Session currentSession = new Session();
 
     private ArrayList<Product> productList = new ArrayList<>();
     private AllProductsTreeNode allProductsNode;
@@ -43,15 +41,19 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     private final RightClickPopupMenuMouseAdapter rightClickPopupMenuMouseAdapter;
     private String treeExpansionState;
 
-    public static Developer getDeveloper() {
+    public Developer getDeveloper() {
         return developer;
     }
 
-    public static int getCurrentSessionId() {
-        return currentSession.getId();
+    public void setCurrentSession(Session currentSession) {
+        this.currentSession = currentSession;
+        if (allProductsTree != null) {
+            allProductsTree.removeMouseListener(rightClickPopupMenuMouseAdapter);
+        }
+        buildAllProductTreeView();
     }
 
-    public static Session getCurrentSession() {
+    public Session getCurrentSession() {
         return currentSession;
     }
 
@@ -81,7 +83,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         setToolbar(JBUI.Panels.simplePanel(actionToolbar.getComponent()));
     }
 
-    private void buildAllProductTreeView() {
+    public void buildAllProductTreeView() {
         setContent(new JLabel("Fetching products...", SwingConstants.CENTER));
         productList.clear();
         addProductsToProductList();
@@ -98,7 +100,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void addProductsToProductList() {
-        ProductService productService = new ProductService();
+        ProductService productService = new ProductService(project);
         productList = productService.getAllProducts();
     }
 
@@ -227,33 +229,10 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            /*Developer developer = new Developer();
-            developer.setId(1);
-            SessionService sessionService = new SessionService();
-            ArrayList<Session> sessions = sessionService.sessionsByDeveloper(developer);
-            var builder = JBPopupFactory.getInstance().createPopupChooserBuilder(sessions);
-            builder.setItemChosenCallback(session -> {
-                int i = 0;
-            });
-            builder.setRequestFocus(true).setTitle("Resume Session?").createPopup().showInBestPositionFor(e.getDataContext());*/
             LoginDialog loginDialog = new LoginDialog(project);
             boolean loggedIn = loginDialog.showAndGet();
             if (loggedIn) {
                 buildAllProductTreeView();
-
-                SessionService sessionService = new SessionService();
-                ArrayList<Session> sessions = sessionService.sessionsByDeveloper(developer);
-                ArrayList<Session> openedSessions = new ArrayList<>();
-                for (Session session : sessions) {
-                    if (!session.isFinished()) {
-                        openedSessions.add(session);
-                    }
-                }
-                var builder = JBPopupFactory.getInstance().createPopupChooserBuilder(openedSessions);
-                builder.setItemChosenCallback(session -> {
-                    int i = 0; //TODO: doesn't stay focused
-                });
-                builder.setRequestFocus(true).createPopup().showInBestPositionFor(e.getDataContext());
             }
         }
 
@@ -295,7 +274,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(TreeSelectionProvider.getTreeNode() instanceof Task && !currentSession.isActive());
+            e.getPresentation().setEnabled(TreeSelectionProvider.getTreeNode() instanceof Task && !currentSession.isActive() && developer.isLoggedIn());
         }
     }
 
@@ -338,7 +317,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
     }
 
     private void addFilteredProductsToProductList() {
-        ProductService productService = new ProductService();
+        ProductService productService = new ProductService(project);
         productList = productService.getProductsByDeveloper();
     }
 
@@ -362,13 +341,15 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
             e.getPresentation().setEnabled(false);
-            if(!currentSession.isActive()) {
-                if(TreeSelectionProvider.getTreeNode() instanceof Task) {
-                    e.getPresentation().setEnabled(true);
-                } else if(TreeSelectionProvider.getTreeNode() instanceof Session) {
-                    Session session = (Session) TreeSelectionProvider.getTreeNode();
-                    if(!session.isFinished()) {
+            if(developer.isLoggedIn()) {
+                if (!currentSession.isActive()) {
+                    if (TreeSelectionProvider.getTreeNode() instanceof Task) {
                         e.getPresentation().setEnabled(true);
+                    } else if (TreeSelectionProvider.getTreeNode() instanceof Session) {
+                        Session session = (Session) TreeSelectionProvider.getTreeNode();
+                        if (!session.isFinished()) {
+                            e.getPresentation().setEnabled(true);
+                        }
                     }
                 }
             }

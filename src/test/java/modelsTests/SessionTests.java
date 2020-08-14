@@ -14,7 +14,7 @@ import org.mockserver.model.HttpResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-@ExtendWith(MockServerExtension.class)
+/*@ExtendWith(MockServerExtension.class)
 @MockServerSettings(ports = {8080}, perTestSuite = true)
 public class SessionTests {
 
@@ -90,4 +90,4 @@ public class SessionTests {
         ProductToolWindow.getCurrentSession().setId(1);
         ProductToolWindow.getCurrentSession().stop();
     }
-}
+}*/

@@ -12,12 +12,15 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.sun.jdi.Method;
+import com.swarm.models.Product;
 import com.swarm.toolWindow.ProductToolWindow;
 import com.swarm.utils.States;
 import com.swarm.models.Invocation;
@@ -29,10 +32,13 @@ import java.util.List;
 public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, DumbAware {
 
     private final Project project;
+    private ProductToolWindow productToolWindow;
     private List<StackFrameProxyImpl> currentStackFrames;
 
     public DebuggerManagerListenerSwarm(Project project) {
         this.project = project;
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Swarm Debugging Manager");
+        productToolWindow = (ProductToolWindow) toolWindow.getContentManager().getContent(0).getComponent();
     }
 
     @Override
@@ -43,7 +49,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
     @Override
     public void sessionCreated(DebuggerSession session) {
         session.getContextManager().addListener((newContext, event) -> {
-            if (ProductToolWindow.getCurrentSessionId() == 0) {
+            if (productToolWindow.getCurrentSession().getId() == 0) {
                 return;
             }
             assert newContext.getDebugProcess() != null;
@@ -97,7 +103,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
             invokedType.setFullPath(file.getVirtualFile().getPath());
         });
 
-        invokedType.setSession(ProductToolWindow.getCurrentSession());
+        invokedType.setSession(productToolWindow.getCurrentSession());
 
         try {
             ApplicationManager.getApplication().runReadAction(() -> {
@@ -146,7 +152,7 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         Invocation invocation = new Invocation();
         invocation.setInvoking(DebugActionListener.invokingMethod);
         invocation.setInvoked(invokedSwarmMethod);
-        invocation.setSession(ProductToolWindow.getCurrentSession());
+        invocation.setSession(productToolWindow.getCurrentSession());
         invocation.create();
     }
 

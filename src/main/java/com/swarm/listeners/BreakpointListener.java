@@ -4,6 +4,8 @@ import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpoint;
@@ -16,14 +18,17 @@ import org.jetbrains.annotations.NotNull;
 public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, DumbAware {
 
     private final Project project;
+    private ProductToolWindow productToolWindow;
 
     public BreakpointListener(Project project) {
         this.project = project;
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Swarm Debugging Manager");
+        productToolWindow = (ProductToolWindow) toolWindow.getContentManager().getContent(0).getComponent();
     }
 
     @Override
     public void breakpointAdded(@NotNull XBreakpoint xBreakpoint) {
-        if(ProductToolWindow.getCurrentSessionId() == 0) {
+        if(productToolWindow.getCurrentSession().getId() == 0) {
             return;
         }
         if(xBreakpoint.getSourcePosition() == null) {
@@ -40,7 +45,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
 
     @Override
     public void breakpointRemoved(@NotNull XBreakpoint<?> breakpoint) {
-        if(ProductToolWindow.getCurrentSessionId() == 0) {
+        if(productToolWindow.getCurrentSession().getId() == 0) {
             return;
         }
         if(breakpoint.getSourcePosition() == null) {
@@ -58,7 +63,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
           // String path = VfsUtilCore.getRelativePath(file.getVirtualFile(), file.getVirtualFile());
             type.setFullPath(file.getVirtualFile().getPath());
             type.setSourceCode(file.getText());
-            type.setSession(ProductToolWindow.getCurrentSession());
+            type.setSession(productToolWindow.getCurrentSession());
 
             PsiMethod psiMethod = findMethodByBreakpointAndFile(breakpoint, file);
             PsiClass psiClass = PsiTreeUtil.getParentOfType(psiMethod, PsiClass.class);
@@ -95,7 +100,7 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
         Event event = new Event();
         event.setKind(eventKind);
         event.setLineNumber(lineNumber);
-        event.setSession(ProductToolWindow.getCurrentSession());
+        event.setSession(productToolWindow.getCurrentSession());
         event.setMethod(method);
         event.create();
 

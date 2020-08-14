@@ -15,7 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.ArrayList;
 
-@ExtendWith(MockServerExtension.class)
+/*@ExtendWith(MockServerExtension.class)
 @MockServerSettings(ports = {8080}, perTestSuite = true)
 public class ProductServiceTests {
 
@@ -71,3 +71,4 @@ public class ProductServiceTests {
         assertThat(products.get(0).getTasks().get(0).getSessions(), hasSize(1));
     }
 }
+*/

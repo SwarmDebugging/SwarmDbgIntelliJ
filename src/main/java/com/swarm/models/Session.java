@@ -85,4 +85,9 @@ public class Session {
     public void setFinished(boolean finished) {
         this.finished = finished;
     }
+
+    @Override
+    public String toString() {
+        return description + " in task: " + task.getTitle();
+    }
 }

@@ -13,6 +13,8 @@ import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.impl.actions.*;
@@ -29,6 +31,7 @@ import java.awt.event.MouseEvent;
 public class DebugActionListener implements AnActionListener, DumbAware {
 
     Project project;
+    private ProductToolWindow productToolWindow;
     private long lastEventTime = -1;
     private boolean noSessionReminderShown = false;
 
@@ -36,11 +39,13 @@ public class DebugActionListener implements AnActionListener, DumbAware {
 
     public DebugActionListener(Project project) {
         this.project = project;
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Swarm Debugging Manager");
+        productToolWindow = (ProductToolWindow) toolWindow.getContentManager().getContent(0).getComponent();
     }
 
     @Override
     public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
-        if (ProductToolWindow.getCurrentSessionId() == 0) {
+        if (productToolWindow.getCurrentSession().getId() == 0) {
             if((action instanceof ToggleLineBreakpointAction || action instanceof StepOverAction || action instanceof StepIntoAction) && !noSessionReminderShown) {
                 showNoActiveSessionMessage();
                 noSessionReminderShown = true;
@@ -83,7 +88,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
             type.setFullPath(file.getVirtualFile().getPath());
         });
 
-        type.setSession(ProductToolWindow.getCurrentSession());
+        type.setSession(productToolWindow.getCurrentSession());
 
         debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
             @Override
@@ -140,7 +145,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
 
         Event event = new Event();
-        event.setSession(ProductToolWindow.getCurrentSession());
+        event.setSession(productToolWindow.getCurrentSession());
         event.setMethod(method);
         event.setLineNumber(lineNumber);
         event.setKind(eventKind);

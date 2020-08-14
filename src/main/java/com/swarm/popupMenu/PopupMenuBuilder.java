@@ -70,10 +70,12 @@ public class PopupMenuBuilder {
         newSwarmSession.addActionListener(actionEvent -> {
             CreateSessionDialog createSessionDialog = new CreateSessionDialog(project);
             if(createSessionDialog.showAndGet()) {
-                ProductToolWindow.getCurrentSession().setTask(task);
-                ProductToolWindow.getCurrentSession().setDeveloper(ProductToolWindow.getDeveloper());
-                ProductToolWindow.getCurrentSession().setDescription(createSessionDialog.getDescription());
-                ProductToolWindow.getCurrentSession().start();
+                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Swarm Debugging Manager");
+                ProductToolWindow productToolWindow = (ProductToolWindow) toolWindow.getContentManager().getContent(0).getComponent();
+                productToolWindow.getCurrentSession().setTask(task);
+                productToolWindow.getCurrentSession().setDeveloper(productToolWindow.getDeveloper());
+                productToolWindow.getCurrentSession().setDescription(createSessionDialog.getDescription());
+                productToolWindow.getCurrentSession().start();
             }
         });
     }

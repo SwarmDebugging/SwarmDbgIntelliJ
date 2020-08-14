@@ -2,18 +2,29 @@ package com.swarm.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.JBPopupMenu;
+import com.intellij.openapi.ui.popup.JBPopup;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.swarm.models.Session;
+import com.swarm.services.SessionService;
 import com.swarm.toolWindow.ProductToolWindow;
+import com.swarm.toolWindow.RecommendationToolWindow;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 public class LoginDialog extends DialogWrapper {
+    private Project project;
+    private ProductToolWindow productToolWindow;
 
     private final JPanel panel = new JPanel(new GridBagLayout());
     private final JTextField usernameField = new JTextField();
@@ -22,7 +33,11 @@ public class LoginDialog extends DialogWrapper {
 
     public LoginDialog(Project project) {
         super(project);
+        this.project = project;
         init();
+
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Swarm Debugging Manager");
+        productToolWindow = (ProductToolWindow) toolWindow.getContentManager().getContent(0).getComponent();
     }
 
     @Nullable
@@ -65,12 +80,32 @@ public class LoginDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        ProductToolWindow.getDeveloper().setUsername(usernameField.getText());
 
-        ProductToolWindow.getDeveloper().login();
+        productToolWindow.getDeveloper().setUsername(usernameField.getText());
 
-        if(ProductToolWindow.getDeveloper().getId() != 0) {
-            super.doOKAction();
+        productToolWindow.getDeveloper().login();
+
+        if(productToolWindow.getDeveloper().getId() != 0) {
+            SessionService sessionService = new SessionService();
+            ArrayList<Session> sessions = sessionService.sessionsByDeveloper(productToolWindow.getDeveloper());
+            ArrayList<Session> openedSessions = new ArrayList<>();
+            for (Session session : sessions) {
+                if (!session.isFinished()) {
+                    openedSessions.add(session);
+                }
+            }
+            var builder = JBPopupFactory.getInstance().createPopupChooserBuilder(openedSessions);
+            builder.setItemChosenCallback(session -> {
+                productToolWindow.setCurrentSession(session);
+                super.doOKAction();
+            });
+            builder.setCancelCallback(() -> {
+                super.doOKAction();
+                return true;
+            });
+            builder.setTitle("Continue an Unfinished Session?");
+            JBPopup popup = builder.setRequestFocus(true).createPopup();
+            popup.showInCenterOf(this.panel);
         }
     }
 
@@ -90,11 +125,11 @@ public class LoginDialog extends DialogWrapper {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
 
-            ProductToolWindow.getDeveloper().setUsername(usernameField.getText());
+            productToolWindow.getDeveloper().setUsername(usernameField.getText());
 
-            ProductToolWindow.getDeveloper().registerNewDeveloper();
+            productToolWindow.getDeveloper().registerNewDeveloper();
 
-            if(ProductToolWindow.getDeveloper().getId() != 0) {
+            if(productToolWindow.getDeveloper().getId() != 0) {
                 close(OK_EXIT_CODE, true);
             }
         }

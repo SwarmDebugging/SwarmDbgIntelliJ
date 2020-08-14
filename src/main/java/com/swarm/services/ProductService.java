@@ -1,5 +1,8 @@
 package com.swarm.services;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.swarm.models.Product;
 import com.swarm.models.Session;
 import com.swarm.models.Task;
@@ -13,6 +16,11 @@ import java.util.ArrayList;
 public class ProductService {
     
     private ArrayList<Product> productList;
+    private Project project;
+
+    public ProductService(Project project) {
+        this.project = project;
+    }
 
     public ArrayList<Product> getAllProducts() {
         productList = new ArrayList<>();
@@ -186,8 +194,11 @@ public class ProductService {
     }
 
     private JSONObject fetchDevelopersTasks() {
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Swarm Debugging Manager");
+        ProductToolWindow productToolWindow = (ProductToolWindow) toolWindow.getContentManager().getContent(0).getComponent();
+
         HTTPRequest fetchTasks = new HTTPRequest();
-        fetchTasks.setQuery("{sessions(developerId:" + ProductToolWindow.getDeveloper().getId() + "){id,description,finished,task{id,title,done,product{id,name}}}}");
+        fetchTasks.setQuery("{sessions(developerId:" + productToolWindow.getDeveloper().getId() + "){id,description,finished,task{id,title,done,product{id,name}}}}");
         JSONObject response = new JSONObject(fetchTasks.post().getString("body"));
         return response.getJSONObject("data");
     }
