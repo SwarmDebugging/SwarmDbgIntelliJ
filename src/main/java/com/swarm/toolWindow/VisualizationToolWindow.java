@@ -52,18 +52,26 @@ public class VisualizationToolWindow extends SimpleToolWindowPanel implements Du
     @Override
     public void treeSelectionAction(Object treeNode) {
         if (treeNode == null) {
-            setContent(new JBLabel("Select a task to view the visualisation"));
+            setContent(new JBLabel("Select a task or a product to view the visualisation"));
 
         } else if(treeNode instanceof Task) {
             Task task = (Task) treeNode;
 
             if(JBCefApp.isSupported()){
-                setContent(new JBCefBrowser("http://localhost:8080/getInvocationGraph/" + task.getId() + "/" + constantNodeSize).getComponent());
+                setContent(new JBCefBrowser("http://localhost:8080/getTaskInvocationGraph/" + task.getId() + "/" + constantNodeSize).getComponent());
             } else {
-                BrowserUtil.browse("http://localhost:8080/getInvocationGraph/" + task.getId() + "/" + constantNodeSize);
+                BrowserUtil.browse("http://localhost:8080/getTaskInvocationGraph/" + task.getId() + "/" + constantNodeSize);
+            }
+        } else if (treeNode instanceof Product) {
+            Product product = (Product) treeNode;
+
+            if(JBCefApp.isSupported()){
+                setContent(new JBCefBrowser("http://localhost:8080/getProductInvocationGraph/" + product.getId() + "/" + constantNodeSize).getComponent());
+            } else {
+                BrowserUtil.browse("http://localhost:8080/getProductInvocationGraph/" + product.getId() + "/" + constantNodeSize);
             }
         } else {
-            setContent(new JBLabel("Select a task to view the visualisation"));
+            setContent(new JBLabel("Select a task or a product to view the visualisation"));
         }
     }
 
