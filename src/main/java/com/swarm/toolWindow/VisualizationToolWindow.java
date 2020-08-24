@@ -94,7 +94,7 @@ public class VisualizationToolWindow extends SimpleToolWindowPanel implements Du
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-            e.getPresentation().setEnabled(TreeSelectionProvider.getTreeNode() instanceof Task);
+            e.getPresentation().setEnabled(TreeSelectionProvider.getTreeNode() instanceof Task || TreeSelectionProvider.getTreeNode() instanceof Product);
         }
     }
 }

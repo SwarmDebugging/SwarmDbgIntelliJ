@@ -14,7 +14,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class ProductService {
-    
+
     private ArrayList<Product> productList;
     private Project project;
 
@@ -55,8 +55,8 @@ public class ProductService {
                 Product product = productList.get(index);
 
                 boolean isInProduct = false;
-                for (Task task: product.getTasks()){
-                    if(task.getId() == jsonSession.getJSONObject("task").getInt("id")){
+                for (Task task : product.getTasks()) {
+                    if (task.getId() == jsonSession.getJSONObject("task").getInt("id")) {
                         isInProduct = true;
                         Session session = new Session();
                         session.setId(jsonSession.getInt("id"));
@@ -67,18 +67,18 @@ public class ProductService {
                     }
                 }
 
-                 if(!isInProduct) {
+                if (!isInProduct) {
                     Task task = new Task();
                     task.setId(jsonSession.getJSONObject("task").getInt("id"));
                     task.setTitle(jsonSession.getJSONObject("task").getString("title"));
                     task.setDone(jsonSession.getJSONObject("task").getBoolean("done"));
                     productList.get(index).addTask(task);
 
-                     Session session = new Session();
-                     session.setId(jsonSession.getInt("id"));
-                     session.setDescription(jsonSession.getString("description"));
-                     session.setFinished(!jsonSession.isNull("finished"));
-                     task.addSession(session);
+                    Session session = new Session();
+                    session.setId(jsonSession.getInt("id"));
+                    session.setDescription(jsonSession.getString("description"));
+                    session.setFinished(!jsonSession.isNull("finished"));
+                    task.addSession(session);
                 }
             } else {
                 Product product = new Product();
@@ -130,7 +130,7 @@ public class ProductService {
     private void buildRemainingProducts(JSONArray products) {
         for (int i = 0; i < products.length(); i++) {
             JSONObject jsonProduct = products.getJSONObject(i);
-            if(productIsInArray(jsonProduct.getInt("id")) == -1) {
+            if (productIsInArray(jsonProduct.getInt("id")) == -1) {
                 Product product = new Product();
                 product.setId(jsonProduct.getInt("id"));
                 product.setName(jsonProduct.getString("name"));
@@ -141,7 +141,7 @@ public class ProductService {
 
     private void addRemainingTasks() {
         JSONObject data = fetchAllTasks();
-        if(!data.isNull("tasks")) {
+        if (!data.isNull("tasks")) {
             JSONArray tasks = data.getJSONArray("tasks");
             buildRemainingTasks(tasks);
         }
@@ -161,14 +161,14 @@ public class ProductService {
             Product product = productList.get(productIndex);
 
             boolean isInProduct = false;
-            for (Task task: product.getTasks()){
-                if(task.getId() == tasks.getJSONObject(i).getInt("id")){
+            for (Task task : product.getTasks()) {
+                if (task.getId() == tasks.getJSONObject(i).getInt("id")) {
                     isInProduct = true;
                     break;
                 }
             }
 
-            if(isInProduct) continue;
+            if (isInProduct) continue;
 
             JSONObject jsonTask = tasks.getJSONObject(i);
             Task task = new Task();
@@ -187,7 +187,7 @@ public class ProductService {
 
     private void addProductsLinkedToDevelopersTasks(int developerId) {
         JSONObject data = fetchDevelopersTasks(developerId);
-        if(!data.isNull("sessions")) {
+        if (!data.isNull("sessions")) {
             JSONArray sessions = data.getJSONArray("sessions");
             buildProductsFromSessions(sessions);
         }

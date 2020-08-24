@@ -70,7 +70,8 @@ public class ProductServiceTests extends BasePlatformTestCase {
         .withBody(body.toString()))
                 .respond(HttpResponse.response()
                 .withBody("{\"data\":{\"sessions\":[{\"id\":4,\"description\":\"test sessions\",\"finished\":null,\"task\":{\"id\":3,\"title\":\"title3\",\"done\":false,\"product\":{\"id\":2,\"name\":\"product2\"}}}," +
-                        "{\"id\":10,\"description\":\"test sessions\",\"finished\":null,\"task\":{\"id\":3,\"title\":\"title3\",\"done\":false,\"product\":{\"id\":2,\"name\":\"product2\"}}}]}}"));
+                        "{\"id\":10,\"description\":\"test sessions\",\"finished\":null,\"task\":{\"id\":3,\"title\":\"title3\",\"done\":false,\"product\":{\"id\":2,\"name\":\"product2\"}}}," +
+                        "{\"id\":14,\"description\":\"test sessions\",\"finished\":null,\"task\":{\"id\":15,\"title\":\"title3\",\"done\":false,\"product\":{\"id\":2,\"name\":\"product2\"}}}]}}"));
     }
 
     private void setupProductByDeveloperRequest() {
@@ -89,7 +90,7 @@ public class ProductServiceTests extends BasePlatformTestCase {
         ArrayList<Product> products = productService.getAllProducts();
 
         assertThat(products, hasSize(2));
-        assertThat(products.get(0).getTasks(), hasSize(3));
+        assertThat(products.get(0).getTasks(), hasSize(4));
         assertThat(products.get(0).getTasks().get(0).getSessions(), hasSize(2));
     }
 
