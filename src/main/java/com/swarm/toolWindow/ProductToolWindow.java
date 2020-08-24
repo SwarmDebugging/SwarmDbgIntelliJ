@@ -318,7 +318,7 @@ public class ProductToolWindow extends SimpleToolWindowPanel implements DumbAwar
 
     private void addFilteredProductsToProductList() {
         ProductService productService = new ProductService(project);
-        productList = productService.getProductsByDeveloper();
+        productList = productService.getProductsByDeveloper(developer.getId());
     }
 
     private class StartRecordingEventsAction extends DumbAwareAction {

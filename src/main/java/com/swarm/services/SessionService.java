@@ -16,11 +16,10 @@ public class SessionService {
     public ArrayList<Session> sessionsByDeveloper(Developer developer) {
         sessionList = new ArrayList<>();
         HTTPRequest getSessionsByDeveloperId = new HTTPRequest();
-        getSessionsByDeveloperId.setQuery("query sessions($developerId:Long!){sessions(developerId:$developerId){id,finished,description,task{title,done}}}");
-        getSessionsByDeveloperId.addVariable("developerId", developer.getId());
+        getSessionsByDeveloperId.setQuery("{sessions(developerId:" + developer.getId() + "){id,finished,description,task{title,done}}}");
         JSONObject response = new JSONObject(getSessionsByDeveloperId.post().getString("body"));
 
-        if((!response.getJSONObject("data").isNull("sessions"))) {
+        if ((!response.getJSONObject("data").isNull("sessions"))) {
             JSONArray sessions = response.getJSONObject("data").getJSONArray("sessions");
             addJSONSessionsToSessionList(sessions);
         }
@@ -30,7 +29,7 @@ public class SessionService {
     private void addJSONSessionsToSessionList(JSONArray sessions) {
         for (int i = 0; i < sessions.length(); i++) {
             JSONObject jsonSession = sessions.getJSONObject(i);
-            if(!jsonSession.getJSONObject("task").getBoolean("done")) {
+            if (!jsonSession.getJSONObject("task").getBoolean("done")) {
                 Session newSession = new Session();
                 newSession.setFinished(!jsonSession.isNull("finished"));
                 newSession.setId(jsonSession.getInt("id"));

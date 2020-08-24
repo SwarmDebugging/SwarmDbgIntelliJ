@@ -179,26 +179,24 @@ public class ProductService {
         }
     }
 
-    public ArrayList<Product> getProductsByDeveloper() {
+    public ArrayList<Product> getProductsByDeveloper(int developerId) {
         productList = new ArrayList<>();
-        addProductsLinkedToDevelopersTasks();
+        addProductsLinkedToDevelopersTasks(developerId);
         return productList;
     }
 
-    private void addProductsLinkedToDevelopersTasks() {
-        JSONObject data = fetchDevelopersTasks();
+    private void addProductsLinkedToDevelopersTasks(int developerId) {
+        JSONObject data = fetchDevelopersTasks(developerId);
         if(!data.isNull("sessions")) {
             JSONArray sessions = data.getJSONArray("sessions");
             buildProductsFromSessions(sessions);
         }
     }
 
-    private JSONObject fetchDevelopersTasks() {
-        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Swarm Debugging Manager");
-        ProductToolWindow productToolWindow = (ProductToolWindow) toolWindow.getContentManager().getContent(0).getComponent();
+    private JSONObject fetchDevelopersTasks(int developerId) {
 
         HTTPRequest fetchTasks = new HTTPRequest();
-        fetchTasks.setQuery("{sessions(developerId:" + productToolWindow.getDeveloper().getId() + "){id,description,finished,task{id,title,done,product{id,name}}}}");
+        fetchTasks.setQuery("{sessions(developerId:" + developerId + "){id,description,finished,task{id,title,done,product{id,name}}}}");
         JSONObject response = new JSONObject(fetchTasks.post().getString("body"));
         return response.getJSONObject("data");
     }
