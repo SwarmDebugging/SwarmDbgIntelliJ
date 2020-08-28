@@ -134,7 +134,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            jumpToSource(); //TODO: test this
+            jumpToSource();
         }
 
         @Override
@@ -157,7 +157,10 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
             try {
                 Breakpoint breakpoint = (Breakpoint) contentTable.getValueAt(contentTable.getSelectedRow(), contentTable.getSelectedColumn());
 
-                VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(breakpoint.getType().getFullPath()));
+                String filePath = breakpoint.getType().getFullPath().substring(project.getName().length());
+                filePath = project.getBasePath() + filePath;
+
+                VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(filePath));
                 if (file == null) {
                     return;
                 }
@@ -171,9 +174,11 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
 
     private PsiFile getPsiFileFromType(Type type) {
         final PsiFile[] psiFile = new PsiFile[1];
-
         ApplicationManager.getApplication().runReadAction(() -> {
-            VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(type.getFullPath()));
+            String filePath = type.getFullPath().substring(project.getName().length());
+            filePath = project.getBasePath() + filePath;
+
+            VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(Path.of(filePath));
             if (file == null) {
                 return;
             }
@@ -203,6 +208,7 @@ public class RecommendationToolWindow extends SimpleToolWindowPanel implements D
         }
     }
 
+    //TODO: don't know where to set breakpoint when a task is selected
     public void setBreakpoint() {
         if (TreeSelectionProvider.getTreeNode() instanceof Task) {
             /*Method method = (Method) contentTable.getValueAt(contentTable.getSelectedRow(), 0);

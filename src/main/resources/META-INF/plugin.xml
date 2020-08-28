@@ -9,6 +9,7 @@
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.xdebugger</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Swarm Debugging Manager" anchor="right" factoryClass="com.swarm.toolWindow.ProductToolWindowFactory" icon="/icons/ant.svg"/>
@@ -22,8 +23,4 @@
         <listener class="com.swarm.listeners.DebuggerManagerListenerSwarm" topic="com.intellij.debugger.impl.DebuggerManagerListener"/>
         <listener class="com.swarm.listeners.SwarmProjectListener" topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </projectListeners>
-
-    <actions>
-
-    </actions>
 </idea-plugin>

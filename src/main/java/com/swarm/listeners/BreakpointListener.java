@@ -60,8 +60,12 @@ public class BreakpointListener implements XBreakpointListener<XBreakpoint<?>>, 
 
         ReadAction.run(() -> {
             PsiFile file = PsiManager.getInstance(project).findFile(breakpoint.getSourcePosition().getFile());
-          // String path = VfsUtilCore.getRelativePath(file.getVirtualFile(), file.getVirtualFile());
-            type.setFullPath(file.getVirtualFile().getPath());
+            String projectBasePath = project.getBasePath();
+            String fileAbsolutePath = file.getVirtualFile().getPath();
+            String filePath = fileAbsolutePath.substring(projectBasePath.length());
+            filePath = project.getName().toLowerCase() + filePath;
+
+            type.setFullPath(filePath);
             type.setSourceCode(file.getText());
             type.setSession(productToolWindow.getCurrentSession());
 
