@@ -99,8 +99,13 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
 
         ReadAction.run(() -> {
             PsiFile file = DebuggerManagerEx.getInstanceEx(project).getContext().getSourcePosition().getFile();
+            String projectBasePath = project.getBasePath();
+            String fileAbsolutePath = file.getVirtualFile().getPath();
+            String filePath = fileAbsolutePath.substring(projectBasePath.length());
+            filePath = project.getName().toLowerCase() + filePath;
+
             invokedType.setSourceCode(file.getText());
-            invokedType.setFullPath(file.getVirtualFile().getPath());
+            invokedType.setFullPath(filePath);
         });
 
         invokedType.setSession(productToolWindow.getCurrentSession());

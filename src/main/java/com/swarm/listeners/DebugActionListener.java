@@ -84,8 +84,13 @@ public class DebugActionListener implements AnActionListener, DumbAware {
         Type type = new Type();
         ReadAction.run(() -> {
             PsiFile file = debuggerManagerEx.getContext().getSourcePosition().getFile();
+            String projectBasePath = project.getBasePath();
+            String fileAbsolutePath = file.getVirtualFile().getPath();
+            String filePath = fileAbsolutePath.substring(projectBasePath.length());
+            filePath = project.getName().toLowerCase() + filePath;
+
             type.setSourceCode(file.getText());
-            type.setFullPath(file.getVirtualFile().getPath());
+            type.setFullPath(filePath);
         });
 
         type.setSession(productToolWindow.getCurrentSession());
