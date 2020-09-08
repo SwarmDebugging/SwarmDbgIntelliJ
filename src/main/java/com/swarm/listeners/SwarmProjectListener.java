@@ -6,6 +6,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.swarm.toolWindow.ProductToolWindow;
+import com.swarm.utils.RequestsQueue;
 import icons.SwarmIcons;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,5 +22,6 @@ public class SwarmProjectListener implements ProjectManagerListener {
                 productToolWindow.getCurrentSession().stop();
             }
         }
+        RequestsQueue.getInstance().sendRequests();
     }
 }
