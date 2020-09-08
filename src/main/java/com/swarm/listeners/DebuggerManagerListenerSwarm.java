@@ -22,6 +22,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.sun.jdi.Method;
 import com.swarm.models.Product;
 import com.swarm.toolWindow.ProductToolWindow;
+import com.swarm.utils.RequestsQueue;
 import com.swarm.utils.States;
 import com.swarm.models.Invocation;
 import com.swarm.models.Type;
@@ -127,8 +128,12 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
             e.printStackTrace();
         }
 
-        invokedType.create();
-
+        RequestsQueue.getInstance().addRequest(new Runnable() {
+            @Override
+            public void run() {
+                invokedType.create();
+            }
+        });
         Method invoked = currentStackFrames.get(0).location().method();
         com.swarm.models.Method invokedSwarmMethod = new com.swarm.models.Method();
         ApplicationManager.getApplication().runReadAction(() -> {
@@ -151,14 +156,25 @@ public class DebuggerManagerListenerSwarm implements DebuggerManagerListener, Du
         });
         invokedSwarmMethod.setName(invoked.name());
         invokedSwarmMethod.setType(invokedType);
-        invokedSwarmMethod.create();
+        RequestsQueue.getInstance().addRequest(new Runnable() {
+            @Override
+            public void run() {
+                invokedSwarmMethod.create();
+            }
+        });
 
 
         Invocation invocation = new Invocation();
         invocation.setInvoking(DebugActionListener.invokingMethod);
         invocation.setInvoked(invokedSwarmMethod);
         invocation.setSession(productToolWindow.getCurrentSession());
-        invocation.create();
+        RequestsQueue.getInstance().addRequest(new Runnable() {
+            @Override
+            public void run() {
+                invocation.create();
+            }
+        });
+
     }
 
     private String encodeSignature(PsiParameter[] parameters, String returnType) {

@@ -19,10 +19,12 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.xdebugger.impl.actions.*;
 import com.swarm.toolWindow.ProductToolWindow;
+import com.swarm.utils.RequestsQueue;
 import com.swarm.utils.States;
 import com.swarm.models.Event;
 import com.swarm.models.Method;
 import com.swarm.models.Type;
+import org.bouncycastle.cert.ocsp.Req;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.InputEvent;
@@ -46,7 +48,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
     @Override
     public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, @NotNull AnActionEvent event) {
         if (productToolWindow.getCurrentSession().getId() == 0) {
-            if((action instanceof ToggleLineBreakpointAction || action instanceof StepOverAction || action instanceof StepIntoAction) && !noSessionReminderShown) {
+            if ((action instanceof ToggleLineBreakpointAction || action instanceof StepOverAction || action instanceof StepIntoAction) && !noSessionReminderShown) {
                 showNoActiveSessionMessage();
                 noSessionReminderShown = true;
             }
@@ -62,7 +64,7 @@ public class DebugActionListener implements AnActionListener, DumbAware {
             lastEventTime = input.getWhen();
         }
         if (action instanceof StepIntoAction || action instanceof ForceStepIntoAction) {
-            invokingMethod.setId(handleEvent("StepInto"));
+            handleEvent("StepInto");
             States.isSteppedInto = true;
         } else if (action instanceof StepOverAction || action instanceof ForceStepOverAction) {
             handleEvent("StepOver");
@@ -75,10 +77,10 @@ public class DebugActionListener implements AnActionListener, DumbAware {
 
     private void showNoActiveSessionMessage() {
         ApplicationManager.getApplication().invokeLater(() ->
-                Messages.showInfoMessage(project,"Reminder: No debugging data is collected, start a session to start data collection","No Active Session"));
+                Messages.showInfoMessage(project, "Reminder: No debugging data is collected, start a session to start data collection", "No Active Session"));
     }
 
-    private int handleEvent(String eventKind) {
+    private void handleEvent(String eventKind) {
         DebuggerManagerEx debuggerManagerEx = DebuggerManagerEx.getInstanceEx(project);
 
         Type type = new Type();
@@ -112,8 +114,12 @@ public class DebugActionListener implements AnActionListener, DumbAware {
                 });
             }
         });
-        type.create();
-
+        RequestsQueue.getInstance().addRequest(new Runnable() {
+            @Override
+            public void run() {
+                type.create();
+            }
+        });
         Method method = new Method();
         method.setType(type);
         debuggerManagerEx.getContext().getDebugProcess().getManagerThread().invokeAndWait(new DebuggerCommandImpl() {
@@ -145,18 +151,30 @@ public class DebugActionListener implements AnActionListener, DumbAware {
                 }
             }
         });
-        method.create();
+        RequestsQueue.getInstance().addRequest(new Runnable() {
+            @Override
+            public void run() {
+                method.create();
+            }
+        });
 
-        int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
+            int lineNumber = debuggerManagerEx.getContext().getSourcePosition().getLine();
 
         Event event = new Event();
         event.setSession(productToolWindow.getCurrentSession());
         event.setMethod(method);
         event.setLineNumber(lineNumber);
         event.setKind(eventKind);
-        event.create();
 
-        return method.getId();
+        RequestsQueue.getInstance().addRequest(new Runnable() {
+            @Override
+            public void run() {
+                event.create();
+                if(eventKind.equals("StepInto")) {
+                    invokingMethod.setId(method.getId());
+                }
+            }
+        });
     }
 
     private String encodeSignature(PsiParameter[] parameters, String returnType) {
